@@ -1,4 +1,4 @@
--- Naxxramas Loot Ledger v0.1.0.26: conservative 3.3.5 loot identity.
+-- Naxxramas Loot Ledger v0.1.0.27: conservative 3.3.5 loot identity.
 -- Wrath does not expose a trustworthy loot-source GUID via GetLootSourceInfo.
 -- Treat overlapping loot scans as the SAME opportunity until a leader explicitly
 -- confirms a new corpse. Never infer a new opportunity from a reopen or /reload.
@@ -18,29 +18,35 @@ local function Log(action, message, oldID, newID)
         actor=Name(),when=date and date('%Y-%m-%d %H:%M:%S') or 'unknown'}
     while #history>100 do table.remove(history,1) end
 end
+-- Schema 3 stores the active group plus a bounded archive of previous groups.
+-- The client cannot distinguish two identical physical corpses. Ambiguity must
+-- never be interpreted as permission to roll again.
+local MAX_ARCHIVED=80
 function I:Initialize()
     if self.initialized then return end
-    local session = NLL.db and NLL.db.raidSession
+    local session=NLL.db and NLL.db.raidSession
     if not session then return end
-    if type(session.lootIdentity) ~= 'table' then session.lootIdentity={} end
-    local group=session.lootIdentity
-    if type(group.rows) ~= 'table' then group.rows={} end
-    if type(group.serial) ~= 'number' then group.serial=0 end
-    if type(NLL.db.lootIdentityAudit) ~= 'table' then NLL.db.lootIdentityAudit={} end
-    -- v0.1.0.25's former currentLoot entries cannot safely be used to prove
-    -- same-corpse identity. Clear the on-screen stale queue on upgrade only.
-    if group.schema ~= 2 then
+    if type(session.lootIdentity)~='table' then session.lootIdentity={} end
+    local book=session.lootIdentity
+    if type(book.rows)~='table' then book.rows={} end
+    if type(book.serial)~='number' then book.serial=0 end
+    if type(book.groups)~='table' then book.groups={} end
+    if type(book.oldProcessed)~='table' then book.oldProcessed={} end
+    if type(NLL.db.lootIdentityAudit)~='table' then NLL.db.lootIdentityAudit={} end
+    if book.schema~=2 and book.schema~=3 then
+        -- Pre-0.1.0.26 loot queues have no durable identity guarantee.
         session.currentLoot={}
-        group.schema=2
-        group.rows={}
-        group.id=nil
-        group.serial=0
-    else
-        -- A client reload cannot prove an award window stayed open.
-        -- Restored winners are view-only for real direct awarding.
-        for _,row in ipairs(group.rows) do
+        book.rows={};book.id=nil;book.serial=0;book.groups={}
+    end
+    book.schema=3
+    -- A restored winner is display-only, never sufficient for a direct award.
+    for _,g in ipairs(book.groups) do
+        for _,row in ipairs(g.rows or {}) do
             if row.processed then row.awardContextClosed=true end
         end
+    end
+    for _,row in ipairs(book.rows) do
+        if row.processed then row.awardContextClosed=true end
     end
     self.initialized=true
 end
@@ -49,22 +55,55 @@ function I:GetGroup()
 end
 function I:GetRow(uid)
     if not uid then return nil end
-    local group=self:GetGroup()
-    for _,row in ipairs(group and group.rows or {}) do
+    local book=self:GetGroup()
+    for _,row in ipairs(book and book.rows or {}) do
         if row.uid==uid then return row end
+    end
+    for _,g in ipairs(book and book.groups or {}) do
+        for _,row in ipairs(g.rows or {}) do
+            if row.uid==uid then return row end
+        end
     end
     return nil
 end
-function I:NewGroup(group,reason)
-    local old=group.id
+local function ArchiveActive(book)
+    if not book.id or #book.rows==0 then return end
+    -- These references belong exclusively to the saved history group.
+    book.groups[#book.groups+1]={id=book.id,rows=book.rows,serial=book.serial,
+        startedAt=book.startedAt,lastSeenAt=book.lastSeenAt,
+        explicitConfirmed=book.explicitConfirmed}
+    while #book.groups>MAX_ARCHIVED do
+        local removed=table.remove(book.groups,1)
+        -- Never discard the fact a completed item could already have won,
+        -- even when old individual group details are compacted.
+        for _,r in ipairs(removed.rows or {}) do
+            if r.processed then book.oldProcessed[tostring(r.itemID)]=true end
+        end
+    end
+end
+function I:NewGroup(book,reason)
+    local old=book.id
+    ArchiveActive(book)
     local session=NLL.db.raidSession
     session.lootGeneration=(tonumber(session.lootGeneration) or 0)+1
-    group.id='L'..tostring(session.lootGeneration)
-    group.rows={}
-    group.serial=0
-    group.startedAt=Wall()
-    group.schema=2
-    Log('NEW_OPPORTUNITY',reason or 'Nonoverlapping loot items',old,group.id)
+    book.id='L'..tostring(session.lootGeneration)
+    book.explicitConfirmed=(reason=='Leader explicitly confirmed different corpse')
+    book.rows={};book.serial=0;book.startedAt=Wall();book.schema=3
+    Log('NEW_OPPORTUNITY',reason or 'Non-overlapping loot',old,book.id)
+end
+function I:ActivateArchived(book,index)
+    local old=book.id
+    local g=table.remove(book.groups,index)
+    ArchiveActive(book)
+    book.id=g.id;book.rows=g.rows;book.serial=g.serial
+    book.startedAt=g.startedAt;book.lastSeenAt=g.lastSeenAt
+    book.explicitConfirmed=g.explicitConfirmed
+    -- Reactivating previously viewed loot does not reopen the real award
+    -- context; its receipt and corpse identity are still unverified.
+    for _,row in ipairs(book.rows) do
+        if row.processed then row.awardContextClosed=true end
+    end
+    Log('REVISIT_POSSIBLE', 'Signature matches earlier group; physical corpse unverified',old,book.id)
 end
 local function Count(rows)
     local counts={}
@@ -73,28 +112,50 @@ local function Count(rows)
     end
     return counts
 end
-function I:Assign(entries, forceNew)
+function I:Assign(entries,forceNew)
     self:Initialize()
-    local group=self:GetGroup()
-    if not group then return entries end
+    local book=self:GetGroup()
+    if not book then return entries end
     entries=entries or {}
-    if #entries==0 then return entries end -- no new opportunity for an empty window
-    local hadGroup=group.id~=nil and #group.rows>0
+    if #entries==0 then return entries end
+    local known=Count(book.rows)
     local overlap=false
-    local known=Count(group.rows)
     for _,entry in ipairs(entries) do
         if known[entry.itemID] then overlap=true break end
     end
-    if forceNew or not hadGroup or not overlap then
-        self:NewGroup(group,forceNew and 'Leader confirmed a different corpse' or
-            'New non-overlapping loot signature')
+    local uncertainItems={}
+    if forceNew then
+        self:NewGroup(book,'Leader explicitly confirmed different corpse')
+    elseif not book.id or #book.rows==0 then
+        self:NewGroup(book,'First loot opportunity')
+    elseif not overlap then
+        -- Find a historical opportunity matching these loot items before
+        -- deciding a disjoint scan is a new corpse.
+        local choices={}
+        for index,g in ipairs(book.groups) do
+            local ids=Count(g.rows)
+            for _,e in ipairs(entries) do
+                if ids[e.itemID] then choices[#choices+1]=index;break end
+            end
+        end
+        if #choices==1 then
+            self:ActivateArchived(book,choices[1])
+        elseif #choices>1 then
+            self:NewGroup(book,'Multiple old signatures match; locked until reviewed')
+            for _,e in ipairs(entries) do
+                uncertainItems[e.itemID]=true
+            end
+            Log('AMBIGUOUS_HISTORY','Several earlier corpses share these item IDs; no automatic new tickets')
+        else
+            self:NewGroup(book,'New non-overlapping signature')
+        end
     end
     self.scanNumber=self.scanNumber+1
     local used={}
     local currentCounts=Count(entries)
     for _,entry in ipairs(entries) do
         local matches={}
-        for _,row in ipairs(group.rows) do
+        for _,row in ipairs(book.rows) do
             if row.itemID==entry.itemID and not used[row.uid] then
                 matches[#matches+1]=row
             end
@@ -105,26 +166,38 @@ function I:Assign(entries, forceNew)
         end
         if not match then match=matches[1] end
         if not match then
-            group.serial=group.serial+1
-            match={uid=group.id..':'..tostring(group.serial)..':'..tostring(entry.itemID),
+            book.serial=book.serial+1
+            match={uid=book.id..':'..tostring(book.serial)..':'..tostring(entry.itemID),
                 itemID=entry.itemID,firstSlot=entry.slotIndex}
-            group.rows[#group.rows+1]=match
+            book.rows[#book.rows+1]=match
         end
         used[match.uid]=true
         match.lastSlot=entry.slotIndex
         match.lastSeen=Wall()
         entry.dropUID=match.uid
-        -- If duplicate copies have different disposition, a partial scan
-        -- cannot prove which physical copy remains. Block instead of guessing.
         local total=0
-        for _,row in ipairs(group.rows) do
+        for _,row in ipairs(book.rows) do
             if row.itemID==entry.itemID then total=total+1 end
         end
-        -- Even two already completed identical copies cannot be safely
-        -- mapped to a remaining single copy once one slot disappears.
-        entry.identityUncertain=(total>1 and currentCounts[entry.itemID]<total) or false
+        local uncertainty=(total>1 and currentCounts[entry.itemID]<total)
+            or uncertainItems[entry.itemID]
+            or (book.oldProcessed[tostring(entry.itemID)]==true and
+                not forceNew and not book.explicitConfirmed)
+        -- When a *new* row appears in a group, but an older archived group
+        -- processed the same item, we cannot prove it's a distinct item.
+        if not forceNew and not book.explicitConfirmed and not match.processed then
+            for _,g in ipairs(book.groups) do
+                for _,r in ipairs(g.rows or {}) do
+                    if r.itemID==entry.itemID and r.processed then
+                        uncertainty=true;break
+                    end
+                end
+                if uncertainty then break end
+            end
+        end
+        entry.identityUncertain=uncertainty and true or false
     end
-    group.lastSeenAt=Wall()
+    book.lastSeenAt=Wall()
     return entries
 end
 function I:MarkCompleted(uid,winner,ticket,method)

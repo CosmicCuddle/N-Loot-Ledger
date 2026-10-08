@@ -1,0 +1,54 @@
+NAXXRAMAS LOOT LEDGER v0.1.0.27 - BULK SAFETY TEST
+=================================================
+
+BEFORE INSTALLING
+1. Exit WoW and back up BOTH Interface/AddOns/NaxxLootLottery and the
+   NaxxLootLottery.lua SavedVariables file in WTF/Account/.../SavedVariables.
+2. Keep the v0.1.0.26 backup until everything below is confirmed.
+3. Install the new ZIP's NaxxLootLottery folder in Interface/AddOns.
+
+SAFE IN-GAME CHECKPOINT
+/nll version       -> v0.1.0.27
+/nll status        -> READY
+/nll lootidentity  -> shows current ID and archived group count
+/nll debug         -> enable Debug only if it is currently disabled
+/nll sim mc40      -> 40 fake characters and 13 simulated drops
+Try fake tickets, one fake winner and one fake award.
+/nll sim stop      -> clears fake session without modifying real histories
+
+REAL PLAYERBOT READ-ONLY PREFLIGHT
+Stop the simulator FIRST. Invite your actual AzerothCore Playerbots into
+an actual raid and add BOT_GEAR_PLAN needs for them in NLL Wishlists.
+/nll botcheck              -> first 15 planned bots and summary
+/nll botcheck BotCharacter  -> full detail for one planned bot
+ROSTER READY means that a character with that name is in the live raid
+roster, online, with a live class and assigned role. It does NOT prove that
+this character is an AI Playerbot or that it can receive Master Loot.
+OFFLINE / NOT IN RAID / CLASS UNVERIFIED / ROLE UNKNOWN should be resolved
+before conducting a real lottery.
+
+MASTER LOOT CANDIDATES (READ ONLY)
+Only if you are safely able to open the real WoW Master Loot dropdown for
+an expendable item, use /nll botcheck BotCharacter. It will report
+LISTED INDEX <n>, NOT LISTED FOR SELECTED ITEM, or NOT CHECKED.
+The check NEVER calls GiveMasterLoot and never awards an item. A bot being
+listed still does NOT guarantee that the server can deliver the item.
+
+REAL MULTI-CORPSE TEST (NO AWARD NEEDED)
+On a test server with a raid leader and two different lootable corpses:
+- Open corpse A with a supported MC drop. Complete a harmless test lottery
+  only if actual testing is safe; otherwise observe the assigned drop ID.
+- Close A; inspect a DIFFERENT corpse B with disjoint loot.
+- Reopen corpse A. Its old result / ID must NOT become a fresh lottery.
+- Reopen A after /reload and confirm its result is still locked.
+- If a genuinely NEW corpse has identical-looking loot, leader may run
+  /nll newloot followed by /nll newloot confirm within 20 seconds.
+  This is an explicitly audited assertion, not proof of physical identity.
+Never use this override to re-roll an already-decided drop.
+
+IMPORTANT LIMITS
+- Client 3.3.5 does not expose a reliable corpse GUID through our APIs.
+- When two archived groups could match the same item, NLL refuses to guess.
+- Direct Master Loot stays OFF by default and resets OFF on /reload.
+- This release has NOT been confirmed against real Playerbots / transfers.
+- Restore both backup addon and corresponding SavedVariables to roll back.

@@ -9,7 +9,7 @@ local NLL = NaxxLootLottery
 
 NLL.name = "Naxxramas Loot Ledger"
 NLL.shortName = "NLL"
-NLL.version = "0.1.0.26"
+NLL.version = "0.1.0.27"
 NLL.databaseVersion = 1
 NLL.initialized = false
 NLL.initializeAttempted = false
@@ -259,6 +259,11 @@ function NLL:HandleSlashCommand(message)
         return
     end
 
+    if command == "botcheck" then
+        local ok, message=self.PlayerbotCompatibility:Report(arguments or '')
+        if not ok then self:Print(message) end
+        return
+    end
     if command == "newloot" then
         local ok, message
         if string.lower(arguments or '') == 'confirm' then
@@ -273,6 +278,7 @@ function NLL:HandleSlashCommand(message)
         local group=self.LootIdentity:GetGroup()
         self:Print('Current loot opportunity: '..tostring(group and group.id or 'none'))
         self:Print('Previously assigned items: '..tostring(group and group.rows and #group.rows or 0))
+        self:Print('Archived loot groups: '..tostring(group and group.groups and #group.groups or 0))
         return
     end
 
@@ -570,7 +576,8 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll sim preview|prepare|roll|next|reset|stop - Fake workflow.")
         self:Print("/nll testdrop <id> - Debug-only fake drop.")
         self:Print("/nll clearloot - Clear detected loot (not the roll history).")
-        self:Print("/nll lootidentity - Show persistent loot opportunity ID.")
+        self:Print("/nll lootidentity - Show current and archived loot group counts.")
+        self:Print("/nll botcheck [name] - Read-only real Playerbot roster/loot preflight.")
         self:Print("/nll newloot - Confirm a DIFFERENT corpse when loot overlaps.")
         self:Print("/nll newloot confirm - Confirm new corpse within 20 seconds.")
         self:Print("/nll priority <id> - Show priority configuration state.")
@@ -659,6 +666,10 @@ function NLL:Initialize()
         self.PriorityEngine
     )
 
+    RequireModule(
+        "Core/PlayerbotCompatibility.lua",
+        self.PlayerbotCompatibility
+    )
     RequireModule(
         "Core/LootIdentity.lua",
         self.LootIdentity

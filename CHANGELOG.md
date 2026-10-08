@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0.27 — Historical corpse revisits and read-only Playerbot checks (2026-10-08)
+
+- Preserve old loot-opportunity groups so A → B → A does not reset a completed result.
+- Migrate schema 2 to 3 with a bounded history and conservative ambiguity locks.
+- Add `/nll botcheck [name]` to compare saved Playerbot gear plans against live raid roster class/role/online data and selected WoW Master Loot candidates.
+- Keep 40-player simulation and explicit Master Loot confirmations unchanged; real bot delivery remains unverified.
+- Expand offline historical-group and Playerbot diagnostic tests.
+
 ## 0.1.0.26 — Loot opportunity identity, duplicate prevention and recovery (2026-10-08)
 
 - Add a persistent per-drop loot identity ledger to prevent accidentally re-rolling the same item after reopening its loot window or `/reload`.

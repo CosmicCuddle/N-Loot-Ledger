@@ -1,0 +1,27 @@
+Naxxramas Loot Ledger v0.1.0.27 - MULTI-CORPSE HISTORY AND PLAYERBOT PREFLIGHT
+============================================================================
+
+- Fix v0.1.0.26's A -> B -> A revisit case. An earlier saved loot opportunity
+  can be recovered after inspecting a different corpse without silently
+  assigning new ticket IDs.
+- Migrate existing schema 2 loot identity data to schema 3 without erasing
+  completed results. Preserve bounded archived groups (up to 80) and compact
+  old processed item ID locks when trimming older groups.
+- If multiple archived loot groups match, mark the scan ambiguous and block
+  automatic lottery preparation; never guess which physical corpse is open.
+- Explicit two-step /nll newloot confirmation is preserved and audited.
+- Keep completed results visible but closed for automated award after a
+  revisit/reload. The client cannot prove corpse GUID or item receipt.
+- Add Core/PlayerbotCompatibility.lua, a READ-ONLY actual roster preflight:
+  /nll botcheck [name]. Count existing saved BOT_GEAR_PLAN needs; verify
+  roster presence, online flag, live class, saved/assigned role, and when
+  the genuine Master Loot dropdown is open, winner's candidate listing.
+- No unsupported Playerbot module API is assumed. A saved BOT_GEAR_PLAN or
+  a roster entry does NOT prove that an entity is actually a Playerbot.
+- No added GiveMasterLoot calls; this update makes no real transfers.
+- Keep all 40-player fake-raid scenarios, release backward compatibility,
+  and Lua 5.1 / WoW 3.3.5 APIs intact.
+
+NOT YET VALIDATED: Real AzerothCore Playerbot roster visibility, client loot
+candidates, inventory delivery and interactions with other modules. These
+require controlled testing on the specific server.

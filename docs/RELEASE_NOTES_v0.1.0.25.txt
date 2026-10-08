@@ -1,0 +1,46 @@
+Naxxramas Loot Ledger v0.1.0.25
+OPT-IN MASTER LOOT, AUDIT HISTORY AND MULTI-DROP SAFETY
+=======================================================
+
+REAL AWARD CONTROLS
+- New Settings > Loot Awards screen.
+- Direct Master Loot is OFF at every startup and /reload; opt in each session.
+- Existing manual "I Awarded It in WoW" reporting is preserved.
+- New separate "Arm Direct Award" then "CONFIRM GIVE ITEM" workflow.
+- Final click revalidates the exact live loot slot/item ID, winner name,
+  Master Looter identity, raid authority and Blizzard candidate index.
+- Re-checks the candidate index each time instead of trusting a cached one.
+- Stops if the winning drop changes, the user loses Master Looter authority,
+  selected slot/candidate changes, loot UI closes, or confirmation expires.
+- No real transfer happens in response to a server roll, frame opening,
+  page selection, timer, fake award, or any other implicit action.
+- Never calls GiveMasterLoot while the fake-raid simulator is active.
+
+AWARD STATUS AND HISTORY
+- A successful GiveMasterLoot API invocation records AWARD_REQUESTED.
+- LOOT_SLOT_CLEARED changes status to LOOT_SLOT_CLEARED, but this is NOT
+  independent proof that the recipient received the item.
+- LOOT_CLOSED without a cleared slot records AWARD_OUTCOME_UNKNOWN.
+- No automated update to real Gear Plans or OBTAINED state.
+- Award requests cannot be repeated for an already-recorded drop.
+- New Settings > Award History tab, showing the real-only award ledger,
+  status and audit notes over multiple pages.
+- /nll awardhistory shows status for the last real award events.
+- /nll directaward off immediately disables the optional feature.
+- Current Loot and Overview show concise, distinct reported/requested/
+  cleared/unverified states rather than incorrectly claiming delivery.
+
+PRESERVED WORKING FEATURES
+- 40-player Molten Core simulation and 20-player all-class scenario.
+- 13-drop fake raid, paging and independent fake winner/award status.
+- Guild rule presets and custom overrides.
+- Existing real manual report workflow and lottery safety checks.
+- NLL Dark and Vanilla WoW styling.
+
+IMPORTANT LIMITATIONS
+- A successful client GiveMasterLoot call only proves that the request was
+  sent from this client. It is NOT a delivery receipt.
+- In some 3.3.5 clients Blizzard's candidate API may require the actual
+  Master Loot dropdown to remain selected/open. If unavailable, NLL blocks.
+- This feature is untested against the user's real server; initially test
+  only with an expendable item and a prepared group.

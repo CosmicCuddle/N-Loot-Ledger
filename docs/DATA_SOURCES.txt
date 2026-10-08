@@ -1,0 +1,12 @@
+Naxxramas Loot Ledger - Data Reference Notes
+================================================
+
+Molten Core item IDs and boss/source mappings in Phase 3 were
+cross-checked against the public AtlasLootClassic Molten Core data.
+
+AtlasLootClassic is used as a factual reference for loot-table data.
+Naxxramas Loot Ledger does not copy AtlasLootClassic's addon
+implementation or UI code.
+
+The NLL database structure, search system, SavedVariables model and UI
+in this package are original to this project.

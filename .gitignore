@@ -1,0 +1,14 @@
+# Never commit personal account or character data
+WTF/
+SavedVariables/
+*NaxxLootLotteryDB*.lua
+*.bak
+*.backup
+*~
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+*.log

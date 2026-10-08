@@ -1,0 +1,61 @@
+Naxxramas Loot Ledger v0.1.0.25
+ONE BULK CHECKPOINT - SAFE TEST ORDER
+====================================
+
+1. BACKUP
+---------
+Save the entire previous NaxxLootLottery folder AND your SavedVariables:
+WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua
+
+2. STARTUP
+----------
+Install the whole NaxxLootLottery folder. Restart WoW.
+/nll version   -> 0.1.0.25
+/nll status    -> READY
+Settings should include Loot Awards and Award History.
+
+3. FULL 40-PLAYER FAKE RAID (NO REAL ITEMS)
+-------------------------------------------
+/nll debug
+/nll sim mc40
+Check Raid Roles shows 40 fake bots.
+Current Loot has 13 separate fake drops; test a couple of lottery winners.
+Try Review Award -> Confirm Fake Award; fake Gear Plan becomes OBTAINED.
+Settings > Award History must NOT gain a simulated award.
+End with /nll sim stop.
+
+4. SETTINGS SAFETY
+------------------
+Open Settings > Loot Awards.
+Direct Master Loot must say OFF by default.
+Enabling it must be an explicit action; verify disabling it works.
+Reload -> it MUST reset to OFF.
+/nll directaward off -> emergency disable.
+
+5. MANUAL REAL AWARD REGRESSION
+------------------------------
+A real lottery winner may still be reported AFTER awarding in WoW.
+This remains marked LEADER_REPORTED and receipt NOT verified.
+Use Settings > Award History to review that event.
+
+6. LIVE DIRECT-AWARD TEST (OPTIONAL - EXPENDABLE ITEM ONLY)
+----------------------------------------------------------
+DO NOT start with valuable gear or live guild progression loot.
+You must be designated Master Looter in WoW.
+Have a completed verified lottery and EXACT loot item selected in WoW.
+Settings > Loot Awards -> Enable Direct Awards.
+Open NLL award review. Confirm displayed winner and item.
+Press Arm Direct Award; check recipient, item and slot carefully.
+Press CONFIRM GIVE ITEM within 15 seconds to send the real request.
+Verify recipient in WoW manually, since API request is not receipt proof.
+Check the Award History status and compare with Blizzard loot UI.
+If there is uncertainty, DO NOT retry the same item blindly.
+
+7. RESTRICTIONS TO TEST WHEN PRACTICAL
+--------------------------------------
+- Wrong winner/candidate index -> blocks direct request.
+- Wrong selected loot slot -> blocks.
+- Not the designated Master Looter -> blocks.
+- Simulation running -> blocks all real transfers.
+- Close loot window -> direct transfer must not proceed.
+- Awarded/requested drop -> duplicate request blocked.

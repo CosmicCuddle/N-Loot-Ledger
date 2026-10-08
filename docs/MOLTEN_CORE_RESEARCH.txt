@@ -1,0 +1,32 @@
+Naxxramas Loot Ledger 0.1.0.18 - Molten Core policy research
+
+160 catalog items: 136 OPTIONAL recommendations, 22 manual-only, 2 unconfigured.
+Remaining unconfigured utility trinkets:
+  18815 Essence of the Pure Flame (on-hit reflect fire damage)
+  17082 Shard of the Flame (health regen, Shard of the Gods set bonus)
+
+Why not auto-assign these: neither has a universal raid-loot priority;
+the server's encounter strategy, class/spec roster, and custom item data matter.
+They remain configurable by hand. No forced default, no automated awards.
+
+New OPTIONAL recommendation IDs (never permanently forced):
+19138 Band of Sulfuras - intellect/spirit: healer then caster
+18817 Crown of Destruction - ranged physical then melee
+18829 Deep Earth Spaulders - nature-spell mail: elemental Shaman suggested
+17107 Dragon's Blood Cape - defensive tanks then melee
+18803 Finkle's Lava Dredger - mana mace: healer then caster
+18824 Magma Tempered Boots - healing plate: Paladin healer suggested
+19144 Sabatons of the Flamewalker - mail attack power: Hunter/Shaman policy suggested
+17110 Seal of the Archmagus - mana regen: healer then caster
+
+Public item stat references (not claims about your custom DBC):
+https://www.wowhead.com/classic/item=19138
+https://www.wowhead.com/classic/item=18817
+https://wowclassicdatabase.com/item/deep-earth-spaulders
+https://www.wowhead.com/classic/item=17107
+https://classicdb.ch/?item=18803
+https://www.wowhead.com/classic/item=18824
+https://www.wowhead.com/classic/item=19144
+https://www.wowhead.com/classic/item=17110
+https://www.wowhead.com/classic/item=18815
+https://www.wowhead.com/classic/item=17082

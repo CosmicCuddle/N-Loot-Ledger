@@ -1,0 +1,16 @@
+Preset policy v0.1.0.16
+======================
+Preloaded baseline = the 97 optional v0.1.0.15 suggestions.
+Inherent class restrictions are not the same as recommended role priority.
+Curated suggestions are Classic-era starting points and may not match custom
+Individual Progression / spell rebalancing / guild needs.
+
+Precedence:
+1. Manual-only / guild / class quest / profession recipe exclusion
+2. Explicit custom saved guild priority (including unfinished drafts)
+3. Enabled built-in curated preset
+4. Not configured: cannot join an ordinary ticket preview
+
+Enabling presets saves one boolean only; it never writes new per-item rules.
+Deleting a custom rule restores the preset only if the preset switch is ON.
+No automatic rolls or loot awards are available in this version.

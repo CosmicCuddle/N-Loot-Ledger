@@ -1,0 +1,75 @@
+name: Publish v0.1.0.25 pre-release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/publish-v0.1.0.25-prerelease.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nll-v0.1.0.25-prerelease
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build ZIP and publish pre-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release source
+        uses: actions/checkout@v4
+
+      - name: Validate addon and build installable ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          root = Path("NaxxLootLottery")
+          toc = root / "NaxxLootLottery.toc"
+          assert toc.is_file(), "Expected NaxxLootLottery/NaxxLootLottery.toc"
+          assert "## Version: 0.1.0.25" in toc.read_text(encoding="utf-8"), "Incorrect addon version"
+          paths = []
+          for line in toc.read_text(encoding="utf-8").splitlines():
+              line = line.strip()
+              if not line or line.startswith("#"):
+                  continue
+              p = root / line.replace("\\", "/")
+              assert p.is_file(), f"Missing TOC module: {line}"
+              paths.append(p)
+          assert len(paths) == 30, f"Expected 30 Lua modules, found {len(paths)}"
+          destination = Path("Naxxramas-Loot-Ledger-v0.1.0.25.zip")
+          with ZipFile(destination, "w", ZIP_DEFLATED) as archive:
+              for file in sorted(root.rglob("*")):
+                  if file.is_file():
+                      assert not any(part in {"SavedVariables", "WTF", ".git"} for part in file.parts)
+                      archive.write(file, str(file))
+          with ZipFile(destination, "r") as archive:
+              assert archive.testzip() is None, "ZIP integrity check failed"
+              assert "NaxxLootLottery/NaxxLootLottery.toc" in archive.namelist()
+          print(f"Built {destination}: {len(paths)} modules")
+          PY
+
+      - name: Create prerelease with downloadable ZIP
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="v0.1.0.25"
+          ZIP="Naxxramas-Loot-Ledger-v0.1.0.25.zip"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ZIP" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" "$ZIP" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "Naxxramas Loot Ledger v0.1.0.25 (Pre-release)" \
+              --notes-file docs/PRERELEASE_v0.1.0.25.md \
+              --prerelease
+          fi

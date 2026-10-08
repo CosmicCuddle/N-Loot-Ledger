@@ -24,10 +24,21 @@ function L:GetSelectedEntry()
 end
 function L:GetActiveFor(entry)
     if not entry then return nil end
+    if entry.identityUncertain then return nil end -- never display a guessed winner
     if self.active and entry.dropUID == self.active.dropUID then
         return self.active
     end
-    return self.results[entry.dropUID]
+    if self.results[entry.dropUID] then return self.results[entry.dropUID] end
+    -- Restore completed real winners after /reload. Ticket results and the
+    -- persistent identity lock are separate from transient raid/UI objects.
+    if entry.slotIndex ~= 0 and NLL.LootIdentity then
+        local restored=NLL.LootIdentity:RestoreOutcome(entry)
+        if restored then
+            self.results[entry.dropUID]=restored
+            return restored
+        end
+    end
+    return nil
 end
 function L:AuthorityAllowed(testDrop)
     if testDrop then
@@ -80,7 +91,12 @@ function L:Prepare(entry, matches)
         self.active.status == 'ROLL_UNCONFIRMED') then
         return false, 'The previous roll is pending/unconfirmed. Cancel Tickets first (audited). '
     end
-    if self.results[entry.dropUID] or
+    if (entry.identityUncertain and not isTest) then
+        return false,'Duplicate item identity is ambiguous after looting. Do not guess; inspect the corpse and previous roll history.'
+    end
+    if (not isTest and NLL.LootIdentity and
+        NLL.LootIdentity:IsProcessed(entry.dropUID)) or
+        self:GetActiveFor(entry) and self:GetActiveFor(entry).status=='COMPLETE' or
         (self.active and self.active.status == 'COMPLETE' and
         self.active.dropUID == entry.dropUID) then
         return false, 'This drop already has a winner. No duplicate roll.'
@@ -152,6 +168,9 @@ function L:Finish(roll,method)
     a.method=method
     a.awardStatus=nil -- not an award until a separate confirmation
     self.results[a.dropUID]=a
+    if not a.test and NLL.LootIdentity then
+        NLL.LootIdentity:MarkCompleted(a.dropUID,a.winner,roll,method)
+    end
     self:Record('COMPLETE',roll,'Result only. Loot award remains manual.')
     NLL:Print((a.test and '[TEST - no loot awarded] ' or '') ..
         a.itemName .. ': winning ticket ' .. roll .. ' = ' .. a.winner ..
@@ -230,7 +249,12 @@ function L:Cancel(reason)
 end
 function L:GetStatus(entry)
     local a=self:GetActiveFor(entry)
-    if not a then return 'No tickets prepared.' end
+    if not a then
+        if entry and entry.identityUncertain then
+            return 'AMBIGUOUS: repeated item copies; inspect history first.'
+        end
+        return 'No tickets prepared.'
+    end
     if a.status=='PREPARED' then return #a.tickets .. ' tickets ready; press Start Roll.' end
     if a.status=='WAITING_FOR_ROLL' then return 'Awaiting server roll; no winner yet.' end
     if a.status=='COMPLETE' then

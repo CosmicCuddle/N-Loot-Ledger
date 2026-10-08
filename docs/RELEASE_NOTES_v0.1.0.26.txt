@@ -1,0 +1,22 @@
+Naxxramas Loot Ledger v0.1.0.26 — Reliability checkpoint
+==========================================================
+- Persistent per-drop loot identity during scans and after reload.
+- Same/overlapping loot keeps previous result locks; new disjoint signatures
+  are assigned fresh opportunity IDs. Distinct corpses with shared items
+  require explicit confirmation through /nll newloot + confirm.
+- Preserves separately rolled drops as items disappear from the loot queue.
+- Restores winners from SavedVariables after reload, including last known
+  award status. It never infers successful item delivery from roll history.
+- Pending rolls cancel if the selected drop disappears or loot is closed.
+- Blocks uncertain identity for partially depleted duplicate item rows.
+- Closed/reloaded award context cannot be used for automatic direct awarding.
+- Explicit new opportunity confirmation is authority-gated, time-limited,
+  and auditable. It NEVER silently overwrites prior lottery history.
+- Does NOT implement source GUID verification or automatic item-award receipt.
+- The internal folder, slash command /nll and SavedVariables key stay intact.
+
+IMPORTANT: WoW 3.3.5a loot API does not expose a trustworthy corpse GUID.
+The addon therefore may conservatively treat genuinely separate corpses
+with overlapping items as the same opportunity, requiring manual confirmation.
+It cannot guarantee unique corpse identity without external server support.
+Backup AddOns AND SavedVariables before updating or rolling back.

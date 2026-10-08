@@ -1,0 +1,54 @@
+Naxxramas Loot Ledger v0.1.0.26 — LIVE TEST CHECKLIST
+===================================================
+
+BEFORE INSTALLING: Exit WoW and back up BOTH your AddOns/NaxxLootLottery folder
+and WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua (and .lua.bak).
+
+1. STARTUP
+  /nll version  -> 0.1.0.26
+  /nll status   -> READY
+  /nll lootidentity -> none if you have not looted a fresh supported window
+
+2. FAKE RAID REGRESSION (SAFE / NO REAL LOOT)
+  /nll debug (enable if currently disabled)
+  /nll sim mc40
+  Check all 40 fake members, 13 drops, wishlists, ticket rolls and fake awards.
+  /nll sim stop
+  No new real lottery/award histories should appear.
+
+3. SAME-CORPSE REOPEN (REAL LOOT; AVOID VALUABLE ITEMS)
+  In a controlled raid, open a supported Molten Core loot window.
+  /nll lootidentity -> note the opportunity ID.
+  Run one real lottery (if practical). Record winning character and item.
+  Close loot window and reopen the SAME corpse.
+  /nll lootidentity -> must show SAME opportunity ID.
+  The prior winner must still appear. Prepare Tickets must NOT re-roll that drop.
+  Another, unprocessed item in the same loot window may still be rolled.
+  If uncertain, stop: never try to force a second lottery for the same drop.
+
+4. RELOAD RECOVERY
+  After a completed roll, /reload then reopen the same corpse.
+  The known winner should reappear; Prepare Tickets remains blocked.
+  Direct award of this RESTORED winner is blocked by design.
+  Normal WoW Master Loot/manual handling stays available.
+
+5. DIFFERENT CORPSE WITH AN IDENTICAL/OVERLAPPING ITEM LIST
+  ONLY after confirming physically that this is a DIFFERENT corpse,
+  open its real loot and type /nll newloot
+  Review the warning. Then /nll newloot confirm within 20 seconds.
+  /nll lootidentity -> a NEW opportunity ID appears.
+  Old winners remain in history; the new drop can have fresh tickets.
+  NEVER use this command to reroll the same physical drop.
+
+6. SAFE-FAIL CASES
+  - Closing the loot window with pending tickets invalidates them.
+  - Ambiguous duplicate item copies do not get assigned guessed winners.
+  - An ordinary non-leader/non-officer cannot confirm a new opportunity.
+  - Starting a new opportunity is blocked while a roll is unresolved.
+  - Direct Master Loot remains OFF by default and on each /reload.
+  - If direct award has an unknown result, do not retry blindly.
+
+NOTE: WoW 3.3.5a does not supply a reliable loot source GUID here.
+The ledger errs on the side of blocking ambiguous fresh loot until a leader
+explicitly confirms a different corpse. This is a pre-release; live testing
+is required before treating any result as production-certified.

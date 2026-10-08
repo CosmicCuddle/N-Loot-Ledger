@@ -2,7 +2,7 @@
 
 **Raid loot planning, wishlists, post-drop ticket lotteries, and award tracking for World of Warcraft 3.3.5a (Wrath of the Lich King) on AzerothCore.**
 
-**Current development version:** `0.1.0.25`  
+**Current development version:** `0.1.0.26`  
 **Status:** In development. The 40-player simulator has been tested in-game; real Master Loot transfer still requires controlled server testing.
 
 ## Features
@@ -11,6 +11,7 @@
 - Gear wishlists for players and persistent manual gear plans for Playerbots.
 - Class/role eligibility checks, candidate review and drop-specific ticket lotteries.
 - Clear, visual winner announcements and winner persistence across multiple drops.
+- Saved loot-opportunity identity: same-looking reopened loot keeps its original roll lock and winner across `/reload`, with a conservative confirmation path for new corpses.
 - Manual award reporting and an Award History screen.
 - **Opt-in** two-stage real Master Loot request with revalidation; **disabled at every login and reload**.
 - 40-character Molten Core simulation with eight groups, class-specific equipment plans, 13 mock loot drops and fake award confirmations.
@@ -22,7 +23,7 @@
 2. Download the repository as a ZIP from GitHub. Extract it and copy **only the `NaxxLootLottery` subfolder** into `World of Warcraft/Interface/AddOns/`.
 3. The final path must be `Interface/AddOns/NaxxLootLottery/NaxxLootLottery.toc`. Avoid accidentally nesting a second `NaxxLootLottery` folder.
 4. Restart the WoW client or enter `/reload`. If the addon is marked out of date, verify your client build is 3.3.5a (Interface 30300).
-5. Enter `/nll version` and `/nll status` to confirm version `0.1.0.25` and `READY`.
+5. Enter `/nll version` and `/nll status` to confirm version `0.1.0.26` and `READY`.
 
 **Compatibility note:** The installed addon directory is still **`NaxxLootLottery`**, the SavedVariables name remains **`NaxxLootLotteryDB`**, and chat commands remain **`/nll`**. These are intentionally unchanged during the public rename to preserve existing installations and preferences.
 
@@ -42,6 +43,9 @@
 | `/nll awardhistory` | View real award history |
 | `/nll settings` | Preferences, Debug Lab and Loot Awards |
 | `/nll directaward off` | Immediately disable optional direct awarding |
+| `/nll lootidentity` | Show the current persistent loot-opportunity ID |
+| `/nll newloot` | Begin explicit confirmation for a DIFFERENT corpse when loot overlaps |
+| `/nll newloot confirm` | Confirm within 20 seconds; only while real raid loot is open |
 | `/nll status` | Diagnostics |
 | `/nll help` | Full command list |
 
@@ -55,6 +59,15 @@
 6. Stop with `/nll sim stop`.
 
 You can also test every class individually (`/nll sim mage`, `/nll sim warrior`, `/nll sim deathknight`, etc.), or `/nll sim all` for a 20-character group.
+
+## Loot recovery and preventing duplicate lotteries (v0.1.0.26)
+
+- Reopening the same Molten Core loot window **reuses** stable per-drop identifiers. Completed winners remain visible after a client reload and are blocked from a second ticket draw.
+- **WoW 3.3.5a does not provide a trustworthy corpse GUID through the loot APIs used here.** NLL conservatively treats overlapping loot signatures as the same opportunity, even when they may belong to a different corpse. It cannot prove corpse identity.
+- If a **different** corpse has an overlapping item list, with that corpse's real loot window open, a raid leader/officer types `/nll newloot` followed by `/nll newloot confirm` within 20 seconds. **Never use this to re-roll a previous drop.** The manual reset is audited.
+- Multiple identical copies of the same item are tracked independently, but if one disappears and NLL cannot determine which remains, further draws on ambiguous copies are blocked instead of guessing.
+- A recovered winner is **viewable**, not automatically awarded. After the loot window closes (or `/reload`), direct NLL awarding of that previously completed winner is blocked. Use WoW's normal UI for manual handling as appropriate; no item delivery is inferred from a saved winner.
+- Previous pre-v0.1.0.26 loot-window IDs were not persistent corpse identifiers and cannot be retroactively matched. For safety the stale on-screen queue is cleared on the first migration, but existing lottery/award history is kept.
 
 ## Important award safety information
 
@@ -71,13 +84,14 @@ You can also test every class individually (`/nll sim mage`, `/nll sim warrior`,
 - Language: **Lua 5.1**, Wrath-era UI APIs.
 - No modern `C_ChatInfo`, `C_Timer`, `GetLootSourceInfo`, or `RegisterAddonMessagePrefix` dependencies.
 - The initial item library focuses on **Molten Core**; priorities are editable, not mandatory universal rules.
+- Reproducible loot-identity regression tests: `texlua tests/test_loot_identity.lua` (TeX Lua runner) and `texluac -p` for Lua module syntax.
 - This repository includes **source code**, not personal SavedVariables, characters, raid histories, or server database exports.
 
 ## Documents
 
 - [Changelog](CHANGELOG.md)
-- [Latest bulk-test checklist](docs/TESTING_v0.1.0.25.txt)
-- [Current release notes](docs/RELEASE_NOTES_v0.1.0.25.txt)
+- [Latest bulk-test checklist](docs/TESTING_v0.1.0.26.txt)
+- [Current release notes](docs/RELEASE_NOTES_v0.1.0.26.txt)
 - [Data sources](docs/DATA_SOURCES.txt)
 
 ## License

@@ -78,40 +78,47 @@ function Loot:GetCurrentLoot()
     return NLL.db.raidSession.currentLoot
 end
 
-function Loot:SetCurrentLoot(entries)
+function Loot:SetCurrentLoot(entries, options)
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
-        return false -- never persist a loot queue during fake raid mode
+        return false -- integrated simulation must never write real SavedVariables
     end
-    if not NLL.db
-        or not NLL.db.raidSession then
-
-        return
+    if not NLL.db or not NLL.db.raidSession then return false end
+    entries=entries or {}
+    options=options or {}
+    if not options.test and NLL.LootIdentity then
+        NLL.LootIdentity:Assign(entries, options.newOpportunity)
+    else
+        -- The standalone /nll testdrop remains a local, debug-only drop.
+        local session=NLL.db.raidSession
+        session.lootGeneration=(tonumber(session.lootGeneration) or 0)+1
+        for index,entry in ipairs(entries) do
+            entry.dropUID='TEST:'..tostring(session.lootGeneration)..':'..tostring(index)
+        end
     end
-
-    local session = NLL.db.raidSession
-    session.lootGeneration = (tonumber(session.lootGeneration) or 0) + 1
-    for i, entry in ipairs(entries or {}) do
-        entry.dropUID = tostring(session.lootGeneration) .. ":" ..
-            tostring(i) .. ":" .. tostring(entry.itemID)
+    local old=NLL.db.raidSession.currentLoot or {}
+    local previousUID={}
+    local identical=#old==#entries
+    for i,entry in ipairs(entries) do
+        previousUID[entry.dropUID]=true
+        if not old[i] or old[i].dropUID~=entry.dropUID or
+            old[i].slotIndex~=entry.slotIndex then identical=false end
     end
-    -- Refreshing/clearing the loot window invalidates every uncommitted draw.
-    -- Completed results remain in history, but no stale tickets carry forward.
-    if NLL.TicketLottery and NLL.TicketLottery.Invalidate then
-        NLL.TicketLottery:Invalidate("Loot window changed")
+    local active=NLL.TicketLottery and NLL.TicketLottery.active
+    -- A second LOOT_OPENED for the SAME opportunity must not invalidate
+    -- already prepared tickets. A different or vanished drop must.
+    if active and not previousUID[active.dropUID] and
+        NLL.TicketLottery.Invalidate then
+        NLL.TicketLottery:Invalidate('Current loot drop disappeared or changed')
     end
-    if NLL.CandidateReview and NLL.CandidateReview.OnLootChanged then
+    if not identical and NLL.CandidateReview and NLL.CandidateReview.OnLootChanged then
         NLL.CandidateReview:OnLootChanged()
     end
-    NLL.db.raidSession.currentLoot = entries or {}
-
-    NLL.db.raidSession.currentLootUpdated =
-        GetTime and GetTime() or 0
-
-    if NLL.UI
-        and NLL.UI.RefreshCurrentLootPanel then
-
+    NLL.db.raidSession.currentLoot=entries
+    NLL.db.raidSession.currentLootUpdated=GetTime and GetTime() or 0
+    if NLL.UI and NLL.UI.RefreshCurrentLootPanel then
         NLL.UI:RefreshCurrentLootPanel()
     end
+    return true
 end
 
 function Loot:ClearCurrentLoot()
@@ -176,11 +183,10 @@ function Loot:BuildEntry(
     }
 end
 
-function Loot:ScanLootWindow()
+function Loot:ScanLootWindow(forceNew)
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
         return -- real LOOT_OPENED events must not alter fake raid or saved loot
     end
-    if NLL.TicketLottery then NLL.TicketLottery.liveLootObserved=true end
     if not GetNumLootItems
         or not GetLootSlotLink then
 
@@ -235,7 +241,10 @@ function Loot:ScanLootWindow()
         end
     end
 
-    self:SetCurrentLoot(entries)
+    if forceNew and #entries==0 then return false end
+    self.lootOpen=true
+    if NLL.TicketLottery then NLL.TicketLottery.liveLootObserved=true end
+    self:SetCurrentLoot(entries,{newOpportunity=forceNew==true})
 
     if #entries > 0 then
         NLL:Print(
@@ -248,6 +257,7 @@ function Loot:ScanLootWindow()
             "Loot window contained no supported Molten Core items."
         )
     end
+    return #entries>0
 end
 
 function Loot:RememberBossDeath(
@@ -310,7 +320,7 @@ function Loot:InjectTestDrop(itemID)
 
     self:SetCurrentLoot({
         entry
-    })
+    }, {test=true})
 
     return true, entry
 end
@@ -347,6 +357,11 @@ eventFrame:SetScript(
             return
         end
         if event == "LOOT_CLOSED" then
+            Loot.lootOpen=false
+            if NLL.LootIdentity then NLL.LootIdentity:OnLootClosed() end
+            if NLL.TicketLottery then
+                NLL.TicketLottery:Invalidate('WoW loot window closed before result')
+            end
             if NLL.AwardWorkflow then
                 NLL.AwardWorkflow:OnLootClosed()
             end

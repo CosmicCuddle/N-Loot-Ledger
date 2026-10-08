@@ -66,11 +66,15 @@ end
 -- The dropdown list and its candidate indices belong to the currently
 -- selected Blizzard loot slot. Never trust a previously cached index.
 function A:ValidateLiveContext(entry, winner)
-    if not entry or entry.simulationOnly or not winner then
+    if not entry or entry.simulationOnly or entry.identityUncertain or not winner then
         return false, 'A real drop and completed real winner are required.'
     end
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
         return false, 'Simulation active: real awards are blocked.'
+    end
+    local identity=NLL.LootIdentity and NLL.LootIdentity:GetRow(entry.dropUID)
+    if identity and identity.awardContextClosed then
+        return false, 'Winner restored from closed loot window: use WoW manual award. Direct award is not safe after reopen/reload.'
     end
     if not NLL.TicketLottery.liveLootObserved or
        type(entry.slotIndex) ~= 'number' or entry.slotIndex < 1 then
@@ -186,6 +190,7 @@ function A:Confirm(entry)
         return false, 'Current real lottery/raid authority required.'
     end
     result.awardStatus = 'LEADER_REPORTED'
+    if NLL.LootIdentity then NLL.LootIdentity:MarkAward(entry.dropUID,result.awardStatus) end
     Audit(HistoryRow(entry, result, 'LEADER_REPORTED',
         'Leader reports separate manual Blizzard UI award; delivery not verified', verified))
     self.verification = nil
@@ -272,6 +277,7 @@ function A:CommitDirectAward(entry)
     end
     -- The API returns no delivery receipt. Do NOT mark Gear Plan OBTAINED.
     result.awardStatus = 'AWARD_REQUESTED'
+    if NLL.LootIdentity then NLL.LootIdentity:MarkAward(entry.dropUID,result.awardStatus) end
     local history = Audit(HistoryRow(entry, result, 'AWARD_REQUESTED',
         'GiveMasterLoot invoked after explicit double confirmation; delivery unverified', fresh))
     self.liveRequests[entry.dropUID] = {
@@ -289,6 +295,7 @@ function A:OnLootSlotCleared(slot)
             request.history.status = 'LOOT_SLOT_CLEARED'
             request.history.note = 'WoW loot slot cleared after request; recipient receipt not verified'
             request.result.awardStatus = 'LOOT_SLOT_CLEARED'
+            if NLL.LootIdentity then NLL.LootIdentity:MarkAward(uid,request.result.awardStatus) end
             self.liveRequests[uid] = nil
             RefreshUI()
             break
@@ -302,6 +309,7 @@ function A:OnLootClosed()
             request.history.status = 'AWARD_OUTCOME_UNKNOWN'
             request.history.note = 'Loot window closed without observing slot cleared; investigate manually'
             request.result.awardStatus = 'AWARD_OUTCOME_UNKNOWN'
+            if NLL.LootIdentity then NLL.LootIdentity:MarkAward(uid,request.result.awardStatus) end
         end
         self.liveRequests[uid] = nil
     end

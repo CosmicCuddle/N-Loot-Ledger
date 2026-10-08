@@ -9,7 +9,7 @@ local NLL = NaxxLootLottery
 
 NLL.name = "Naxxramas Loot Ledger"
 NLL.shortName = "NLL"
-NLL.version = "0.1.0.25"
+NLL.version = "0.1.0.26"
 NLL.databaseVersion = 1
 NLL.initialized = false
 NLL.initializeAttempted = false
@@ -256,6 +256,23 @@ function NLL:HandleSlashCommand(message)
         self.UI:ShowMainFrame(
             "settings"
         )
+        return
+    end
+
+    if command == "newloot" then
+        local ok, message
+        if string.lower(arguments or '') == 'confirm' then
+            ok, message = self.LootIdentity:ConfirmReset()
+        else
+            ok, message = self.LootIdentity:PrepareReset()
+        end
+        self:Print(message)
+        return
+    end
+    if command == "lootidentity" then
+        local group=self.LootIdentity:GetGroup()
+        self:Print('Current loot opportunity: '..tostring(group and group.id or 'none'))
+        self:Print('Previously assigned items: '..tostring(group and group.rows and #group.rows or 0))
         return
     end
 
@@ -552,7 +569,10 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll sim <class> - Class-specific fake raid (e.g. rogue, deathknight).")
         self:Print("/nll sim preview|prepare|roll|next|reset|stop - Fake workflow.")
         self:Print("/nll testdrop <id> - Debug-only fake drop.")
-        self:Print("/nll clearloot - Clear detected loot.")
+        self:Print("/nll clearloot - Clear detected loot (not the roll history).")
+        self:Print("/nll lootidentity - Show persistent loot opportunity ID.")
+        self:Print("/nll newloot - Confirm a DIFFERENT corpse when loot overlaps.")
+        self:Print("/nll newloot confirm - Confirm new corpse within 20 seconds.")
         self:Print("/nll priority <id> - Show priority configuration state.")
         self:Print("/nll preview - Preview current drop priority, no roll.")
         self:Print("/nll reviewpool - Review current drop candidates.")
@@ -640,6 +660,10 @@ function NLL:Initialize()
     )
 
     RequireModule(
+        "Core/LootIdentity.lua",
+        self.LootIdentity
+    )
+    RequireModule(
         "Core/LootDetection.lua",
         self.LootDetection
     )
@@ -680,6 +704,7 @@ function NLL:Initialize()
     self.Communication:Initialize()
     self.NeedMatcher:Initialize()
     self.CandidateReview:Initialize()
+    self.LootIdentity:Initialize()
     self.LootDetection:Initialize()
     self.PriorityEngine:Initialize()
 

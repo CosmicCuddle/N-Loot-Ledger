@@ -14,4 +14,8 @@ For stability, the first Naxxramas Loot Ledger release **does not rename** the `
 
 Exit the game. Restore the previous addon folder **and** the corresponding SavedVariables backup, then restart. Simply deleting the new addon files does not roll back SavedVariables changes.
 
-Development build 0.1.0.25 does not represent independent verification of real Master Loot delivery.
+Development build 0.1.0.26 does not represent independent verification of real Master Loot delivery.
+
+## Loot-identity migration (0.1.0.26)
+
+This update creates `raidSession.lootIdentity` in the **existing** `NaxxLootLotteryDB` SavedVariables. Old currentLoot data is cleared once because pre-0.1.0.26 drop IDs are not trustworthy after reopen. Previously recorded lottery and award histories are preserved. A rollback must restore the saved variables from the same pre-upgrade backup; an old client cannot be assumed to understand the new identity ledger.

@@ -693,7 +693,7 @@ function UI:RefreshCurrentLootPanel()
         (simulation and "|cffffcc33[SIMULATION] |r" or "") ..
         tostring(#loot) ..
         (simulation and " fake boss drop(s)." or
-         " supported item(s) in the current loot queue.")
+         " supported item(s). Previous winners restored for reopened loot.")
     )
 
     self.currentLootSelected =
@@ -994,8 +994,8 @@ function UI:RefreshTicketLotteryControls(selected)
     else
         self.currentLootLotteryNote:SetText(L:GetStatus(selected))
     end
-    local allowed=selected and selected.dropUID and L.liveLootObserved and
-        L:AuthorityAllowed(selected.slotIndex==0)
+    local allowed=selected and selected.dropUID and not selected.identityUncertain and
+        L.liveLootObserved and L:AuthorityAllowed(selected.slotIndex==0)
     if allowed and (not a or a.status=='PREPARED') then
         self.currentLootPrepareButton:Enable()
     else self.currentLootPrepareButton:Disable() end

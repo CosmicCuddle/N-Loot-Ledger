@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.0.26 — Loot opportunity identity, duplicate prevention and recovery (2026-10-08)
+
+- Add a persistent per-drop loot identity ledger to prevent accidentally re-rolling the same item after reopening its loot window or `/reload`.
+- Restore completed winners and their known award states without treating saved data as a real item-delivery receipt.
+- Preserve independent results when a loot list changes, while invalidating pending tickets if their selected item disappears.
+- Refuse to guess the identity of ambiguous identical-item copies when loot counts change.
+- Add audited, two-step `/nll newloot` and `/nll newloot confirm` commands for a genuinely new corpse with overlapping loot items.
+- Disallow direct Master Loot awarding of winners recovered from a closed loot window; this requires a fresh, verifiable award context.
+- Add offline loot-identity regression tests and update safety/rollback documentation.
+- All existing fake-raid scenarios remain unchanged.
+
 ## 0.1.0.25 — Naxxramas Loot Ledger branding and public source checkpoint (2026-10-08)
 
 - Publish the latest tested development source with the name **Naxxramas Loot Ledger**.
@@ -21,4 +32,4 @@
 - **0.1.0.17:** Manual post-drop ticket lottery and audited results.
 - **0.1.0.16:** Opt-in curated Molten Core priority presets.
 
-See `docs/RELEASE_NOTES_v0.1.0.25.txt` for detailed safety and behaviour notes.
+See `docs/RELEASE_NOTES_v0.1.0.26.txt` for the latest safety and behaviour notes.

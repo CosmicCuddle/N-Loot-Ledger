@@ -1,0 +1,85 @@
+name: Publish v0.1.0.26 pre-release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/publish-v0.1.0.26-prerelease.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nll-v0.1.0.26-prerelease
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Validate and publish prerelease
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lua 5.1 for syntax and regression tests
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+
+      - name: Run module and loot recovery tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' module; do
+            luac5.1 -p "$module"
+          done < <(find NaxxLootLottery -type f -name '*.lua' -print0)
+          lua5.1 tests/test_loot_identity.lua
+
+      - name: Build installable addon ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          root = Path('NaxxLootLottery')
+          toc = root / 'NaxxLootLottery.toc'
+          assert toc.is_file(), 'Missing addon .toc'
+          contents = toc.read_text(encoding='utf-8')
+          assert '## Version: 0.1.0.26' in contents, 'Wrong version'
+          modules=[x.strip().replace('\\','/') for x in contents.splitlines()
+                   if x.strip() and not x.startswith('#')]
+          assert len(modules)==31, f'Expected 31 Lua modules, found {len(modules)}'
+          for m in modules:
+              assert (root / m).is_file(), f'Missing required module: {m}'
+          out=Path('Naxxramas-Loot-Ledger-v0.1.0.26.zip')
+          with ZipFile(out,'w',ZIP_DEFLATED) as z:
+              for f in sorted(root.rglob('*')):
+                  if f.is_file():
+                      assert not {'SavedVariables','WTF','.git'} & set(f.parts)
+                      z.write(f,f.as_posix())
+          with ZipFile(out) as z:
+              assert z.testzip() is None, 'Corrupt ZIP'
+              assert 'NaxxLootLottery/NaxxLootLottery.toc' in z.namelist()
+          print(f'Validated {len(modules)} modules; installable ZIP {out.stat().st_size} bytes')
+          PY
+
+      - name: Publish GitHub pre-release and ZIP
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='v0.1.0.26'
+          ZIP='Naxxramas-Loot-Ledger-v0.1.0.26.zip'
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ZIP" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" "$ZIP" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title 'Naxxramas Loot Ledger v0.1.0.26 (Pre-release)' \
+              --notes-file docs/PRERELEASE_v0.1.0.26.md \
+              --prerelease
+          fi

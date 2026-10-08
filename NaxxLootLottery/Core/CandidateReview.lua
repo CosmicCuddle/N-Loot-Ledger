@@ -31,6 +31,9 @@ function R:IsAuthorized(entry)
         NLL.TicketLottery:AuthorityAllowed(entry.slotIndex==0)
 end
 function R:CanChange(entry)
+    if entry and entry.identityUncertain then
+        return false,'Duplicate-copy identity is uncertain; candidate changes are blocked.'
+    end
     if not self:IsAuthorized(entry) then
         return false,'Only a raid leader/officer with an observed drop may edit candidates.'
     end

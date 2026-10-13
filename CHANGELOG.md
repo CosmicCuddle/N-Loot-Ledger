@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — Dark-only UI cleanup (development branch; not shipped)
+
+- Remove the Vanilla appearance selector and parchment rendering; retain the existing NLL Dark theme.
+- Open Settings on Priority Setup while preserving Debug Lab, Loot Awards, Award History and priority controls.
+- Normalize old `VANILLA` / `CLASSIC` appearance settings to `DARK` without deleting or replacing SavedVariables, gear plans, priorities, loot identity, or award/winner history.
+- Add `tests/test_dark_skin.lua` and branch/PR Lua 5.1 regression workflow. CI and real 3.3.5a UI acceptance must pass before any merge or release.
+- No new Master Loot functionality or real award request behavior.
+
 ## 0.1.0.27 — Historical corpse revisits and read-only Playerbot checks (2026-10-08)
 
 - Preserve old loot-opportunity groups so A → B → A does not reset a completed result.

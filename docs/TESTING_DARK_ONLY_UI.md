@@ -47,7 +47,8 @@ The `NLL Lua 5.1 regression tests` GitHub Actions workflow runs these checks on 
 ## 5. Acceptance / evidence
 
 - [x] Lua 5.1 regression workflow passed on development-source commit `a00e88cc` ([run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38396113585)); re-check if source changes again
-- [ ] WoW 3.3.5a UI check passes at the owner's actual UI scale
+- [ ] Full WoW 3.3.5a UI check passes at the owner's actual UI scale (remaining panels not yet inspected)
+- [x] Priority Setup footer visually retested by owner on 13 October 2026: Disable Presets button and explanation fit inside panel; statistics, four item rows and pagination remain visible. 136 presets shown enabled. Screenshot evidence provided in development conversation; no preset toggle was performed.
 - [ ] No Vanilla option/artwork and existing Dark appearance retained
 - [ ] SavedVariables and award history preserved
 - [ ] Simulator passes without live award effects

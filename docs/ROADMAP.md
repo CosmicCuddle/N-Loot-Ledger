@@ -63,11 +63,11 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [x] Remove Vanilla presentation and selection; preserve NLL Dark visuals, widget dimensions and hover states.
 - [x] Normalize legacy skin preferences to `DARK` in the existing SavedVariables table, without touching loot or award records.
 - [x] Add an offline Lua 5.1 dark-skin/persistence/settings smoke test and a GitHub Actions regression workflow.
-- [ ] Confirm GitHub regression workflow and existing loot-history tests pass on the complete development branch.
+- [x] Lua 5.1 workflow and existing loot-history tests passed on the development branch ([successful CI run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38396113585)).
 - [ ] Inspect actual WoW 3.3.5a Settings, Wishlists, Current Loot, Priority Setup, Debug Lab and award panels at the owner's UI scale.
 - [ ] Confirm installation and matched SavedVariables rollback with an expendable/throwaway test copy.
 - [ ] Only with owner's approval merge or publish; update v0.1.0.27 references when a **new** version is explicitly agreed.
-- Reference: [Dark-only testing checklist](TESTING_DARK_ONLY_UI.md).
+- Review: [draft PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2) (not merged). Reference: [Dark-only testing checklist](TESTING_DARK_ONLY_UI.md).
 
 ### M5 — UI, raid policy and release candidate (future proposals, not yet agreed scope)
 

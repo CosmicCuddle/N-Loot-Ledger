@@ -8,6 +8,38 @@ local UI = NLL.UI
 local PAGE_SIZE = 4
 local RAID = "MOLTEN_CORE"
 
+-- Prevent footer descriptions from wrapping under the controls when the
+-- player uses large/custom WoW fonts. Full explanations remain on hover.
+local function OneLineText(label, candidates, maxWidth)
+    label:SetHeight(20)
+    for _, candidate in ipairs(candidates) do
+        label:SetText(candidate)
+        if type(label.GetStringWidth) ~= "function"
+            or label:GetStringWidth() <= maxWidth then
+            return
+        end
+    end
+    local short = candidates[#candidates] or ""
+    -- Even the shortest candidate can be too wide with a custom font.
+    -- Use a measured ellipsis rather than allowing a second line to wrap.
+    while #short > 1 do
+        label:SetText(short .. "...")
+        if type(label.GetStringWidth) ~= "function"
+            or label:GetStringWidth() <= maxWidth then
+            return
+        end
+        short = string.sub(short, 1, #short - 1)
+    end
+    label:SetText("...")
+end
+
+local function FooterTooltip(hit)
+    if not hit or not hit.fullText then return end
+    GameTooltip:SetOwner(hit, "ANCHOR_RIGHT")
+    GameTooltip:AddLine(hit.fullText, 1, 1, 1, true)
+    GameTooltip:Show()
+end
+
 local BOSSES = {
     "All", "Lucifron", "Magmadar", "Gehennas", "Garr", "Shazzrah",
     "Baron Geddon", "Golemagg the Incinerator", "Sulfuron Harbinger",
@@ -180,10 +212,19 @@ function UI:RefreshPrioritySetup()
         maxPage .. "   (" .. #filtered .. " items)")
     if self.priorityBrowseSummary then
         local info = NLL.PriorityEngine:GetPresetSummary(RAID)
-        self.priorityBrowseSummary:SetText(
-            "Custom " .. info.custom .. "   Presets " .. info.preset ..
-            "   Drafts " .. info.drafts .. "   Manual " .. info.manual ..
-            "   Not set " .. info.unconfigured .. "   Available " .. info.available)
+        local custom, preset, drafts = tostring(info.custom), tostring(info.preset), tostring(info.drafts)
+        local manual, unset, available = tostring(info.manual), tostring(info.unconfigured), tostring(info.available)
+        self.priorityBrowseSummaryHit.fullText =
+            "Custom: " .. custom .. "\nPresets in use: " .. preset ..
+            "\nDrafts: " .. drafts .. "\nManual: " .. manual ..
+            "\nNot set: " .. unset .. "\nAvailable presets: " .. available
+        OneLineText(self.priorityBrowseSummary, {
+            "Custom " .. custom .. "   Presets " .. preset ..
+                "   Drafts " .. drafts .. "   Manual " .. manual .. "   Not set " .. unset,
+            "Custom " .. custom .. "   Presets " .. preset .. "   Manual " .. manual,
+            "Custom " .. custom .. "   Presets " .. preset,
+            "Presets " .. preset,
+        }, 720)
     end
     if self.prioritySuggestionFilterButton then
         UI:SetButtonState(self.prioritySuggestionFilterButton,
@@ -197,10 +238,18 @@ function UI:RefreshPrioritySetup()
             enabled and "active" or "normal")
         if self.priorityPresetExplanation then
             local info = NLL.PriorityEngine:GetPresetSummary(RAID)
-            self.priorityPresetExplanation:SetText(
-                (enabled and "ACTIVE" or "OFF") .. "  -  " ..
-                info.available .. " presets. Custom rules win; " ..
-                "unresearched items remain unconfigured.")
+            local status = enabled and "ACTIVE" or "OFF"
+            local count = tostring(info.available)
+            self.priorityPresetExplanationHit.fullText =
+                status .. " - " .. count ..
+                " presets available. Custom rules always win; " ..
+                "unresearched items remain unconfigured."
+            OneLineText(self.priorityPresetExplanation, {
+                status .. " - " .. count .. " presets. Custom rules win.",
+                status .. " - " .. count .. " presets.",
+                count .. " presets " .. status,
+                status,
+            }, 495)
         end
     end
     if self.priorityUndoButton then
@@ -386,8 +435,15 @@ function UI:CreatePrioritySettingsContent(parent)
         if ok then UI:RefreshPrioritySetup() end
     end)
     self.priorityUndoButton=undo
-    -- Leave room below pagination and above the preset control.
-    self.priorityBrowseSummary=Font(browse,"GameFontDisableSmall","",8,-351,745)
+    -- Keep a measured single-line summary between the pager and preset
+    -- controls. Large custom fonts must never push text onto the button.
+    self.priorityBrowseSummary=Font(browse,"GameFontDisableSmall","",8,-338,720)
+    self.priorityBrowseSummary:SetHeight(20)
+    local summaryHit=CreateFrame("Button",nil,browse)
+    summaryHit:SetAllPoints(self.priorityBrowseSummary)
+    summaryHit:SetScript("OnEnter",FooterTooltip)
+    summaryHit:SetScript("OnLeave",function() GameTooltip:Hide() end)
+    self.priorityBrowseSummaryHit=summaryHit
 
     -- This is a reversible on/off switch, not a bulk write to SavedVariables.
     -- Anchor to the panel BOTTOM, not a hardcoded top offset that overflows
@@ -405,9 +461,15 @@ function UI:CreatePrioritySettingsContent(parent)
         if UI.RefreshCurrentLootPanel then UI:RefreshCurrentLootPanel() end
     end)
     self.priorityPresetToggleButton=presetToggle
-    self.priorityPresetExplanation=Font(browse,"GameFontDisableSmall","",0,0,580)
+    self.priorityPresetExplanation=Font(browse,"GameFontDisableSmall","",0,0,495)
     self.priorityPresetExplanation:ClearAllPoints()
     self.priorityPresetExplanation:SetPoint("LEFT",presetToggle,"RIGHT",12,0)
+    self.priorityPresetExplanation:SetHeight(20)
+    local explanationHit=CreateFrame("Button",nil,browse)
+    explanationHit:SetAllPoints(self.priorityPresetExplanation)
+    explanationHit:SetScript("OnEnter",FooterTooltip)
+    explanationHit:SetScript("OnLeave",function() GameTooltip:Hide() end)
+    self.priorityPresetExplanationHit=explanationHit
 
     -- EDIT VIEW: no item browser controls exist in this visible frame.
     local editor=CreateFrame("Frame",nil,panel)

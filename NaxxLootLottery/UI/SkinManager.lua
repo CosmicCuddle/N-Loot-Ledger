@@ -248,61 +248,6 @@ function UI:ApplySkinToFrame(frame)
     end
 
     frame:SetBackdrop({
-                edgeFile =
-                    "Interface\\DialogFrame\\UI-DialogBox-Border",
-                tile = false,
-                edgeSize = 18,
-                insets = {
-                    left = 6,
-                    right = 6,
-                    top = 6,
-                    bottom = 6
-                }
-            })
-
-            frame:SetBackdropColor(
-                0,
-                0,
-                0,
-                0
-            )
-
-            ApplyColor(
-                frame,
-                "SetBackdropBorderColor",
-                skin.border
-            )
-
-            ShowVanillaParchment(
-                frame
-            )
-        else
-            HideVanillaParchment(
-                frame
-            )
-
-            frame:SetBackdrop(
-                skin.contentBackdrop
-            )
-
-            ApplyColor(
-                frame,
-                "SetBackdropColor",
-                skin.content
-            )
-
-            frame:SetBackdropBorderColor(
-                0,
-                0,
-                0,
-                0
-            )
-        end
-
-        return
-    end
-
-    frame:SetBackdrop({
         bgFile =
             "Interface\\Buttons\\WHITE8X8",
         tile = true,

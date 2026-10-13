@@ -107,8 +107,10 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 
 - [x] Owner requests that **reserved recipes have their own area under My Wishlist** so they are no longer mixed with gear (13 October 2026).
 - [x] Implement **Gear / Items** and **Recipes** subviews without changing the existing wishlist SavedVariables table, recipe manual-only allocation, combined leader submissions or any live award path; independent branch `dev/nll-recipe-wishlist-tabs` is based on unmerged dark-only PR #2.
-- [x] Add `tests/test_recipe_wishlist.lua` and run in GitHub Actions Lua 5.1 workflow; see [recipe acceptance checklist](TESTING_RECIPE_WISHLIST.md).
-- [ ] Owner installs reviewed source only after matched folder/SavedVariables backups; verifies existing four Arcanist wishes, tests one reversible recipe reservation and `/reload`, then removes test reservation.
+- [x] Add `tests/test_recipe_wishlist.lua` and Lua 5.1 CI coverage; see [recipe acceptance checklist](TESTING_RECIPE_WISHLIST.md).
+- [x] Owner's Overview screenshot (13 October 2026) showed **11** reserved Molten Core items and the obsolete `Full wishlist view coming in Phase 4.` summary placeholder. Replace with `Full list: Wishlists > My Wishlist.` (fake-raid-specific guidance when simulated); add `tests/test_overview_wishlist_copy.lua`. Check for other user-visible stale `Phase` messages in UI sources: only this instance found.
+- [ ] Owner reviews the corrected Overview overflow row visually after installing the latest test branch. Existing 11-reservation baseline should be retained unless intentionally edited.
+- [ ] Owner installs reviewed source only after matched folder/SavedVariables backups; verifies existing live wishlist baseline (**11 reservations in latest screenshot**), tests one reversible recipe reservation and `/reload`, then removes only the test reservation.
 - [ ] Review this separate draft PR and get express owner merge approval. No stable release is authorised by the feature request.
 
 ### M6 — First non-prerelease GitHub release (proposed; no release authorised)

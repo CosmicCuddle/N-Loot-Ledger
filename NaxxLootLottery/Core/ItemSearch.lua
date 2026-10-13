@@ -137,3 +137,33 @@ function Search:GetReservationCount()
         "MOLTEN_CORE"
     )
 end
+
+
+-- Split presentation only: all item IDs remain in the original wishlist.
+-- Category is 'items', 'recipes', or 'all' (for the total count).
+function Search:GetLocalWishlistItems(category)
+    local output = {}
+    local MC = NLL.Data.MoltenCore
+    local wishlist = NLL.Database:GetLocalWishlist(
+        self:GetPlayerName(), "MOLTEN_CORE"
+    )
+
+    for itemID, wanted in pairs(wishlist or {}) do
+        if wanted then
+            local item = MC:GetItem(itemID)
+            if item then
+                local isRecipe = MC:IsRecipeItem(item)
+                if category == "all"
+                    or (category == "recipes" and isRecipe)
+                    or (category ~= "recipes" and category ~= "all" and not isRecipe) then
+                    table.insert(output, item)
+                end
+            end
+        end
+    end
+
+    table.sort(output, function(a, b)
+        return string.lower(a.name) < string.lower(b.name)
+    end)
+    return output
+end

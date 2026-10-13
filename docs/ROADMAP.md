@@ -103,6 +103,20 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [ ] Preserve the existing isolated 40-person/eight-group/13-drop stress test and no-SavedVariables/no-server-transfer guarantees; validate realistic, size-dependent compositions and contender pools.
 - [ ] Agree exact UI scope, fixtures, regression tests and a separate reviewable development branch with owner before implementing.
 
+### M5c — Recipe wishlist separation (requested before first stable release; review branch)
+
+- [x] Owner requests that **reserved recipes have their own area under My Wishlist** so they are no longer mixed with gear (13 October 2026).
+- [x] Implement **Gear / Items** and **Recipes** subviews without changing the existing wishlist SavedVariables table, recipe manual-only allocation, combined leader submissions or any live award path; independent branch `dev/nll-recipe-wishlist-tabs` is based on unmerged dark-only PR #2.
+- [x] Add `tests/test_recipe_wishlist.lua` and Lua 5.1 CI coverage; see [recipe acceptance checklist](TESTING_RECIPE_WISHLIST.md).
+- [x] Owner's Overview screenshot (13 October 2026) showed **11** reserved Molten Core items and the obsolete `Full wishlist view coming in Phase 4.` summary placeholder. Replace with `Full list: Wishlists > My Wishlist.` (fake-raid-specific guidance when simulated); add `tests/test_overview_wishlist_copy.lua`. Check for other user-visible stale `Phase` messages in UI sources: only this instance found.
+- [x] Owner's post-install Overview screenshot confirms `+ 6 more reserved item(s)` and `Full list: Wishlists > My Wishlist.` replacing the obsolete Phase 4 placeholder; two-line text remains within its row without apparent overlap. The 11 locally reserved Molten Core items and 39-member raid count are unchanged (13 October 2026).
+- [x] Owner verbally confirmed the new My Wishlist **Gear / Items** and **Recipes** controls work well in their installed client (13 October 2026). This is basic UI acceptance, not yet an end-to-end recipe reservation test.
+- [x] Owner's 13 October 2026 Recipes screenshot after `/reload` shows **15 total = 11 Gear / Items + 4 Recipes**, containing Healing Power and Spell Power enchant formulas plus Core Felcloth Bag and Flarecore Wraps patterns. Recipes display in separate rows without obvious overlap and persist through `/reload`. Do not remove these reservations: the owner has not identified any as disposable.
+- [x] Owner's subsequent **Gear / Items** screenshot shows count **11**, correct **Page 1/2** navigation, original Arcanist pieces and other gear (e.g. Azuresong Mageblade, Chokers) with no recipes on the visible page; owner confirms the full grouping is correct. Combined 11 + 4 = 15 and recipes remain separate. Lower-edge row/footer appears crowded with multi-line boss text: inspect during remaining UI polish, but do not claim an actual overlap without reproduction.
+- [x] Owner verbally confirmed [Issue #4 — Raid Loot Search recipe text overlap](https://github.com/CosmicCuddle/N-Loot-Ledger/issues/4) **seems fine in the updated client** (13 October 2026); the compact name/Item ID/Manual priority fix and `tests/test_search_layout.lua` passed Lua 5.1 CI. No dedicated post-fix screenshot was provided; retain that evidence boundary and review issue closure before release.
+- [x] **Owner accepts Issue #5 visual fix (13 October 2026):** [Wishlist Inbox submitted-item pagination overlap](https://github.com/CosmicCuddle/N-Loot-Ledger/issues/5). Following the four-items-per-page change (7-item submission → 4 + 3), compact Previous/Next buttons, and a dedicated page-label area, the owner reports the updated real-client layout 'looks all good now.' This is **verbal UI acceptance**, not a new screenshot nor a real Accept/Reject operation. `tests/test_inbox_layout.lua` and all Lua 5.1 CI suites passed. Preserve real submissions and avoid clicking decision actions merely for a visual retest.
+- [ ] Review this separate draft PR and get express owner merge approval. No stable release is authorised by the feature request.
+
 ### M6 — First non-prerelease GitHub release (proposed; no release authorised)
 
 **Goal:** ship a clearly scoped, tested WoW 3.3.5a addon without implying that currently unverified direct Master Loot delivery or Playerbot inventory receipt has been certified. Stable is a GitHub release designation, not a guarantee of every optional feature.
@@ -127,7 +141,7 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [ ] Only with the owner's **explicit separate release approval**, merge the approved branch and create a **new GitHub release without the prerelease flag**. Preserve old prerelease tags/assets unchanged.
 - [ ] Optionally update N Addon Collection and other documentation only after the new artifact is verified and separately approved.
 
-**Not blockers unless the owner promotes them into scope:** recipes/profession wishlists, copy/paste wishlist import/export, new raid-size simulator controls, cosmetic singular/plural text refinements, and broad future raid expansions.
+**Not blockers unless the owner promotes them into scope:** copy/paste wishlist import/export, new raid-size simulator controls, cosmetic singular/plural text refinements, and broad future raid expansions. **Recipe wishlist separation is now explicitly required before the stable release**, with in-client acceptance pending.
 
 ### M5 — UI, raid policy and release candidate (future proposals, not yet agreed scope)
 

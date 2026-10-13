@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — Recipe wishlist categories (dependent review branch; not shipped)
+
+- Add **Gear / Items** and **Recipes** subviews inside My Wishlist, retaining the NLL Dark layout and normal wishlist pagination.
+- Automatically classify reserved Molten Core plans, schematics, formulas, patterns and recipes using the existing `Profession recipe` metadata. Equipment and crafting materials remain under Gear / Items.
+- Preserve the original per-player item-ID reservations, `Submit to Leader` combined payload, role priorities and manual-only recipe allocation. No database migration, new real-award path or client API changes.
+- Fix an obsolete **Overview** overflow-row message claiming the full wishlist would arrive in Phase 4. Direct players to the existing **Wishlists → My Wishlist** screen; provide simulation-specific guidance for fake plans.
+- Address Raid Loot Search's long recipe-name/Item-ID collision and overflowing `Manual: Profession recipe` priority at the owner's custom UI scale: constrain name/ID to separate single-line regions, use compact readable search labels and priorities, retain full item and policy tooltips. Owner visual retest pending; the underlying priorities and reservations are unchanged.
+- Fix the Wishlist Inbox item-review footer colliding with the fifth row at the owner's large UI font scale: show four submitted items per page, shorten Previous/Next captions and give the page counter more space. Do not change any acceptance/rejection behavior or saved submission data; owner visual acceptance pending.
+- Add Lua 5.1 regression coverage for classification, reservation, leader-submission compatibility, category navigation, Overview overflow messaging, long-name search and non-destructive Inbox pagination. In-game Search overlap reported visually improved; the new Inbox layout still needs owner review. No new release yet.
+
 ## Unreleased — Dark-only UI cleanup (development branch; not shipped)
 
 - Remove the Vanilla appearance selector and parchment rendering; retain the existing NLL Dark theme.

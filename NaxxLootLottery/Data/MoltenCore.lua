@@ -534,6 +534,14 @@ function MC:GetItems()
     return self.itemList
 end
 
+function MC:IsRecipeItem(item)
+    -- Recipes retain their existing manual-allocation policy.
+    -- Used only to sort personal wishlist items into display groups.
+    return type(item) == "table"
+        and item.manualReason == "Profession recipe"
+end
+
+
 function MC:GetBossText(item)
     if not item or not item.bosses then
         return "Unknown"

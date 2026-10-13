@@ -719,8 +719,11 @@ function UI:RefreshOverview()
         )
 
         lastRow.idText:SetText("")
+        -- The complete My Wishlist page already exists. In the fake
+        -- raid, Wishlists switches to the temporary Gear Plans view.
         lastRow.sourceText:SetText(
-            "Full wishlist view coming in Phase 4."
+            sim and "Fake plans: open Wishlists." or
+            "Full list: Wishlists > My Wishlist."
         )
         lastRow.winnerText:SetText("")
         lastRow:Show()

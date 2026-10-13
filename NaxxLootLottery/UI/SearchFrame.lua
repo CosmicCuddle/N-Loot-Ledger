@@ -9,6 +9,37 @@ local UI = NLL.UI
 
 local RESULTS_PER_PAGE = 6
 
+-- WoW 3.3.5a cannot reliably fit long item names, a separate Item ID and
+-- multi-line priority explanations inside a 44-pixel search row at every
+-- client font scale. Keep the full metadata, but use compact row labels.
+local function SetSearchItemName(label, fullName)
+    local shown = tostring(fullName or "")
+    local suffix = string.match(
+        shown, "^Formula: Enchant Weapon %- (.+)$"
+    )
+    if suffix then
+        shown = "Formula: " .. suffix
+    end
+    label:SetText(shown)
+
+    -- Truncate other long names only when the actual client font is
+    -- too wide. The adjacent icon/name hover retains the full tooltip.
+    if type(label.GetStringWidth) == "function" then
+        local plain = shown
+        while #plain > 4 and label:GetStringWidth() > 282 do
+            plain = string.sub(plain, 1, #plain - 1)
+            label:SetText(plain .. "...")
+        end
+    end
+end
+
+local function CompactPriority(label)
+    if label == "Not configured" then return "Not set" end
+    if string.match(label or "", "^Draft") then return "Draft" end
+    if string.match(label or "", "^Manual:") then return "Manual" end
+    return label
+end
+
 local function SearchRowBackdrop(row, alternate)
     UI:RegisterSkinnedFrame(
         row,
@@ -232,15 +263,31 @@ function UI:CreateSearchPanel(parent)
         local nameText = row:CreateFontString(
             nil, "OVERLAY", "GameFontHighlight"
         )
-        nameText:SetPoint("TOPLEFT", row, "TOPLEFT", 44, -5)
+        nameText:SetPoint("TOPLEFT", row, "TOPLEFT", 44, -4)
         nameText:SetWidth(290)
+        nameText:SetHeight(18) -- one line; cannot collide with Item ID
         nameText:SetJustifyH("LEFT")
+
+        local nameHit = CreateFrame("Button", nil, row)
+        nameHit:SetPoint("TOPLEFT", row, "TOPLEFT", 44, -3)
+        nameHit:SetWidth(290)
+        nameHit:SetHeight(20)
+        nameHit:SetScript("OnEnter", function(self)
+            if not self.itemID then return end
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetHyperlink(
+                "item:" .. tostring(self.itemID) .. ":0:0:0:0:0:0:0"
+            )
+            GameTooltip:Show()
+        end)
+        nameHit:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
         local idText = row:CreateFontString(
             nil, "OVERLAY", "GameFontDisableSmall"
         )
         idText:SetPoint("BOTTOMLEFT", row, "BOTTOMLEFT", 44, 5)
         idText:SetWidth(290)
+        idText:SetHeight(14) -- separate, fixed line below item name
         idText:SetJustifyH("LEFT")
 
         local bossText = row:CreateFontString(
@@ -255,7 +302,20 @@ function UI:CreateSearchPanel(parent)
         )
         priorityText:SetPoint("LEFT", row, "LEFT", 605, 0)
         priorityText:SetWidth(92)
+        priorityText:SetHeight(18) -- prevent stacked text crossing rows
         priorityText:SetJustifyH("LEFT")
+
+        local priorityHit = CreateFrame("Button", nil, row)
+        priorityHit:SetPoint("LEFT", row, "LEFT", 605, 0)
+        priorityHit:SetWidth(92)
+        priorityHit:SetHeight(30)
+        priorityHit:SetScript("OnEnter", function(self)
+            if not self.fullPriority then return end
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:AddLine(self.fullPriority)
+            GameTooltip:Show()
+        end)
+        priorityHit:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
         local reserveButton =
             self:CreateTextButton(row, "Reserve", 78)
@@ -270,9 +330,11 @@ function UI:CreateSearchPanel(parent)
         row.icon = icon
         row.iconHit = iconHit
         row.nameText = nameText
+        row.nameHit = nameHit
         row.idText = idText
         row.bossText = bossText
         row.priorityText = priorityText
+        row.priorityHit = priorityHit
         row.reserveButton = reserveButton
 
         self.searchRows[rowIndex] = row
@@ -411,7 +473,8 @@ function UI:RefreshSearchPanel()
         if item then
             row.icon:SetTexture(GetItemTexture(item.itemID))
             row.iconHit.itemID = item.itemID
-            row.nameText:SetText(item.name)
+            row.nameHit.itemID = item.itemID
+            SetSearchItemName(row.nameText, item.name)
             row.idText:SetText("Item ID: " .. tostring(item.itemID))
             row.bossText:SetText(MC:GetBossText(item))
 
@@ -421,16 +484,16 @@ function UI:RefreshSearchPanel()
                     item.itemID
                 )
 
+            -- The full reason remains available on hover; otherwise
+            -- "Manual: Profession recipe" overflows the 92px column.
+            row.priorityHit.fullPriority = priorityLabel
+            local shortLabel = CompactPriority(priorityLabel)
             if item.manualOnly then
                 row.priorityText:SetText(
-                    "|cffff9933" ..
-                    priorityLabel ..
-                    "|r"
+                    "|cffff9933" .. shortLabel .. "|r"
                 )
             else
-                row.priorityText:SetText(
-                    priorityLabel
-                )
+                row.priorityText:SetText(shortLabel)
             end
 
             local reserved =
@@ -454,6 +517,8 @@ function UI:RefreshSearchPanel()
             row:Show()
         else
             row.iconHit.itemID = nil
+            row.nameHit.itemID = nil
+            row.priorityHit.fullPriority = nil
             row:Hide()
         end
     end

@@ -30,3 +30,11 @@ jobs:
         run: lua5.1 tests/test_loot_history_and_bots.lua
       - name: Dark-only UI and SavedVariables regression
         run: lua5.1 tests/test_dark_skin.lua
+      - name: Gear/items and recipe wishlist separation regression
+        run: lua5.1 tests/test_recipe_wishlist.lua
+      - name: Overview full-wishlist guidance regression
+        run: lua5.1 tests/test_overview_wishlist_copy.lua
+      - name: Raid loot search long-name and priority layout regression
+        run: lua5.1 tests/test_search_layout.lua
+      - name: Wishlist Inbox pagination and footer layout regression
+        run: lua5.1 tests/test_inbox_layout.lua

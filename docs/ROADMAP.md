@@ -101,14 +101,17 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 
 **Goal:** ship a clearly scoped, tested WoW 3.3.5a addon without implying that currently unverified direct Master Loot delivery or Playerbot inventory receipt has been certified. Stable is a GitHub release designation, not a guarantee of every optional feature.
 
-**Release-blocking acceptance proposals:**
+**Owner-selected release scope — Option A (13 October 2026):** Target a stable, **verified core** release after remaining acceptance checks. Optional Direct Master Loot requests and unverified Playerbot item receipt must be clearly labelled **experimental / not certified**, stay **OFF by default**, and must not be portrayed as tested. The owner's selection of Option A is **not** permission to activate real awarding, merge a PR, or publish a release.
+
+**Release-blocking acceptance checks:**
 - [x] Owner's personal four-item Molten Core wishlist survived a WoW `/reload` on 13 October 2026; data not recreated.
 - [x] Existing MC40 simulation completes a safe fake pool/ticket/roll/fake award; 0 saved Gear Needs and 136 presets remain after stop; real award history visibly empty; Direct Master Loot OFF.
 - [x] Latest 13 October Lua 5.1 branch CI passed at `935687ef` ([CI run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38412635857)); retest after code/packaging changes.
 - [ ] Final non-destructive UI sweep: Overview, Raid Loot Search and Wishlist Inbox. Confirm `/nll status` READY and `/nll lootidentity` output is sensible; no screenshot requirement for ordinary positive confirmations.
 - [ ] Verify persistence of a non-empty fake-independent winner/identity fixture across `/reload` and rollback on an **expendable** SavedVariables copy. Do not fabricate or overwrite real personal history.
 - [ ] Conduct controlled **real-raid observational tests** without transferring items: real roster/loot detection, botcheck for online/offline/class/role, read-only candidate listings, and A→B→A duplicate-lock behavior where test drops are available. If impractical, carry unverified features as explicitly experimental/not certified; do not mislabel them as proven.
-- [ ] Decide scope of *optional direct award*: either separately authorise an expendable real-item receipt test (including recipient inventory confirmation), or clearly designate direct award as experimental/unsupported for the first stable release, remaining OFF by default. No real `GiveMasterLoot` calls without separate express approval.
+- [x] Owner selected release Option A: keep optional Direct Master Loot experimental/unverified, OFF by default, with explicit warnings in documentation and release notes. No real `GiveMasterLoot` testing or delivery claims are authorised.
+- [ ] Verify release messaging and safety defaults reflect this decision; consider whether the existing optional experimental control needs any additional guard before publication.
 - [ ] Re-evaluate open [loot identity issue #1](https://github.com/CosmicCuddle/N-Loot-Ledger/issues/1) against test evidence; close only when genuinely accepted, otherwise document as an outstanding known limitation.
 - [ ] Review [draft PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2), verify final code/CI/visual changes, and obtain owner approval before merging it.
 - [ ] Select a **new** version/tag with owner (for example `v0.1.0.28`; `v1.0.0` should reflect agreed API/product stability, not a requirement for GitHub's stable flag).

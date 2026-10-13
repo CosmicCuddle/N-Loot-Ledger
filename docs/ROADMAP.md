@@ -45,7 +45,8 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 
 ### M3 — Actual Playerbot observations (read-only first)
 
-- [x] Owner's 13 October 2026 **real raid** Raid Roles screenshot shows **39 raid members**, page 1/4, with real roster names/classes/online status and displayed NLL role assignments (e.g. Gorak Main Tank, Eiga Tank, Arndor and Rakari Healer). Owner already changed some roles and reported they appeared to work; those role assignments save immediately. Only page 1 was inspected. This does not verify actual Playerbot identity, all 39 rows, `/reload` persistence of assignments or candidate eligibility.
+- [x] Owner's 13 October 2026 real Raid Roles screenshot shows **39 raid members**, page 1/4, with names/classes/online status and saved NLL role values (e.g. Gorak Main Tank, Eiga Tank, Arndor and Rakari Healer).
+- [x] Owner later inspected all four roster pages and confirmed all members appeared without overlaps or missing rows; separate page-2 screenshot shows real classes/online status and some legitimately `UNASSIGNED` NLL roles. Owner confirmed previously assigned roles **persisted after `/reload`**. This verifies in-client roster/role persistence, but not the underlying bot AI identity, all members' eligibility, or actual loot/item delivery.
 - [ ] In an actual raid with saved BOT_GEAR_PLAN needs, run `/nll botcheck` and `/nll botcheck BotName` for representative online/offline roles and classes.
 - [ ] Optionally open a real Master Loot candidate dropdown for an expendable item; verify whether the expected recipient appears. **Do not select/award yet.**
 - [ ] Distinguish **in roster**, **eligible candidate**, **verified Playerbot**, **loot request accepted** and **item actually received**. The client does not generally prove all these states.

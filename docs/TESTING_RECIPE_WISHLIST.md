@@ -24,6 +24,7 @@ lua5.1 tests/test_loot_history_and_bots.lua
 lua5.1 tests/test_dark_skin.lua
 lua5.1 tests/test_recipe_wishlist.lua
 lua5.1 tests/test_overview_wishlist_copy.lua
+lua5.1 tests/test_search_layout.lua
 ```
 
 The recipe test loads real Molten Core recipe data, checks unchanged SavedVariables identities, filtering, leader submission and category navigation. The Overview test ensures the old Phase 4 placeholder is gone, with correct guidance for both a normal character and a fake raid.
@@ -41,7 +42,7 @@ The recipe test loads real Molten Core recipe data, checks unchanged SavedVariab
 - [x] Owner's post-`/reload` Recipes screenshot (13 October 2026) shows **15 total** reserved items: **11 Gear / Items and 4 Recipes**. Four recipes display correctly. Owner then checked Gear / Items and provided page 1/2 screenshot showing expected equipment (including Arcanist Bindings, Boots, Crown and Gloves) and **no recipes** on the visible page; owner confirmed the separation looks correct. Earlier 11-item baseline is no longer the current total.
 - [x] Owner supplied Raid Loot Search screenshot with **Formula: Enchant Weapon - Healing Power** (ID `18260`) and **Spell Power** (`18259`) both showing **Remove**, indicating reserved state. Their creation order and whether either was previously reserved were not established; do not click Remove now.
 - [x] Both reserved enchanting formulas (Healing Power ID 18260 and Spell Power ID 18259) appear in the **Recipes** subview alongside Pattern: Core Felcloth Bag (21371) and Pattern: Flarecore Wraps (18265); 4 recipe rows are visible with `Remove` controls and no obvious row overlap. The Gear / Items subview still needs explicit exclusion confirmation.
-- [ ] **Visual release blocker:** [Issue #4](https://github.com/CosmicCuddle/N-Loot-Ledger/issues/4) — Raid Loot Search longer formula names overlap Item ID; `MANUAL: PROFESSION RECIPE` priority column wraps beyond comfortable row height. User asked to finish testing first, fix before stable release.
+- [ ] **Visual release blocker awaiting owner retest:** [Issue #4](https://github.com/CosmicCuddle/N-Loot-Ledger/issues/4). A source fix is implemented: in Raid Loot Search formula names use compact single-line labels (`Formula: Healing Power`, `Formula: Spell Power`); full original item links remain available by hovering icon/title; Item IDs remain visible separately. Manual priority displays `Manual`, with full `Manual: Profession recipe` on hover. Reinstall latest review branch after saving matching backups, search `Formula`, then check no overlap at the owner's actual UI scale. Do not mark done based only on automated tests.
 - [x] Owner verified the Recipes view after reload; four matching recipe names and sources displayed, and count 11 + 4 = 15. Explicit visual confirmation of exclusion from Gear / Items remains pending.
 - [x] Owner reports completing `/reload` and that reserved recipes persist, supported by the subsequent Recipes screenshot with all four recipes and 15 total. This does not independently show all 11 individual Gear / Items entries post-reload.
 - [ ] Do **not** remove any of the four reserved recipes: user has not identified them as disposable test entries. Any future test cleanup requires explicit identification of a newly created test-only reservation.

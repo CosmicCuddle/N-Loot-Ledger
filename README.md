@@ -2,31 +2,32 @@
 
 **Raid loot planning, wishlists, post-drop ticket lotteries, and award tracking for World of Warcraft 3.3.5a (Wrath of the Lich King) on AzerothCore.**
 
-**Current development version:** `0.1.0.27`  
-**Status:** In development. The 40-player simulator has been tested in-game; real Master Loot transfer still requires controlled server testing.
+**Prepared candidate version:** `0.1.0.28` — **NOT YET PUBLISHED**  
+**Latest published version:** `v0.1.0.27` (pre-release)  
+**Status:** Proposed first stable **verified-core** release; Direct Master Loot remains **experimental, unverified and OFF by default**. Live boss loot and bot inventory delivery are not certified.
 
-**Unreleased UI branches:** [dev/nll-dark-only-ui](https://github.com/CosmicCuddle/N-Loot-Ledger/tree/dev/nll-dark-only-ui) (draft PR #2) removes optional Vanilla artwork. The dependent [dev/nll-recipe-wishlist-tabs](https://github.com/CosmicCuddle/N-Loot-Ledger/tree/dev/nll-recipe-wishlist-tabs) separates personal reserved recipes from other items under My Wishlist, without SavedVariables migration. Neither branch is part of published v0.1.0.27; test and review before adoption.
+**Review sequence (all still unmerged):** [Dark-only PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2) → [Recipes/UI PR #3](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/3) → release-prep review branch `dev/nll-v0.1.0.28-stable-prep`. Each requires separate approval before merge. No tag/release will be created by the candidate CI.
 
 ## Features
 
 - Molten Core item browser and configurable loot priority rules with optional presets.
 - Gear wishlists for players and persistent manual gear plans for Playerbots.
-- On the unreleased recipe-wishlist branch, **My Wishlist → Gear / Items** and **Recipes** present separate views of the existing reserved items. Both categories still submit together to the raid leader; recipe allocation remains manual-only.
+- **My Wishlist → Gear / Items** and **Recipes** separate the display of existing reservations. Both groups are still submitted together to the raid leader; profession recipe allocation is **manual-only**.
 - Class/role eligibility checks, candidate review and drop-specific ticket lotteries.
 - Clear, visual winner announcements and winner persistence across multiple drops.
 - Saved loot-opportunity identity: same-looking reopened loot keeps its original roll lock and winner across `/reload`, with archived-group recovery and a conservative confirmation path for new corpses.
 - Manual award reporting and an Award History screen.
 - **Opt-in** two-stage real Master Loot request with revalidation; **disabled at every login and reload**.
 - 40-character Molten Core simulation with eight groups, class-specific equipment plans, 13 mock loot drops and fake award confirmations.
-- NLL Dark interface. On the unreleased dark-only development branch, legacy Vanilla/Classic appearance preferences are safely normalised to Dark.
+- NLL Dark interface only; legacy Vanilla/Classic appearance preferences are safely normalized to Dark, without replacing saved wishlist or loot history.
 
 ## Installation (WoW 3.3.5a)
 
 1. Before changing anything, **back up** your current `Interface/AddOns/NaxxLootLottery` folder, and the NLL SavedVariables files from `WTF/Account/<account>/SavedVariables/` (and character-level SavedVariables if present).
-2. Download the repository as a ZIP from GitHub. Extract it and copy **only the `NaxxLootLottery` subfolder** into `World of Warcraft/Interface/AddOns/`.
+2. For this review version, use the **candidate installable ZIP from successful GitHub Actions**, not the older pre-release or the repository source archive. See [candidate install and rollback](docs/INSTALL-v0.1.0.28.md). Extract **only the `NaxxLootLottery` directory** into `World of Warcraft/Interface/AddOns/`.
 3. The final path must be `Interface/AddOns/NaxxLootLottery/NaxxLootLottery.toc`. Avoid accidentally nesting a second `NaxxLootLottery` folder.
 4. Restart the WoW client or enter `/reload`. If the addon is marked out of date, verify your client build is 3.3.5a (Interface 30300).
-5. Enter `/nll version` and `/nll status` to confirm version `0.1.0.27` and `READY`.
+5. Enter `/nll version` and `/nll status` to confirm version **`0.1.0.28`** and **`READY`** in the candidate build. The published v0.1.0.27 download still reports its original version.
 
 **Compatibility note:** The installed addon directory is still **`NaxxLootLottery`**, the SavedVariables name remains **`NaxxLootLotteryDB`**, and chat commands remain **`/nll`**. These are intentionally unchanged during the public rename to preserve existing installations and preferences.
 
@@ -81,7 +82,7 @@ Run `/nll botcheck` in an **actual raid** (not the Debug Lab) after saving Playe
 ## Important award safety information
 
 - Fake raid and fake lottery data are isolated from real records.
-- **Live direct awarding is OFF by default and resets OFF every login or `/reload`.**
+- **Live direct awarding is experimental / not certified, OFF by default and resets OFF every login or `/reload`.**
 - Real awards require explicit manual confirmations, an actual eligible winner, an open matching loot slot, and Master Looter authority.
 - A request sent by `GiveMasterLoot` **does not prove item receipt**; NLL tracks the request, observed slot clearing, and uncertain outcomes separately. An item slot disappearing is not an independent delivery receipt.
 - Never test automatic item transfer with valuable gear until you have first validated the flow on your server using expendable items.
@@ -94,7 +95,7 @@ Run `/nll botcheck` in an **actual raid** (not the Debug Lab) after saving Playe
 - No modern `C_ChatInfo`, `C_Timer`, `GetLootSourceInfo`, or `RegisterAddonMessagePrefix` dependencies.
 - The initial item library focuses on **Molten Core**; priorities are editable, not mandatory universal rules.
 - Reproducible loot-identity regression tests: `texlua tests/test_loot_identity.lua` and `texlua tests/test_loot_history_and_bots.lua` (TeX Lua runner) and `texluac -p` for Lua module syntax.
-- The unreleased UI branch adds `tests/test_dark_skin.lua` and an automated Lua 5.1 regression workflow.
+- The 0.1.0.28 review code includes Lua 5.1 tests for the Dark-only UI, recipe grouping, Overview, Search, Inbox and loot-identity safety, plus `python3 tests/test_release_packaging.py` for the installable release-candidate ZIP. The [candidate-build workflow](.github/workflows/validate-v0.1.0.28-candidate.yml) does **not** publish a release.
 - This repository includes **source code**, not personal SavedVariables, characters, raid histories, or server database exports.
 
 ## Documents
@@ -102,8 +103,10 @@ Run `/nll botcheck` in an **actual raid** (not the Debug Lab) after saving Playe
 - [Project handover — new development chats](docs/PROJECT-HANDOVER.md)
 - [Development roadmap and safety milestones](docs/ROADMAP.md)
 - [Changelog](CHANGELOG.md)
-- [Latest bulk-test checklist](docs/TESTING_v0.1.0.27.txt)
-- [Current release notes](docs/RELEASE_NOTES_v0.1.0.27.txt)
+- [v0.1.0.28 release-candidate checklist](docs/RELEASE_CHECKLIST_v0.1.0.28.md)
+- [v0.1.0.28 prepared release notes](docs/RELEASE_NOTES_v0.1.0.28.md)
+- [v0.1.0.28 safe install/rollback](docs/INSTALL-v0.1.0.28.md)
+- [Prior v0.1.0.27 test checklist](docs/TESTING_v0.1.0.27.txt)
 - [Data sources](docs/DATA_SOURCES.txt)
 
 ## License

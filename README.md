@@ -6,7 +6,7 @@
 **Latest published version:** `v0.1.0.27` (pre-release)  
 **Status:** Proposed first stable **verified-core** release; Direct Master Loot remains **experimental, unverified and OFF by default**. Live boss loot and bot inventory delivery are not certified.
 
-**Review sequence (all still unmerged):** [Dark-only PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2) → [Recipes/UI PR #3](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/3) → release-prep review branch `dev/nll-v0.1.0.28-stable-prep`. Each requires separate approval before merge. No tag/release will be created by the candidate CI.
+**Review sequence (all still unmerged):** [Dark-only PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2) → [Recipes/UI PR #3](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/3) → [release-prep draft PR #6](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/6) (`dev/nll-v0.1.0.28-stable-prep`). Each requires separate approval before merge. No tag/release will be created by the candidate CI.
 
 ## Features
 

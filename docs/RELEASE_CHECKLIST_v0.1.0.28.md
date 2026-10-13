@@ -17,7 +17,8 @@
 - [x] Bump internal `NLL.version` and `## Version` to 0.1.0.28 on separate review branch, preserving `NaxxLootLottery` / `NaxxLootLotteryDB`.
 - [x] Write release notes, install/rollback instructions and a reproducible addon-only package script.
 - [x] Add read-only candidate CI with Lua 5.1 tests and a downloadable workflow artifact, **without any tag/release creation**.
-- [ ] Confirm latest candidate CI success; inspect its ZIP and SHA256 checksum (no `WTF`, SavedVariables or nested repository directory).
+- [x] Automated [candidate CI run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38433305898) passed and created `Naxxramas-Loot-Ledger-v0.1.0.28-REVIEW` artifact (ZIP + SHA256SUMS). ZIP verifier confirmed exactly 32 Lua modules + one TOC, a single `NaxxLootLottery` folder, no WTF/SavedVariables, matching internal/TOC versions and OFF-by-default direct awarding. ZIP SHA256: `1f1158cd66d0d76dd578451f018508ee6a8d2cfdcc8428a711b63370cccf755d`.
+- [ ] Before recommending installation, manually inspect/download the exact candidate artifact from successful branch HEAD; a fresh run on updated documentation may have a different run ID but should produce the same ZIP hash if addon sources are unchanged.
 - [ ] Owner smoke-test the **exact candidate ZIP** in WoW: `/nll version` **0.1.0.28**, `/nll status` **READY**, saved 15 wishlist entries, role assignments/presets, Direct Master Loot OFF and no unwanted real history changes.
 - [ ] Perform/approve a matched-addon-and-SavedVariables restore rehearsal on an **expendable** copy (not production), or explicitly document why deferred.
 - [ ] Resolve owner-reviewed Issue #4 / #5 closure disposition; leave unrelated [Issue #1](https://github.com/CosmicCuddle/N-Loot-Ledger/issues/1) open as a clearly documented known limitation unless real live-raid testing supports closure.

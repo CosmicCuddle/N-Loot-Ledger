@@ -5,12 +5,13 @@
 **Current development version:** `0.1.0.27`  
 **Status:** In development. The 40-player simulator has been tested in-game; real Master Loot transfer still requires controlled server testing.
 
-**Unreleased development branch:** [dev/nll-dark-only-ui](https://github.com/CosmicCuddle/N-Loot-Ledger/tree/dev/nll-dark-only-ui) removes the optional Vanilla appearance and changes no loot or award logic. It is not part of published v0.1.0.27; test and review before adoption.
+**Unreleased UI branches:** [dev/nll-dark-only-ui](https://github.com/CosmicCuddle/N-Loot-Ledger/tree/dev/nll-dark-only-ui) (draft PR #2) removes optional Vanilla artwork. The dependent [dev/nll-recipe-wishlist-tabs](https://github.com/CosmicCuddle/N-Loot-Ledger/tree/dev/nll-recipe-wishlist-tabs) separates personal reserved recipes from other items under My Wishlist, without SavedVariables migration. Neither branch is part of published v0.1.0.27; test and review before adoption.
 
 ## Features
 
 - Molten Core item browser and configurable loot priority rules with optional presets.
 - Gear wishlists for players and persistent manual gear plans for Playerbots.
+- On the unreleased recipe-wishlist branch, **My Wishlist → Gear / Items** and **Recipes** present separate views of the existing reserved items. Both categories still submit together to the raid leader; recipe allocation remains manual-only.
 - Class/role eligibility checks, candidate review and drop-specific ticket lotteries.
 - Clear, visual winner announcements and winner persistence across multiple drops.
 - Saved loot-opportunity identity: same-looking reopened loot keeps its original roll lock and winner across `/reload`, with archived-group recovery and a conservative confirmation path for new corpses.

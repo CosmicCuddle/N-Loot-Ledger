@@ -45,6 +45,7 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 
 ### M3 — Actual Playerbot observations (read-only first)
 
+- [x] Owner ran `/nll botcheck` in a real 39-member raid on 13 October 2026 and confirmed the expected empty-plan diagnostic (`No saved Playerbot gear plans...`). This proves the command's zero-plan path behaves normally, **not** actual Playerbot compatibility. Gear Plans still have 0 saved needs; no test plan was created. Any single-plan test must be owner-approved, backed up, removable, and strictly non-awarding.
 - [x] Owner's 13 October 2026 real Raid Roles screenshot shows **39 raid members**, page 1/4, with names/classes/online status and saved NLL role values (e.g. Gorak Main Tank, Eiga Tank, Arndor and Rakari Healer).
 - [x] Owner later inspected all four roster pages and confirmed all members appeared without overlaps or missing rows; separate page-2 screenshot shows real classes/online status and some legitimately `UNASSIGNED` NLL roles. Owner confirmed previously assigned roles **persisted after `/reload`**. This verifies in-client roster/role persistence, but not the underlying bot AI identity, all members' eligibility, or actual loot/item delivery.
 - [ ] In an actual raid with saved BOT_GEAR_PLAN needs, run `/nll botcheck` and `/nll botcheck BotName` for representative online/offline roles and classes.

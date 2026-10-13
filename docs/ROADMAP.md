@@ -84,7 +84,8 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [x] Owner confirmed their original four Arcanist Wishlist entries remained present after `/reload` on 13 October 2026. This verifies real-client reload persistence of the personal wishlist, not a full historical database/rollback exercise.
 - [x] Owner confirmed the Overview screen looks and works normally after the simulator was stopped; visual confirmation only, no screenshot or exhaustive functional test (13 October 2026).
 - [x] Owner confirmed Raid Loot Search loads the Molten Core library and searching for `Arcanist` displays expected results without reported overlap or Lua errors (13 October 2026); no screenshot required for routine positive UI checks.
-- [ ] Inspect remaining Wishlist Inbox screen, then decide whether additional real-raid read-only checks are required before a stable release.
+- [x] Owner confirmed Wishlist Inbox opens and works as intended (13 October 2026); no Accept or Reject actions were needed. All planned interface panels have now been visually checked at the owner's in-game UI scale, although this is not exhaustive functional validation.
+- [ ] Decide exact real-raid read-only acceptance checks and perform them safely before a stable release.
 - [x] Owner confirmed making backups before both in-client development installations; contents of backups have not been independently inspected.
 - [ ] Perform an actual paired addon-folder/SavedVariables rollback rehearsal only on an expendable test copy, not on the owner's sole live data. Preserve original backup sets.
 - [ ] Only with owner's approval merge or publish; update v0.1.0.27 references when a **new** version is explicitly agreed.
@@ -109,7 +110,8 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [x] Owner's personal four-item Molten Core wishlist survived a WoW `/reload` on 13 October 2026; data not recreated.
 - [x] Existing MC40 simulation completes a safe fake pool/ticket/roll/fake award; 0 saved Gear Needs and 136 presets remain after stop; real award history visibly empty; Direct Master Loot OFF.
 - [x] Latest 13 October Lua 5.1 branch CI passed at `935687ef` ([CI run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38412635857)); retest after code/packaging changes.
-- [ ] Final non-destructive UI sweep: Overview, Raid Loot Search and Wishlist Inbox. Confirm `/nll status` READY and `/nll lootidentity` output is sensible; no screenshot requirement for ordinary positive confirmations.
+- [x] Final UI sweep: Owner confirmed Overview, Molten Core Raid Loot Search (`Arcanist` filtering), and Wishlist Inbox work as intended, with no reported defects (13 October 2026).
+- [ ] Confirm `/nll version` = `0.1.0.27`, `/nll status` READY, and `/nll lootidentity` returns a sensible read-only ledger summary.
 - [ ] Verify persistence of a non-empty fake-independent winner/identity fixture across `/reload` and rollback on an **expendable** SavedVariables copy. Do not fabricate or overwrite real personal history.
 - [ ] Conduct controlled **real-raid observational tests** without transferring items: real roster/loot detection, botcheck for online/offline/class/role, read-only candidate listings, and A→B→A duplicate-lock behavior where test drops are available. If impractical, carry unverified features as explicitly experimental/not certified; do not mislabel them as proven.
 - [x] Owner selected release Option A: keep optional Direct Master Loot experimental/unverified, OFF by default, with explicit warnings in documentation and release notes. No real `GiveMasterLoot` testing or delivery claims are authorised.

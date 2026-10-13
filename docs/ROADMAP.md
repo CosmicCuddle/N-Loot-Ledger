@@ -77,7 +77,8 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [x] Owner reviewed fake Award Review modal on 13 October 2026: Gauntlets of Might -> SimWar1 shown; simulation-only warning and two safe controls visible; real Direct Award control correctly hidden. Awaiting separate fake confirmation test (no actual award).
 - [x] Owner confirmed `Confirm Fake Award` on Gauntlets of Might in the MC40 simulator (13 October 2026): `Winner: SimWar1 [SIMULATED_AWARDED]` and `[FAKE AWARDED]` now displayed; needed count falls from 3 to 2, retaining SimWar2/SimWar3 and removing the fake winner from the need list. Chat explicitly reports `No real item moved.` This confirms one simulated end-to-end loot cycle, not persistence or a real award.
 - [x] After `/nll sim stop`, owner's My Wishlist screenshot confirms `[SIMULATION - FAKE RAID]` banner gone and original four Arcanist items (Belt, Bindings, Boots, Crown) still listed at 4/4 with normal navigation. This verifies visual return to normal wishlist, not yet a full persisted-data or reload test.
-- [ ] Verify post-simulation Gear Plans remain empty, Molten Core presets remain 136 active, real award/history state unchanged, and remaining Settings panels; use only non-destructive UI review.
+- [x] Post-simulation Priority Setup screenshot confirms presets unchanged: 136 active, 0 custom, 0 drafts, 22 manual, 2 unconfigured; footer remains correctly laid out.
+- [ ] Verify post-simulation Gear Plans and real Award History; inspect remaining Settings panels non-destructively.
 - [ ] Confirm installation and matched SavedVariables rollback with an expendable/throwaway test copy.
 - [ ] Only with owner's approval merge or publish; update v0.1.0.27 references when a **new** version is explicitly agreed.
 - Review: [draft PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2) (not merged). Reference: [Dark-only testing checklist](TESTING_DARK_ONLY_UI.md).

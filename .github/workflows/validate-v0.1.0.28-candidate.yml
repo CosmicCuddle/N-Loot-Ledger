@@ -1,0 +1,55 @@
+name: Validate and package v0.1.0.28 candidate (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-v0.1.0.28-stable-prep
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nll-v0.1.0.28-candidate
+  cancel-in-progress: true
+
+jobs:
+  candidate:
+    name: Lua regressions and installable ZIP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out review branch
+        uses: actions/checkout@v4
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Check addon and test Lua syntax
+        run: |
+          set -euo pipefail
+          find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Run all Lua regression suites
+        run: |
+          set -euo pipefail
+          lua5.1 tests/test_loot_identity.lua
+          lua5.1 tests/test_loot_history_and_bots.lua
+          lua5.1 tests/test_dark_skin.lua
+          lua5.1 tests/test_recipe_wishlist.lua
+          lua5.1 tests/test_overview_wishlist_copy.lua
+          lua5.1 tests/test_search_layout.lua
+          lua5.1 tests/test_inbox_layout.lua
+      - name: Verify candidate package and safety defaults
+        run: python3 tests/test_release_packaging.py
+      - name: Build installable v0.1.0.28 candidate
+        run: |
+          python3 scripts/build_release_zip.py
+          sha256sum dist/Naxxramas-Loot-Ledger-v0.1.0.28.zip > dist/SHA256SUMS.txt
+          cat dist/SHA256SUMS.txt
+      - name: Upload candidate ZIP (not a GitHub Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Naxxramas-Loot-Ledger-v0.1.0.28-REVIEW
+          path: |
+            dist/Naxxramas-Loot-Ledger-v0.1.0.28.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14

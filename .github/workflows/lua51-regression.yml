@@ -32,3 +32,5 @@ jobs:
         run: lua5.1 tests/test_dark_skin.lua
       - name: Gear/items and recipe wishlist separation regression
         run: lua5.1 tests/test_recipe_wishlist.lua
+      - name: Overview full-wishlist guidance regression
+        run: lua5.1 tests/test_overview_wishlist_copy.lua

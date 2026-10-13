@@ -79,7 +79,8 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [x] After `/nll sim stop`, owner's My Wishlist screenshot confirms `[SIMULATION - FAKE RAID]` banner gone and original four Arcanist items (Belt, Bindings, Boots, Crown) still listed at 4/4 with normal navigation. This verifies visual return to normal wishlist, not yet a full persisted-data or reload test.
 - [x] Post-simulation Priority Setup screenshot confirms presets unchanged: 136 active, 0 custom, 0 drafts, 22 manual, 2 unconfigured; footer remains correctly laid out.
 - [x] Owner's post-simulation Real Loot Award History screenshot on 13 October 2026 shows 0 records (Page 1/1), no SimWar1 or Gauntlets of Might fake award, and correct informational text. Confirms fake award absent from the visible real history; no prior non-empty history baseline was established.
-- [ ] Verify post-simulation Gear Plans remain empty and confirm Loot Awards safety setting; inspect any remaining panels non-destructively.
+- [x] Owner verbally confirmed post-simulation Gear Plans still display `0 saved Gear Need(s)` (13 October 2026); no screenshot required for this straightforward count. This supports absence of persisted fake Playerbot Gear Plans in the displayed view.
+- [ ] Confirm Direct Master Loot remains OFF after the simulation, then review remaining acceptance requirements and draft PR #2 with owner.
 - [ ] Confirm installation and matched SavedVariables rollback with an expendable/throwaway test copy.
 - [ ] Only with owner's approval merge or publish; update v0.1.0.27 references when a **new** version is explicitly agreed.
 - Review: [draft PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2) (not merged). Reference: [Dark-only testing checklist](TESTING_DARK_ONLY_UI.md).

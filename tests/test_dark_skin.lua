@@ -55,7 +55,14 @@ check(NLL.db.settings.skin == "DARK", "old skin request changes nothing")
 local function mockFrame()
     local frame = {}
     function frame:SetAllPoints() end
-    function frame:SetPoint() end
+    function frame:SetPoint(...)
+        self.points = self.points or {}
+        self.points[#self.points + 1] = { ... }
+    end
+    function frame:ClearAllPoints() self.points = {} end
+    function frame:SetJustifyH() end
+    function frame:SetAutoFocus() end
+    function frame:CreateTexture() return mockFrame() end
     function frame:SetWidth(width) self.width = width end
     function frame:SetHeight(height) self.height = height end
     function frame:SetText(text) self.text = text end
@@ -117,4 +124,35 @@ for _, mode in ipairs({ "priority", "debug", "awards", "history" }) do
     UI:RefreshSettingsPanel()
     check(UI.lastRefresh == mode, "Settings still works: " .. mode)
 end
-print("PASS: " .. count .. " dark-only UI and SavedVariables assertions")
+-- Priority Setup footer layout regression: no destructive preset changes.
+-- These checks inspect WoW anchor choices with lightweight frame mocks.
+NLL.classes, NLL.roles = {}, {}
+UIDropDownMenu_SetWidth = function() end
+UIDropDownMenu_SetText = function() end
+UIDropDownMenu_Initialize = function() end
+assert(loadfile("NaxxLootLottery/UI/PriorityFrame.lua"))()
+local fullRefresh = UI.RefreshPrioritySetup
+UI.RefreshPrioritySetup = function() end -- layout-only; do not touch saved presets
+UI:CreatePrioritySettingsContent(mockFrame())
+UI.RefreshPrioritySetup = fullRefresh
+local footer = UI.priorityPresetToggleButton
+local footerAnchor = footer.points and footer.points[1]
+check(footerAnchor and footerAnchor[1] == "BOTTOMLEFT"
+    and footerAnchor[3] == "BOTTOMLEFT" and footerAnchor[5] == 8
+    and footerAnchor[6] == 10, "preset button anchored 10 pixels from panel bottom")
+check(footerAnchor[2] == UI.priorityBrowsePage,
+    "preset footer anchored to its browse panel")
+local explain = UI.priorityPresetExplanation
+local explainAnchor = explain.points and explain.points[1]
+check(explainAnchor and explainAnchor[1] == "LEFT"
+    and explainAnchor[2] == footer and explainAnchor[3] == "RIGHT"
+    and explainAnchor[5] == 12 and explainAnchor[6] == 0,
+    "preset explanation follows its button and stays vertically centered")
+local summaryAnchor = UI.priorityBrowseSummary.points[1]
+check(summaryAnchor[6] == -351, "priority summary moved above footer")
+check(UI.priorityPreviousButton ~= nil and UI.priorityNextButton ~= nil,
+    "priority pagination retained")
+check(NLL.db.settings.priorityPresetsEnabled == true,
+    "layout check has not changed saved presets")
+
+print("PASS: " .. count .. " dark-only UI, priority footer, and SavedVariables assertions")

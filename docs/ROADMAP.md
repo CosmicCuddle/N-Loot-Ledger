@@ -110,7 +110,8 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [x] Add `tests/test_recipe_wishlist.lua` and Lua 5.1 CI coverage; see [recipe acceptance checklist](TESTING_RECIPE_WISHLIST.md).
 - [x] Owner's Overview screenshot (13 October 2026) showed **11** reserved Molten Core items and the obsolete `Full wishlist view coming in Phase 4.` summary placeholder. Replace with `Full list: Wishlists > My Wishlist.` (fake-raid-specific guidance when simulated); add `tests/test_overview_wishlist_copy.lua`. Check for other user-visible stale `Phase` messages in UI sources: only this instance found.
 - [x] Owner's post-install Overview screenshot confirms `+ 6 more reserved item(s)` and `Full list: Wishlists > My Wishlist.` replacing the obsolete Phase 4 placeholder; two-line text remains within its row without apparent overlap. The 11 locally reserved Molten Core items and 39-member raid count are unchanged (13 October 2026).
-- [ ] Owner installs reviewed source only after matched folder/SavedVariables backups; verifies existing live wishlist baseline (**11 reservations in latest screenshot**), tests one reversible recipe reservation and `/reload`, then removes only the test reservation.
+- [x] Owner verbally confirmed the new My Wishlist **Gear / Items** and **Recipes** controls work well in their installed client (13 October 2026). This is basic UI acceptance, not yet an end-to-end recipe reservation test.
+- [ ] Confirm existing 11-item baseline and available matched backups, test one reversible recipe reservation and `/reload`, then remove only the test reservation.
 - [ ] Review this separate draft PR and get express owner merge approval. No stable release is authorised by the feature request.
 
 ### M6 — First non-prerelease GitHub release (proposed; no release authorised)

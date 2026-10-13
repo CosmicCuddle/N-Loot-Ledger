@@ -17,6 +17,10 @@ local untouchedReference = savedWishlist
 local saves = { Admina = { MOLTEN_CORE = savedWishlist } }
 
 UnitName = function() return "Admina" end
+-- Communication registers a frame at module load time in WoW.
+CreateFrame = function()
+    return { RegisterEvent = function() end, SetScript = function() end }
+end
 NaxxLootLottery = {
     UI = {},
     Data = {},

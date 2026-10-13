@@ -82,7 +82,8 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [x] Owner verbally confirmed post-simulation Gear Plans still display `0 saved Gear Need(s)` (13 October 2026); no screenshot required for this straightforward count. This supports absence of persisted fake Playerbot Gear Plans in the displayed view.
 - [x] Owner confirmed **Direct Master Loot: OFF** in Settings > Loot Awards after completing and stopping the MC40 simulation (13 October 2026). All tested fake awards remained isolated; no actual loot transfer was authorised or attempted.
 - [x] Owner confirmed their original four Arcanist Wishlist entries remained present after `/reload` on 13 October 2026. This verifies real-client reload persistence of the personal wishlist, not a full historical database/rollback exercise.
-- [ ] Inspect untouched Overview, Raid Loot Search and Wishlist Inbox screens, and decide whether additional real-raid read-only checks are required before a stable release.
+- [x] Owner confirmed the Overview screen looks and works normally after the simulator was stopped; visual confirmation only, no screenshot or exhaustive functional test (13 October 2026).
+- [ ] Inspect remaining Raid Loot Search and Wishlist Inbox screens, and decide whether additional real-raid read-only checks are required before a stable release.
 - [x] Owner confirmed making backups before both in-client development installations; contents of backups have not been independently inspected.
 - [ ] Perform an actual paired addon-folder/SavedVariables rollback rehearsal only on an expendable test copy, not on the owner's sole live data. Preserve original backup sets.
 - [ ] Only with owner's approval merge or publish; update v0.1.0.27 references when a **new** version is explicitly agreed.

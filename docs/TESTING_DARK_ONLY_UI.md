@@ -51,6 +51,7 @@ The `NLL Lua 5.1 regression tests` GitHub Actions workflow runs these checks on 
 - [x] Priority Setup footer visually retested by owner on 13 October 2026: Disable Presets button and explanation fit inside panel; statistics, four item rows and pagination remain visible. 136 presets shown enabled. Screenshot evidence provided in development conversation; no preset toggle was performed.
 - [ ] No Vanilla option/artwork and existing Dark appearance retained
 - [x] My Wishlist panel visually checked by owner on 13 October 2026: four existing Molten Core entries (Arcanist Belt, Bindings, Boots, Crown) visible; item/source columns, paging and Submit to Leader controls display correctly. Owner reports existing wishlist retained; no add/remove/submit performed.
+- [x] Gear Plans empty-state visually checked by owner on 13 October 2026: character/type/role/source/item fields, filtering, Add Need, list header and pagination visible with no apparent clipping. `0 saved Gear Need(s)` matches owner's statement that no Playerbot plans had previously been created; no persistent entries were added.
 - [ ] SavedVariables and award history preserved
 - [ ] Simulator passes without live award effects
 - [ ] Backup and rollback instructions verified on the test copy

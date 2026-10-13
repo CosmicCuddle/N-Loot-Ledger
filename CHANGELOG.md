@@ -1,23 +1,18 @@
 # Changelog
 
-## Unreleased — Recipe wishlist categories (dependent review branch; not shipped)
+## 0.1.0.28 — First stable-core release candidate (UNPUBLISHED)
 
-- Add **Gear / Items** and **Recipes** subviews inside My Wishlist, retaining the NLL Dark layout and normal wishlist pagination.
-- Automatically classify reserved Molten Core plans, schematics, formulas, patterns and recipes using the existing `Profession recipe` metadata. Equipment and crafting materials remain under Gear / Items.
-- Preserve the original per-player item-ID reservations, `Submit to Leader` combined payload, role priorities and manual-only recipe allocation. No database migration, new real-award path or client API changes.
-- Fix an obsolete **Overview** overflow-row message claiming the full wishlist would arrive in Phase 4. Direct players to the existing **Wishlists → My Wishlist** screen; provide simulation-specific guidance for fake plans.
-- Address Raid Loot Search's long recipe-name/Item-ID collision and overflowing `Manual: Profession recipe` priority at the owner's custom UI scale: constrain name/ID to separate single-line regions, use compact readable search labels and priorities, retain full item and policy tooltips. Owner visual retest pending; the underlying priorities and reservations are unchanged.
-- Fix the Wishlist Inbox item-review footer colliding with the fifth row at the owner's large UI font scale: show four submitted items per page, shorten Previous/Next captions and give the page counter more space. Do not change any acceptance/rejection behavior or saved submission data; owner visual acceptance pending.
-- Add Lua 5.1 regression coverage for classification, reservation, leader-submission compatibility, category navigation, Overview overflow messaging, long-name search and non-destructive Inbox pagination. In-game Search overlap reported visually improved; the new Inbox layout still needs owner review. No new release yet.
+**Proposed version only:** The owner chose `v0.1.0.28` for release preparation; no tag, release or merge has been authorised or performed.
 
-## Unreleased — Dark-only UI cleanup (development branch; not shipped)
+- Make **NLL Dark** the only interface style. Normalize old Vanilla/Classic saved display settings without replacing existing SavedVariables or other records.
+- Separate **My Wishlist → Gear / Items** and **Recipes** while retaining existing item-ID reservations and the combined raid-leader submission payload; profession recipes stay manual allocation.
+- Remove outdated Overview “full wishlist in Phase 4” messaging and direct players to the existing complete wishlist screen.
+- Improve Priority Setup preset footer spacing and resolve an additional large-font collision: move the counters to the top-right title row, keep the preset-toggle explanation on one line and preserve the full wording via hover. **Issue #7 owner post-fix screenshot confirms the overlap is resolved.** Also improve Raid Loot Search formula title/Item ID/Manual priority readability and Inbox pagination (four rows per page).
+- Keep `NaxxLootLottery` folder, `NaxxLootLotteryDB` and `/nll` compatible. No changes to actual award/loot-transfer logic or saved-data schema.
+- Mark Direct Master Loot visibly **Experimental**; it remains OFF after every startup/reload and is **not** validated for real inventory delivery.
+- Add Lua 5.1 regression tests for recipe grouping, UI anchors, search readability, Inbox decisions staying untouched in navigation tests, and a Python standard-library build/verification process for a safe addon-only ZIP.
 
-- Remove the Vanilla appearance selector and parchment rendering; retain the existing NLL Dark theme.
-- Open Settings on Priority Setup while preserving Debug Lab, Loot Awards, Award History and priority controls.
-- Normalize old `VANILLA` / `CLASSIC` appearance settings to `DARK` without deleting or replacing SavedVariables, gear plans, priorities, loot identity, or award/winner history.
-- Fix the Priority Setup preset footer overflowing the Settings bottom border: anchor its button above the panel bottom, align its description to the button, and raise the nearby statistics. No preset rules or SavedVariables are changed.
-- Add `tests/test_dark_skin.lua` (including footer-anchor regression checks) and branch/PR Lua 5.1 regression workflow. Real 3.3.5a UI acceptance is still needed before any merge or release.
-- No new Master Loot functionality or real award request behavior.
+**Evidence boundary:** Owner confirmed the UI and simulated MC40 testing, 39 real raid members, role persistence, and 15 wishlist reservations (11 gear/items, 4 recipes) after `/reload`. Real boss corpse observation, nonempty historic receipt recovery and physical Master Loot delivery were not independently confirmed. See `docs/RELEASE_NOTES_v0.1.0.28.md` and `docs/RELEASE_CHECKLIST_v0.1.0.28.md`.
 
 ## 0.1.0.27 — Historical corpse revisits and read-only Playerbot checks (2026-10-08)
 

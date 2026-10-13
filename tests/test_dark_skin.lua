@@ -66,6 +66,10 @@ local function mockFrame()
     function frame:SetWidth(width) self.width = width end
     function frame:SetHeight(height) self.height = height end
     function frame:SetText(text) self.text = text end
+    -- Model an unusually large custom font so the footer text must shorten.
+    function frame:GetStringWidth() return #(self.text or "") * 18 end
+    function frame:Enable() self.enabled = true end
+    function frame:Disable() self.enabled = false end
     function frame:SetBackdrop(backdrop) self.backdrop = backdrop end
     function frame:SetBackdropColor(...) self.color = { ... } end
     function frame:SetBackdropBorderColor(...) self.borderColor = { ... } end
@@ -101,7 +105,8 @@ check(NLL.db.settings.skin == "DARK", "dark-only compatibility setter remains sa
 CreateFrame = function() return mockFrame() end
 UI.CreateTextButton = function(self, parent, label)
     local frame = mockFrame()
-    frame.label = label
+    frame.label = mockFrame()
+    frame.label:SetText(label)
     return frame
 end
 UI.CreateAwardSettingsContent = function() end
@@ -149,10 +154,48 @@ check(explainAnchor and explainAnchor[1] == "LEFT"
     and explainAnchor[4] == 12 and explainAnchor[5] == 0,
     "preset explanation follows its button and stays vertically centered")
 local summaryAnchor = UI.priorityBrowseSummary.points[1]
-check(summaryAnchor[5] == -351, "priority summary moved above footer")
+check(summaryAnchor[1] == "TOPLEFT" and summaryAnchor[4] == 430
+    and summaryAnchor[5] == -9,
+    "priority stats move to top right, outside crowded bottom footer")
+check(UI.priorityBrowseSummary.height == 20,
+    "statistics have fixed one-line height")
+check(UI.priorityBrowseSummary.width == 288,
+    "statistics have reserved width separate from title")
+check(UI.priorityBrowseSummaryHit and UI.priorityPresetExplanationHit,
+    "full statistic and preset help remains available by hover")
+check(UI.priorityPresetExplanation.height == 20
+    and UI.priorityPresetExplanation.width == 495,
+    "preset explanation occupies only one measured line")
 check(UI.priorityPreviousButton ~= nil and UI.priorityNextButton ~= nil,
     "priority pagination retained")
+-- Read-only dynamic refresh with a large mock font, preserving saved state.
+local previousGetter = UI.GetPriorityFilteredItems
+UI.GetPriorityFilteredItems = function() return {} end
+NLL.PriorityEngine = {
+    GetPresetSummary = function()
+        return { custom=0, preset=136, drafts=0, manual=20,
+                 unconfigured=2, available=136 }
+    end,
+    PresetsEnabled = function() return true end,
+    CanUndo = function() return false end,
+}
+UI:RefreshPrioritySetup()
+UI.GetPriorityFilteredItems = previousGetter
+check(UI.priorityBrowseSummary:GetStringWidth() <= UI.priorityBrowseSummary.width,
+    "top right summary measured to fit the enlarged font")
+check(UI.priorityPresetExplanation:GetStringWidth() <= UI.priorityPresetExplanation.width,
+    "bottom explanation measured to fit the enlarged font")
+check(UI.priorityBrowseSummary.text:find("136") ~= nil,
+    "preset count remains visible in compact statistics")
+check(UI.priorityPresetExplanation.text:find("136") ~= nil,
+    "preset count remains visible next to toggle")
+check(UI.priorityBrowseSummaryHit.fullText:find("Not set: 2",1,true) ~= nil,
+    "complete priority counts preserved in tooltip")
+check(UI.priorityPresetExplanationHit.fullText:find("Custom rules always win",1,true) ~= nil,
+    "complete priority instructions preserved in tooltip")
+check(UI.priorityPreviousButton ~= nil and UI.priorityNextButton ~= nil,
+    "pager buttons retained after refresh")
 check(NLL.db.settings.priorityPresetsEnabled == true,
-    "layout check has not changed saved presets")
+    "layout refresh has not changed saved presets")
 
 print("PASS: " .. count .. " dark-only UI, priority footer, and SavedVariables assertions")

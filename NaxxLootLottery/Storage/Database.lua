@@ -82,8 +82,8 @@ function Database:Initialize()
         db.raidSession.lootGeneration = 0
     end
 
-    -- Phase 3 local pre-submission selections.
-    -- Phase 4 will build the fuller wishlist editor around this.
+    -- Persisted local Molten Core reservation IDs. The Gear / Items
+    -- and Recipes views share this existing table; no migration needed.
     if type(db.localWishlists) ~= "table" then
         db.localWishlists = {}
     end

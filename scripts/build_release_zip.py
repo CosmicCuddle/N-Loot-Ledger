@@ -73,8 +73,9 @@ def build(output: Path):
         assert len(names) == len(files), "Missing packaged files"
         assert all(n.startswith("NaxxLootLottery/") for n in names), "Extra root folder"
         assert "NaxxLootLottery/NaxxLootLottery.toc" in names
-        assert not any(x in n.lower() for n in
-                       ("savedvariables", "naxxlootlotterydb", ".bak", "wtf/")), (
+        forbidden = ("savedvariables", "naxxlootlotterydb", ".bak", "wtf/")
+        assert not any(token in name.lower()
+                       for name in names for token in forbidden), (
                            "Personal data slipped into archive"
                        )
     digest = hashlib.sha256(output.read_bytes()).hexdigest()

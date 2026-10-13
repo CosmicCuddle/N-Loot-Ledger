@@ -73,6 +73,15 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [ ] Only with owner's approval merge or publish; update v0.1.0.27 references when a **new** version is explicitly agreed.
 - Review: [draft PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2) (not merged). Reference: [Dark-only testing checklist](TESTING_DARK_ONLY_UI.md).
 
+### M5b — Debug Lab raid-size scenarios (proposal only; not approved for code)
+
+- [x] Owner-supplied WoW 3.3.5a screenshot visually confirms current Debug Lab panel is displayed, with no obvious clipping or overlap; the simulator was not started during this check.
+- [ ] Discuss replacing prominent special-case scenario buttons (Mage Contest, Healer Loot, Guild Item, Missing Role) with raid-size simulation choices, potentially 10/20/25/40 fake players plus optionally other five-player increments.
+- [ ] Preserve specialist safety regression scenarios behind an Advanced Tests menu or slash commands rather than deleting their engine coverage.
+- [ ] Replace fixed SimBryn-only exclusion/offline controls with targeting of a selected simulated character; SimBryn does not exist in 40-player MC scenarios.
+- [ ] Preserve the existing isolated 40-person/eight-group/13-drop stress test and no-SavedVariables/no-server-transfer guarantees; validate realistic, size-dependent compositions and contender pools.
+- [ ] Agree exact UI scope, fixtures, regression tests and a separate reviewable development branch with owner before implementing.
+
 ### M5 — UI, raid policy and release candidate (future proposals, not yet agreed scope)
 
 - [ ] Ask owner which NLL enhancement, interface screen or problem they want addressed first. Avoid speculative feature batches.

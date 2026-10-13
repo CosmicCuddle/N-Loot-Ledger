@@ -97,6 +97,28 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [ ] Preserve the existing isolated 40-person/eight-group/13-drop stress test and no-SavedVariables/no-server-transfer guarantees; validate realistic, size-dependent compositions and contender pools.
 - [ ] Agree exact UI scope, fixtures, regression tests and a separate reviewable development branch with owner before implementing.
 
+### M6 — First non-prerelease GitHub release (proposed; no release authorised)
+
+**Goal:** ship a clearly scoped, tested WoW 3.3.5a addon without implying that currently unverified direct Master Loot delivery or Playerbot inventory receipt has been certified. Stable is a GitHub release designation, not a guarantee of every optional feature.
+
+**Release-blocking acceptance proposals:**
+- [x] Owner's personal four-item Molten Core wishlist survived a WoW `/reload` on 13 October 2026; data not recreated.
+- [x] Existing MC40 simulation completes a safe fake pool/ticket/roll/fake award; 0 saved Gear Needs and 136 presets remain after stop; real award history visibly empty; Direct Master Loot OFF.
+- [x] Latest 13 October Lua 5.1 branch CI passed at `935687ef` ([CI run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38412635857)); retest after code/packaging changes.
+- [ ] Final non-destructive UI sweep: Overview, Raid Loot Search and Wishlist Inbox. Confirm `/nll status` READY and `/nll lootidentity` output is sensible; no screenshot requirement for ordinary positive confirmations.
+- [ ] Verify persistence of a non-empty fake-independent winner/identity fixture across `/reload` and rollback on an **expendable** SavedVariables copy. Do not fabricate or overwrite real personal history.
+- [ ] Conduct controlled **real-raid observational tests** without transferring items: real roster/loot detection, botcheck for online/offline/class/role, read-only candidate listings, and A→B→A duplicate-lock behavior where test drops are available. If impractical, carry unverified features as explicitly experimental/not certified; do not mislabel them as proven.
+- [ ] Decide scope of *optional direct award*: either separately authorise an expendable real-item receipt test (including recipient inventory confirmation), or clearly designate direct award as experimental/unsupported for the first stable release, remaining OFF by default. No real `GiveMasterLoot` calls without separate express approval.
+- [ ] Re-evaluate open [loot identity issue #1](https://github.com/CosmicCuddle/N-Loot-Ledger/issues/1) against test evidence; close only when genuinely accepted, otherwise document as an outstanding known limitation.
+- [ ] Review [draft PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2), verify final code/CI/visual changes, and obtain owner approval before merging it.
+- [ ] Select a **new** version/tag with owner (for example `v0.1.0.28`; `v1.0.0` should reflect agreed API/product stability, not a requirement for GitHub's stable flag).
+- [ ] Prepare release-specific README, CHANGELOG, TOC version, install/rollback instructions and release notes with honest capability/limitations; keep `NaxxLootLottery` folder/key stable.
+- [ ] Build and inspect a new versioned ZIP, install it from the GitHub release artifact in a clean test client, and rerun Lua 5.1 regressions plus smoke checks. The existing v0.1.0.25–27 publication workflows are hardcoded `--prerelease` and do not create the next non-prerelease package.
+- [ ] Only with the owner's **explicit separate release approval**, merge the approved branch and create a **new GitHub release without the prerelease flag**. Preserve old prerelease tags/assets unchanged.
+- [ ] Optionally update N Addon Collection and other documentation only after the new artifact is verified and separately approved.
+
+**Not blockers unless the owner promotes them into scope:** recipes/profession wishlists, copy/paste wishlist import/export, new raid-size simulator controls, cosmetic singular/plural text refinements, and broad future raid expansions.
+
 ### M5 — UI, raid policy and release candidate (future proposals, not yet agreed scope)
 
 - [ ] Ask owner which NLL enhancement, interface screen or problem they want addressed first. Avoid speculative feature batches.

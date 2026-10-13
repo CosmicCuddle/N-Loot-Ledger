@@ -25,6 +25,7 @@ lua5.1 tests/test_dark_skin.lua
 lua5.1 tests/test_recipe_wishlist.lua
 lua5.1 tests/test_overview_wishlist_copy.lua
 lua5.1 tests/test_search_layout.lua
+lua5.1 tests/test_inbox_layout.lua
 ```
 
 The recipe test loads real Molten Core recipe data, checks unchanged SavedVariables identities, filtering, leader submission and category navigation. The Overview test ensures the old Phase 4 placeholder is gone, with correct guidance for both a normal character and a fake raid.

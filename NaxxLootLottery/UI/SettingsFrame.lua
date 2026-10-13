@@ -33,21 +33,6 @@ function UI:CreateSettingsPanel(parent)
 
     heading:SetText("Settings")
 
-    local appearanceButton =
-        self:CreateTextButton(
-            panel,
-            "Appearance",
-            100
-        )
-
-    appearanceButton:SetPoint(
-        "TOPLEFT",
-        heading,
-        "BOTTOMLEFT",
-        0,
-        -10
-    )
-
     local priorityButton =
         self:CreateTextButton(
             panel,
@@ -55,13 +40,7 @@ function UI:CreateSettingsPanel(parent)
             112
         )
 
-    priorityButton:SetPoint(
-        "LEFT",
-        appearanceButton,
-        "RIGHT",
-        8,
-        0
-    )
+    priorityButton:SetPoint("TOPLEFT", heading, "BOTTOMLEFT", 0, -10)
 
     local debugButton = self:CreateTextButton(panel, "Debug Lab", 95)
     debugButton:SetPoint("LEFT", priorityButton, "RIGHT", 8, 0)
@@ -83,29 +62,6 @@ function UI:CreateSettingsPanel(parent)
     local debugPage = CreateFrame("Frame", nil, panel)
     debugPage:SetPoint("TOPLEFT", panel, "TOPLEFT", 10, -72)
     debugPage:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -10, 10)
-
-    local appearancePage =
-        CreateFrame(
-            "Frame",
-            nil,
-            panel
-        )
-
-    appearancePage:SetPoint(
-        "TOPLEFT",
-        panel,
-        "TOPLEFT",
-        10,
-        -72
-    )
-
-    appearancePage:SetPoint(
-        "BOTTOMRIGHT",
-        panel,
-        "BOTTOMRIGHT",
-        -10,
-        10
-    )
 
     local priorityPage =
         CreateFrame(
@@ -130,148 +86,6 @@ function UI:CreateSettingsPanel(parent)
         10
     )
 
-    local appearance =
-        appearancePage:CreateFontString(
-            nil,
-            "OVERLAY",
-            "GameFontNormal"
-        )
-
-    appearance:SetPoint(
-        "TOPLEFT",
-        appearancePage,
-        "TOPLEFT",
-        8,
-        -4
-    )
-
-    appearance:SetText("Appearance")
-
-    local help =
-        appearancePage:CreateFontString(
-            nil,
-            "OVERLAY",
-            "GameFontHighlightSmall"
-        )
-
-    help:SetPoint(
-        "TOPLEFT",
-        appearance,
-        "BOTTOMLEFT",
-        0,
-        -10
-    )
-
-    help:SetWidth(690)
-    help:SetJustifyH("LEFT")
-
-    help:SetText(
-        "Choose how Naxxramas Loot Ledger looks on this client. " ..
-        "The skin changes appearance only; all loot data and functions remain identical."
-    )
-
-    local dark =
-        self:CreateTextButton(
-            appearancePage,
-            "NLL Dark",
-            150
-        )
-
-    dark:SetPoint(
-        "TOPLEFT",
-        help,
-        "BOTTOMLEFT",
-        0,
-        -26
-    )
-
-    local vanilla =
-        self:CreateTextButton(
-            appearancePage,
-            "Vanilla WoW",
-            150
-        )
-
-    vanilla:SetPoint(
-        "LEFT",
-        dark,
-        "RIGHT",
-        12,
-        0
-    )
-
-    dark:SetScript(
-        "OnClick",
-        function()
-            UI:SetSkin("DARK")
-        end
-    )
-
-    vanilla:SetScript(
-        "OnClick",
-        function()
-            UI:SetSkin("VANILLA")
-        end
-    )
-
-    local description =
-        appearancePage:CreateFontString(
-            nil,
-            "OVERLAY",
-            "GameFontHighlight"
-        )
-
-    description:SetPoint(
-        "TOPLEFT",
-        dark,
-        "BOTTOMLEFT",
-        0,
-        -28
-    )
-
-    description:SetWidth(690)
-    description:SetJustifyH("LEFT")
-
-    local details =
-        appearancePage:CreateFontString(
-            nil,
-            "OVERLAY",
-            "GameFontHighlightSmall"
-        )
-
-    details:SetPoint(
-        "TOPLEFT",
-        description,
-        "BOTTOMLEFT",
-        0,
-        -16
-    )
-
-    details:SetWidth(690)
-    details:SetJustifyH("LEFT")
-
-    local note =
-        appearancePage:CreateFontString(
-            nil,
-            "OVERLAY",
-            "GameFontDisableSmall"
-        )
-
-    note:SetPoint(
-        "TOPLEFT",
-        details,
-        "BOTTOMLEFT",
-        0,
-        -22
-    )
-
-    note:SetWidth(690)
-    note:SetJustifyH("LEFT")
-
-    note:SetText(
-        "Skin changes apply immediately and are saved. No /reload is required."
-    )
-
     self:CreateAwardSettingsContent(awardPage)
     self:CreateAwardHistoryContent(historyPage)
 
@@ -279,16 +93,6 @@ function UI:CreateSettingsPanel(parent)
 
     self:CreatePrioritySettingsContent(
         priorityPage
-    )
-
-    appearanceButton:SetScript(
-        "OnClick",
-        function()
-            UI.settingsMode =
-                "appearance"
-
-            UI:RefreshSettingsPanel()
-        end
     )
 
     priorityButton:SetScript(
@@ -321,26 +125,15 @@ function UI:CreateSettingsPanel(parent)
     self.settingsAwardPage = awardPage
     self.settingsDebugButton = debugButton
     self.settingsDebugPage = debugPage
-    self.settingsAppearanceButton =
-        appearanceButton
-
     self.settingsPriorityButton =
         priorityButton
-
-    self.settingsAppearancePage =
-        appearancePage
 
     self.settingsPriorityPage =
         priorityPage
 
-    self.settingsDarkButton = dark
-    self.settingsVanillaButton = vanilla
-    self.settingsSkinDescription = description
-    self.settingsSkinDetails = details
-
     self.settingsMode =
         self.settingsMode
-        or "appearance"
+        or "priority"
 
     self.settingsPanel = panel
 
@@ -354,20 +147,12 @@ function UI:RefreshSettingsPanel()
 
     local mode =
         self.settingsMode
-        or "appearance"
+        or "priority"
 
-    self.settingsAppearancePage:Hide()
     self.settingsPriorityPage:Hide()
     self.settingsDebugPage:Hide()
     self.settingsAwardPage:Hide()
     self.settingsHistoryPage:Hide()
-
-    self:SetButtonState(
-        self.settingsAppearanceButton,
-        mode == "appearance"
-            and "active"
-            or "normal"
-    )
 
     self:SetButtonState(
         self.settingsPriorityButton,
@@ -409,44 +194,7 @@ function UI:RefreshSettingsPanel()
         return
     end
 
-    self.settingsMode =
-        "appearance"
-
-    self.settingsAppearancePage:Show()
-
-    local skinID =
-        self:GetSkinID()
-
-    self:SetButtonState(
-        self.settingsDarkButton,
-        skinID == "DARK"
-            and "active"
-            or "normal"
-    )
-
-    self:SetButtonState(
-        self.settingsVanillaButton,
-        skinID == "VANILLA"
-            and "active"
-            or "normal"
-    )
-
-    if skinID == "VANILLA" then
-        self.settingsSkinDescription:SetText(
-            "Vanilla WoW: actual Wrath quest-window parchment artwork with old Blizzard framing."
-        )
-
-        self.settingsSkinDetails:SetText(
-            "Uses the four Wrath-era QuestFramePanelTemplate parchment textures, " ..
-            "classic panel-button artwork, warm brown rows, and gold borders."
-        )
-    else
-        self.settingsSkinDescription:SetText(
-            "NLL Dark: the compact dark interface used by the addon so far."
-        )
-
-        self.settingsSkinDetails:SetText(
-            "Keeps the current clean dark presentation and compact raid-addon layout."
-        )
-    end
+    self.settingsMode = "priority"
+    self.settingsPriorityPage:Show()
+    self:RefreshPrioritySetup()
 end

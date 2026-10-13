@@ -68,6 +68,7 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [x] Priority Setup footer visually rechecked in the owner's WoW 3.3.5a client on 13 October 2026: footer now entirely inside the panel, 136 presets still displayed enabled, paging and summary visible. No functional priority changes made.
 - [x] Owner's My Wishlist screenshot reviewed: four Molten Core entries visible; layout/navigation intact and owner confirms retained entries. Gear Plans and remaining panels still require review.
 - [x] Owner's Gear Plans screenshot reviewed on 13 October 2026: empty list (0 saved needs), entry controls, filtering and navigation display correctly. No Playerbot plans were created or modified.
+- [x] 40-person MC fake raid started in owner's WoW client: Raid Roles screenshot shows simulation indicator, reported 40 bots in eight groups, normal role dropdowns and page 1/4. This is first-page visual evidence, not verification of all entries, rolls or loot delivery.
 - [ ] Inspect remaining WoW 3.3.5a Current Loot, Debug Lab and award panels at the owner's UI scale.
 - [ ] Confirm installation and matched SavedVariables rollback with an expendable/throwaway test copy.
 - [ ] Only with owner's approval merge or publish; update v0.1.0.27 references when a **new** version is explicitly agreed.

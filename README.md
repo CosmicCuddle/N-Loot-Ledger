@@ -5,6 +5,8 @@
 **Current development version:** `0.1.0.27`  
 **Status:** In development. The 40-player simulator has been tested in-game; real Master Loot transfer still requires controlled server testing.
 
+**Unreleased development branch:** [dev/nll-dark-only-ui](https://github.com/CosmicCuddle/N-Loot-Ledger/tree/dev/nll-dark-only-ui) removes the optional Vanilla appearance and changes no loot or award logic. It is not part of published v0.1.0.27; test and review before adoption.
+
 ## Features
 
 - Molten Core item browser and configurable loot priority rules with optional presets.
@@ -15,7 +17,7 @@
 - Manual award reporting and an Award History screen.
 - **Opt-in** two-stage real Master Loot request with revalidation; **disabled at every login and reload**.
 - 40-character Molten Core simulation with eight groups, class-specific equipment plans, 13 mock loot drops and fake award confirmations.
-- NLL Dark and Vanilla WoW appearance options.
+- NLL Dark interface. On the unreleased dark-only development branch, legacy Vanilla/Classic appearance preferences are safely normalised to Dark.
 
 ## Installation (WoW 3.3.5a)
 
@@ -91,6 +93,7 @@ Run `/nll botcheck` in an **actual raid** (not the Debug Lab) after saving Playe
 - No modern `C_ChatInfo`, `C_Timer`, `GetLootSourceInfo`, or `RegisterAddonMessagePrefix` dependencies.
 - The initial item library focuses on **Molten Core**; priorities are editable, not mandatory universal rules.
 - Reproducible loot-identity regression tests: `texlua tests/test_loot_identity.lua` and `texlua tests/test_loot_history_and_bots.lua` (TeX Lua runner) and `texluac -p` for Lua module syntax.
+- The unreleased UI branch adds `tests/test_dark_skin.lua` and an automated Lua 5.1 regression workflow.
 - This repository includes **source code**, not personal SavedVariables, characters, raid histories, or server database exports.
 
 ## Documents

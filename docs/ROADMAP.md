@@ -69,7 +69,8 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [x] Owner's My Wishlist screenshot reviewed: four Molten Core entries visible; layout/navigation intact and owner confirms retained entries. Gear Plans and remaining panels still require review.
 - [x] Owner's Gear Plans screenshot reviewed on 13 October 2026: empty list (0 saved needs), entry controls, filtering and navigation display correctly. No Playerbot plans were created or modified.
 - [x] 40-person MC fake raid started in owner's WoW client: Raid Roles screenshot shows simulation indicator, reported 40 bots in eight groups, normal role dropdowns and page 1/4. This is first-page visual evidence, not verification of all entries, rolls or loot delivery.
-- [ ] Inspect remaining WoW 3.3.5a Current Loot, Debug Lab and award panels at the owner's UI scale.
+- [x] Owner's Current Loot screenshot confirms 13 fake MC40 drops, pagination page 1/3 and three simulated eligible Gauntlets of Might contenders: main tank at tier 1 and two tanks at tier 2. No clipping seen; ticket preparation/roll not yet tested.
+- [ ] Inspect remaining WoW 3.3.5a award panels and complete the simulator's non-destructive ticket/roll checks.
 - [ ] Confirm installation and matched SavedVariables rollback with an expendable/throwaway test copy.
 - [ ] Only with owner's approval merge or publish; update v0.1.0.27 references when a **new** version is explicitly agreed.
 - Review: [draft PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2) (not merged). Reference: [Dark-only testing checklist](TESTING_DARK_ONLY_UI.md).

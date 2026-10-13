@@ -37,7 +37,7 @@ The recipe test loads real Molten Core recipe data, checks unchanged SavedVariab
 
 ## Safe in-client acceptance (no loot transfers)
 
-- [ ] Open **Wishlists → My Wishlist**. Confirm both subviews fit on the top status row, without covering the item header, eight-row list or pager.
+- [x] Owner verbally confirmed the newly installed **My Wishlist → Gear / Items / Recipes** interface works and looks good (13 October 2026); no screenshot supplied or required. This confirms basic navigation/appearance, not yet recipe reservation, count matching, or `/reload` preservation.
 - [ ] Note the **current live reservation baseline before any changes**. The latest owner Overview screenshot shows **11 Molten Core reservations** (including Arcanist pieces), not the earlier four. Verify existing items are retained under **Gear / Items**, and any previously reserved recipes are correctly listed under **Recipes**. Combined count must match the pre-install baseline.
 - [ ] In **Raid Loot Search**, find a **currently unreserved** recipe (for example, `Formula: Enchant Weapon - Spell Power`, ID `18259`, only if it is not already reserved). Click **Reserve** once. This adds one personal reservation; do not submit or award loot.
 - [ ] Revisit **My Wishlist → Recipes**. Verify the newly reserved recipe appears here, not under **Gear / Items**. The combined count should increase by exactly one from the recorded baseline.

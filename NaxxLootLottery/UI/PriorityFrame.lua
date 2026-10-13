@@ -219,12 +219,10 @@ function UI:RefreshPrioritySetup()
             "\nDrafts: " .. drafts .. "\nManual: " .. manual ..
             "\nNot set: " .. unset .. "\nAvailable presets: " .. available
         OneLineText(self.priorityBrowseSummary, {
-            "Custom " .. custom .. "   Presets " .. preset ..
-                "   Drafts " .. drafts .. "   Manual " .. manual .. "   Not set " .. unset,
-            "Custom " .. custom .. "   Presets " .. preset .. "   Manual " .. manual,
             "Custom " .. custom .. "   Presets " .. preset,
+            "C " .. custom .. "   Presets " .. preset,
             "Presets " .. preset,
-        }, 720)
+        }, 288)
     end
     if self.prioritySuggestionFilterButton then
         UI:SetButtonState(self.prioritySuggestionFilterButton,
@@ -336,7 +334,8 @@ function UI:CreatePrioritySettingsContent(parent)
     browse:SetAllPoints(panel)
     self.priorityBrowsePage = browse
     Font(browse, "GameFontNormal", "Molten Core - Item Priorities", 8, -8, 405)
-    Font(browse, "GameFontDisableSmall", "Select an item to review its rules.", 430, -9, 300)
+    -- The top-right slot is used for compact priority statistics.
+    -- Putting stats under the pager leaves too little room above Presets.
     Font(browse, "GameFontHighlightSmall", "Boss:", 8, -44, 55)
     local bossDrop = CreateFrame("Frame", "NaxxLootLotteryPriorityBossDropDown", browse, "UIDropDownMenuTemplate")
     bossDrop:SetPoint("TOPLEFT", browse, "TOPLEFT", 66, -24)
@@ -435,9 +434,9 @@ function UI:CreatePrioritySettingsContent(parent)
         if ok then UI:RefreshPrioritySetup() end
     end)
     self.priorityUndoButton=undo
-    -- Keep a measured single-line summary between the pager and preset
-    -- controls. Large custom fonts must never push text onto the button.
-    self.priorityBrowseSummary=Font(browse,"GameFontDisableSmall","",8,-338,720)
+    -- Keep statistics in the top-right title row, well above item rows,
+    -- pagination and the preset toggle. The old footer had no room here.
+    self.priorityBrowseSummary=Font(browse,"GameFontDisableSmall","",430,-9,288)
     self.priorityBrowseSummary:SetHeight(20)
     local summaryHit=CreateFrame("Button",nil,browse)
     summaryHit:SetAllPoints(self.priorityBrowseSummary)

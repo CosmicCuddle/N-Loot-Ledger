@@ -54,6 +54,7 @@ The `NLL Lua 5.1 regression tests` GitHub Actions workflow runs these checks on 
 - [x] Gear Plans empty-state visually checked by owner on 13 October 2026: character/type/role/source/item fields, filtering, Add Need, list header and pagination visible with no apparent clipping. `0 saved Gear Need(s)` matches owner's statement that no Playerbot plans had previously been created; no persistent entries were added.
 - [x] Debug Lab panel visually checked in owner's WoW 3.3.5a client on 13 October 2026: scenario controls, class dropdown, action buttons and status text displayed without obvious overlapping or clipping. Simulator not yet started; owner suggested a future raid-size-focused layout instead of prominent Mage Contest scenario controls.
 - [ ] SavedVariables and award history preserved
+- [x] Owner screenshot confirms in-client MC40 simulator displays `[SIMULATION - FAKE RAID]`, Raid Roles `40 bots / 8 groups`, and `Page 1 / 4` with visible fake member classes, group assignments and NLL roles. Only first roster page was inspected; other pages, all 13 simulated drops, and fake roll/award remain untested.
 - [ ] Simulator passes without live award effects
 - [ ] Backup and rollback instructions verified on the test copy
 - [ ] Owner explicitly authorises any merge/release

@@ -7,7 +7,7 @@
 - Make **NLL Dark** the only interface style. Normalize old Vanilla/Classic saved display settings without replacing existing SavedVariables or other records.
 - Separate **My Wishlist → Gear / Items** and **Recipes** while retaining existing item-ID reservations and the combined raid-leader submission payload; profession recipes stay manual allocation.
 - Remove outdated Overview “full wishlist in Phase 4” messaging and direct players to the existing complete wishlist screen.
-- Improve Priority Setup preset footer spacing, Raid Loot Search formula title/Item ID/Manual priority readability, and Inbox item-review footer pagination (four rows per page).
+- Improve Priority Setup preset footer spacing and resolve an additional large-font collision: move the counters to the top-right title row, keep the preset-toggle explanation on one line and preserve the full wording via hover. **Issue #7 owner visual retest pending.** Also improve Raid Loot Search formula title/Item ID/Manual priority readability and Inbox pagination (four rows per page).
 - Keep `NaxxLootLottery` folder, `NaxxLootLotteryDB` and `/nll` compatible. No changes to actual award/loot-transfer logic or saved-data schema.
 - Mark Direct Master Loot visibly **Experimental**; it remains OFF after every startup/reload and is **not** validated for real inventory delivery.
 - Add Lua 5.1 regression tests for recipe grouping, UI anchors, search readability, Inbox decisions staying untouched in navigation tests, and a Python standard-library build/verification process for a safe addon-only ZIP.

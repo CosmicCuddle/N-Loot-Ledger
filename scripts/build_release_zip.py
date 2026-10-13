@@ -23,8 +23,8 @@ EXPECTED_INTERFACE = "30300"
 def addon_entries():
     toc = TOC.read_text(encoding="utf-8")
     core = CORE.read_text(encoding="utf-8")
-    assert re.search(r"^## Interface: 30300$", toc, re.M), "Not a WoW 3.3.5a addon"
-    assert re.search(r"^## Version: 0\\.1\\.0\\.28$", toc, re.M), "Incorrect TOC version"
+    assert re.search(r"^## Interface: " + EXPECTED_INTERFACE + r"$", toc, re.M), "Not a WoW 3.3.5a addon"
+    assert re.search(r"^## Version: " + re.escape(EXPECTED_VERSION) + r"$", toc, re.M), "Incorrect TOC version"
     assert 'NLL.version = "0.1.0.28"' in core, "Core version disagrees"
     assert "## SavedVariables: NaxxLootLotteryDB" in toc, "SavedVariables identity changed"
 

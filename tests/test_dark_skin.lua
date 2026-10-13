@@ -138,18 +138,18 @@ UI.RefreshPrioritySetup = fullRefresh
 local footer = UI.priorityPresetToggleButton
 local footerAnchor = footer.points and footer.points[1]
 check(footerAnchor and footerAnchor[1] == "BOTTOMLEFT"
-    and footerAnchor[3] == "BOTTOMLEFT" and footerAnchor[5] == 8
-    and footerAnchor[6] == 10, "preset button anchored 10 pixels from panel bottom")
+    and footerAnchor[3] == "BOTTOMLEFT" and footerAnchor[4] == 8
+    and footerAnchor[5] == 10, "preset button anchored 10 pixels from panel bottom")
 check(footerAnchor[2] == UI.priorityBrowsePage,
     "preset footer anchored to its browse panel")
 local explain = UI.priorityPresetExplanation
 local explainAnchor = explain.points and explain.points[1]
 check(explainAnchor and explainAnchor[1] == "LEFT"
     and explainAnchor[2] == footer and explainAnchor[3] == "RIGHT"
-    and explainAnchor[5] == 12 and explainAnchor[6] == 0,
+    and explainAnchor[4] == 12 and explainAnchor[5] == 0,
     "preset explanation follows its button and stays vertically centered")
 local summaryAnchor = UI.priorityBrowseSummary.points[1]
-check(summaryAnchor[6] == -351, "priority summary moved above footer")
+check(summaryAnchor[5] == -351, "priority summary moved above footer")
 check(UI.priorityPreviousButton ~= nil and UI.priorityNextButton ~= nil,
     "priority pagination retained")
 check(NLL.db.settings.priorityPresetsEnabled == true,

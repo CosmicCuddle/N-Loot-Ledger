@@ -23,9 +23,10 @@ lua5.1 tests/test_loot_identity.lua
 lua5.1 tests/test_loot_history_and_bots.lua
 lua5.1 tests/test_dark_skin.lua
 lua5.1 tests/test_recipe_wishlist.lua
+lua5.1 tests/test_overview_wishlist_copy.lua
 ```
 
-The last test loads real Molten Core recipe data, confirms classification and existing saved reservation-table identity, filters two lists, checks that guild submission still contains both categories, and tests a lightweight mock of tab switching.
+The recipe test loads real Molten Core recipe data, checks unchanged SavedVariables identities, filtering, leader submission and category navigation. The Overview test ensures the old Phase 4 placeholder is gone, with correct guidance for both a normal character and a fake raid.
 
 ## Back up before in-client review
 
@@ -37,17 +38,18 @@ The last test loads real Molten Core recipe data, confirms classification and ex
 ## Safe in-client acceptance (no loot transfers)
 
 - [ ] Open **Wishlists → My Wishlist**. Confirm both subviews fit on the top status row, without covering the item header, eight-row list or pager.
-- [ ] With the owner's original four Arcanist pieces reserved: **Gear / Items** lists those four; **Recipes** initially shows zero if none were reserved; combined count still equals four.
-- [ ] Open **Raid Loot Search**; search for `Formula: Enchant Weapon - Spell Power` (ID `18259`) and press **Reserve** only once. This *adds one personal wishlist reservation*; do not submit or award any loot.
-- [ ] Revisit **My Wishlist → Recipes**. Verify formula is listed here, but not under **Gear / Items**; combined count increases by one while original gear remains.
-- [ ] `/reload` and recheck that the recipe is still reserved in **Recipes** and all original gear items remain under **Gear / Items**.
-- [ ] To undo this test, click **Remove** on that recipe once; ensure the recipe disappears, combined count returns to four, and original wishlist entries are unchanged. **Do not remove original gear items.**
+- [ ] Note the **current live reservation baseline before any changes**. The latest owner Overview screenshot shows **11 Molten Core reservations** (including Arcanist pieces), not the earlier four. Verify existing items are retained under **Gear / Items**, and any previously reserved recipes are correctly listed under **Recipes**. Combined count must match the pre-install baseline.
+- [ ] In **Raid Loot Search**, find a **currently unreserved** recipe (for example, `Formula: Enchant Weapon - Spell Power`, ID `18259`, only if it is not already reserved). Click **Reserve** once. This adds one personal reservation; do not submit or award loot.
+- [ ] Revisit **My Wishlist → Recipes**. Verify the newly reserved recipe appears here, not under **Gear / Items**. The combined count should increase by exactly one from the recorded baseline.
+- [ ] Run `/reload`; verify the test recipe remains in **Recipes**, all original gear/items are still listed, and the total count remains one above baseline.
+- [ ] To undo the test, click **Remove** only on the recipe newly reserved during this test. Verify it disappears and the combined count returns to the recorded baseline (**11 in the most recent screenshot**, unless changed beforehand). Do not remove earlier reservations.
+- [ ] On **Overview**, with more than five reservations, confirm the summary shows `+ N more reserved item(s)` and **`Full list: Wishlists > My Wishlist.`**, rather than the obsolete Phase 4 statement. No overlap or clipping.
 - [ ] Check NLL 136 optional presets and Direct Master Loot remains OFF. No fake or real award-history changes expected.
 
 ## Safeguards
 
 - **Do not click Submit to Leader** simply to exercise visual filtering; that would transmit a real addon submission to the raid leader.
 - **Do not click a genuine Master Loot recipient**, enable real awarding or invoke `GiveMasterLoot`.
-- If the addon does not load or the layout fails, stop testing; quit WoW and restore the **paired** addon-directory and SavedVariables backups, then confirm original four wishes.
+- If the addon does not load or the layout fails, stop testing; quit WoW and restore the **paired** addon-directory and SavedVariables backups, then confirm the full original wishlist baseline.
 
 Owner must separately approve merging PRs, updating N Addon Collection, or publishing a stable release.

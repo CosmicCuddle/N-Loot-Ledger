@@ -24,37 +24,8 @@ local function SetRowBackdrop(row, alternate)
     )
 end
 
-local function GetLocalWishlistItems()
-    local output = {}
-    local playerName = UnitName("player")
-
-    if not playerName then
-        return output
-    end
-
-    local wishlist =
-        NLL.Database:GetLocalWishlist(
-            playerName,
-            "MOLTEN_CORE"
-        )
-
-    for itemID, wanted in pairs(wishlist or {}) do
-        if wanted then
-            local item =
-                NLL.Data.MoltenCore:GetItem(itemID)
-
-            if item then
-                table.insert(output, item)
-            end
-        end
-    end
-
-    table.sort(output, function(a, b)
-        return string.lower(a.name) < string.lower(b.name)
-    end)
-
-    return output
-end
+-- The existing saved wishlist remains a single set of item IDs.
+-- ItemSearch splits the two visual categories without migrating player data.
 
 function UI:CreateWishlistPanel(parent)
     local panel = CreateFrame("Frame", nil, parent)
@@ -141,7 +112,39 @@ function UI:CreateLocalWishlistContent(parent)
     status:SetWidth(720)
     status:SetJustifyH("LEFT")
 
+    status:SetWidth(450)
     self.localWishlistStatus = status
+
+    -- Compact category controls share the existing status row,
+    -- leaving the eight wishlist rows and bottom pager untouched.
+    local recipesButton = self:CreateTextButton(
+        content, "Recipes", 88
+    )
+    recipesButton:SetPoint(
+        "TOPRIGHT", content, "TOPRIGHT", -4, -1
+    )
+
+    local itemsButton = self:CreateTextButton(
+        content, "Gear / Items", 108
+    )
+    itemsButton:SetPoint(
+        "RIGHT", recipesButton, "LEFT", -4, 0
+    )
+
+    itemsButton:SetScript("OnClick", function()
+        UI.localWishlistCategory = "items"
+        UI.localWishlistPage = 1
+        UI:RefreshLocalWishlist()
+    end)
+    recipesButton:SetScript("OnClick", function()
+        UI.localWishlistCategory = "recipes"
+        UI.localWishlistPage = 1
+        UI:RefreshLocalWishlist()
+    end)
+
+    self.localWishlistItemsButton = itemsButton
+    self.localWishlistRecipesButton = recipesButton
+    self.localWishlistCategory = "items"
 
     local header = CreateFrame("Frame", nil, content)
     header:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -28)
@@ -322,8 +325,24 @@ function UI:CreateLocalWishlistContent(parent)
 end
 
 function UI:RefreshLocalWishlist()
-    local items = GetLocalWishlistItems()
+    local category = self.localWishlistCategory == "recipes"
+        and "recipes" or "items"
+    self.localWishlistCategory = category
+
+    local gearItems = NLL.ItemSearch:GetLocalWishlistItems("items")
+    local recipes = NLL.ItemSearch:GetLocalWishlistItems("recipes")
+    local items = category == "recipes" and recipes or gearItems
     local count = #items
+    local totalCount = #gearItems + #recipes
+
+    self:SetButtonState(
+        self.localWishlistItemsButton,
+        category == "items" and "active" or "normal"
+    )
+    self:SetButtonState(
+        self.localWishlistRecipesButton,
+        category == "recipes" and "active" or "normal"
+    )
 
     local totalPages =
         math.ceil(count / LOCAL_ROWS)
@@ -342,8 +361,9 @@ function UI:RefreshLocalWishlist()
 
     self.localWishlistStatus:SetText(
         "My Molten Core wishlist: |cffffffff" ..
-        tostring(count) ..
-        "|r item(s). Use Raid Loot Search to add more."
+        tostring(totalCount) .. "|r total (" ..
+        tostring(#gearItems) .. " items, " ..
+        tostring(#recipes) .. " recipes)."
     )
 
     if self.localSubmitStatus then

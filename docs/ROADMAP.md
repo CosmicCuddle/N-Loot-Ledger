@@ -30,7 +30,7 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 ### M1 — Safe client baseline (next candidate; owner to confirm scope)
 
 - [ ] Keep a copy of working `Interface/AddOns/NaxxLootLottery` and matching `WTF/.../SavedVariables/NaxxLootLottery.lua` + `.bak` files before installation.
-- [ ] Confirm `/nll version` shows `0.1.0.27`, `/nll status` READY and `/nll lootidentity` a sensible ledger summary in the real client.
+- [x] Owner's 13 October 2026 client screenshot: `/nll version` reports `0.1.0.27`; `/nll status` reports `Initialization status: READY`; `/nll lootidentity` reports no current loot opportunity, 0 previously assigned items and 0 archived groups. This is a valid empty-ledger baseline; persistence of an actual prior winner/archive remains untested.
 - [ ] Re-check `/nll sim mc40`, fake ticket selection, fake winner, fake award, and `/nll sim stop`; ensure simulation does not create real award records.
 - [ ] Execute `tests/test_loot_identity.lua` and `tests/test_loot_history_and_bots.lua` under a suitable Lua 5.1-compatible runner; maintain syntax checks.
 - [ ] If screenshots reveal a visual defect, fix in a reviewable development branch with a narrow regression and fresh ZIP; do not silently ship.
@@ -111,7 +111,7 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [x] Existing MC40 simulation completes a safe fake pool/ticket/roll/fake award; 0 saved Gear Needs and 136 presets remain after stop; real award history visibly empty; Direct Master Loot OFF.
 - [x] Latest 13 October Lua 5.1 branch CI passed at `935687ef` ([CI run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38412635857)); retest after code/packaging changes.
 - [x] Final UI sweep: Owner confirmed Overview, Molten Core Raid Loot Search (`Arcanist` filtering), and Wishlist Inbox work as intended, with no reported defects (13 October 2026).
-- [ ] Confirm `/nll version` = `0.1.0.27`, `/nll status` READY, and `/nll lootidentity` returns a sensible read-only ledger summary.
+- [x] Screenshot verifies version `0.1.0.27`, initialization READY, and an empty real-loot identity ledger (current: none; prior assigned: 0; archived: 0). No claim of non-empty history recovery or real loot transfer.
 - [ ] Verify persistence of a non-empty fake-independent winner/identity fixture across `/reload` and rollback on an **expendable** SavedVariables copy. Do not fabricate or overwrite real personal history.
 - [ ] Conduct controlled **real-raid observational tests** without transferring items: real roster/loot detection, botcheck for online/offline/class/role, read-only candidate listings, and A→B→A duplicate-lock behavior where test drops are available. If impractical, carry unverified features as explicitly experimental/not certified; do not mislabel them as proven.
 - [x] Owner selected release Option A: keep optional Direct Master Loot experimental/unverified, OFF by default, with explicit warnings in documentation and release notes. No real `GiveMasterLoot` testing or delivery claims are authorised.

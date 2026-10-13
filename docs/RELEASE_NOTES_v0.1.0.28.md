@@ -19,7 +19,7 @@
 - NLL initialized READY under v0.1.0.27 before the candidate version update; 39-member raid detected and role assignments persisted across `/reload`.
 - A 40-player/13-drop **fake** Molten Core simulation completed a fake winner and fake award; no real item was moved.
 - Current saved wishlist after recipe separation had **15 reservations: 11 Gear / Items, 4 Recipes**. Recipe reservations survived `/reload`.
-- Owner approved corrected Overview, Priority Setup, Raid Loot Search and Inbox display. Inbox fix approval was verbal, not a new screenshot.
+- Owner accepted the earlier Overview, Raid Loot Search and Inbox corrections. **A later screenshot exposed a new Priority Setup large-font overlap (Issue #7); a further layout fix has automated test coverage but awaits a new in-client visual confirmation.** Inbox fix approval was verbal, not a new screenshot.
 - Direct Master Loot was confirmed **OFF** after simulation. The release candidate version/ZIP still needs its own final WoW smoke test.
 
 **Not certified / do not infer from the above:**

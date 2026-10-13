@@ -7,7 +7,7 @@
 - **One consistent Dark interface.** Removed obsolete Vanilla/Classic appearance choice. Existing saved UI preferences are normalized to Dark without resetting gear needs, priorities, raid roles, saved loot identities or award history.
 - **Separated recipes from equipment.** `Wishlists → My Wishlist` now has **Gear / Items** and **Recipes** subviews. Profession recipes remain **manual allocation**, not auto-awarded. Both categories stay in the same original saved wishlist and are included together in `Submit to Leader`.
 - **Cleaned up Overview.** The obsolete “Full wishlist view coming in Phase 4” text now directs players to `Wishlists → My Wishlist`.
-- **Improved priority controls.** Fixed the Priority Setup preset button/footer position at the tested client font size.
+- **Improved priority controls.** Fixed the Priority Setup button position and, after a further large-font screenshot, moved preset statistics out of the crowded lower footer into the top-right title row. Compact one-line statistics and preset explanations retain their full details on hover. **This last adjustment still needs the owner's visual acceptance (Issue #7).**
 - **Improved Raid Loot Search readability.** Long formula titles and Item IDs use separate lines; compact `Manual` priority labels show the full policy on hover.
 - **Improved Wishlist Inbox readability.** Item review now displays four submitted items per page, with a separate, clearer Previous/Next footer. Submission acceptance and rejection behavior is unchanged.
 - **Retained 40-player Molten Core simulation.** Fake awards remain session-only and do not perform item transfers or create real award receipts.

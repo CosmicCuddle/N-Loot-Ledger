@@ -109,10 +109,8 @@ function UI:CreateLocalWishlistContent(parent)
         "GameFontHighlightSmall"
     )
     status:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -2)
-    status:SetWidth(720)
-    status:SetJustifyH("LEFT")
-
     status:SetWidth(450)
+    status:SetJustifyH("LEFT")
     self.localWishlistStatus = status
 
     -- Compact category controls share the existing status row,

@@ -1,0 +1,57 @@
+# NLL dark-only UI — development branch testing and rollback
+
+**Branch:** `dev/nll-dark-only-ui`  
+**Base:** `main` at `6afe667d698ab5c4ea7b2008354b78b2df2e7d0d` (13 October 2026)  
+**Release status:** NOT merged or released. Existing `v0.1.0.27` is unchanged.  
+**Scope:** `UI/SkinManager.lua`, `UI/SettingsFrame.lua`, `Storage/Database.lua`, documentation and offline regression tests. No loot-award, lottery, communication or raid-priority behavior changes.
+
+## 1. Backup gate (required before in-game installation)
+
+1. **Exit World of Warcraft fully.**
+2. Copy the entire existing `Interface/AddOns/NaxxLootLottery/` to a dated, separate backup location.
+3. Copy `WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua` and `NaxxLootLottery.lua.bak` if present, plus any matching character-specific SavedVariables, to the same dated backup set.
+4. Retain these paired backups until acceptance. Do not post private SavedVariables to public GitHub issues.
+5. For development testing, ideally use a **copy of the client and test SavedVariables**, not the only live copy. Do not run tests while WoW is open.
+
+## 2. Offline Lua 5.1 checks
+
+Run from the repository root with a Lua 5.1-compatible interpreter:
+
+```sh
+find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+lua5.1 tests/test_loot_identity.lua
+lua5.1 tests/test_loot_history_and_bots.lua
+lua5.1 tests/test_dark_skin.lua
+```
+
+The `NLL Lua 5.1 regression tests` GitHub Actions workflow runs these checks on development-branch pushes and pull requests. **Do not mark the milestone complete until the latest HEAD has a passing run.** Offline mocks cannot prove correct 3.3.5a rendering.
+
+## 3. Safe WoW 3.3.5a visual acceptance
+
+1. Install the development branch **only after backup**, preserving the installed folder name `NaxxLootLottery` and the SavedVariables key `NaxxLootLotteryDB`.
+2. Start WoW and confirm `/nll version` still says `0.1.0.27`; `/nll status` should say READY. This is a development source checkpoint, not a new published version.
+3. Open `/nll settings`: tabs should be **Priority Setup**, **Debug Lab**, **Loot Awards**, **Award History**. There should be no Appearance tab or Vanilla skin option.
+4. Check **Priority Setup**, **Wishlists**, **Raid Loot Search**, **Raid Roles**, **Current Loot**, **Debug Lab**, **Loot Awards** and **Award History**: backgrounds, hover/active buttons, text, row spacing, and scrolling should match the existing NLL Dark presentation without parchment, overlap or missing controls.
+5. Check that previously saved priorities, roles, gear needs, wishlists, loot identity, winners and award history remain present. Only `settings.skin` may normalize to `DARK`; `directMasterLootEnabled` must still reset OFF.
+6. If Debug is already ON, leave it ON; otherwise toggle `/nll debug` once. Run `/nll sim mc40`, inspect the 40 fake members, 13 fake drops, an expendable fake ticket/roll and fake award, then `/nll sim stop`.
+7. **Do not activate Direct Master Loot, click a real item recipient, call `GiveMasterLoot`, or clear/replace real SavedVariables.** No live transfer is authorised for this UI milestone.
+8. Capture screenshots of Settings, Wishlists and one dark table view (plus any defects) for the owner to review before merge.
+
+## 4. Rollback
+
+1. Exit WoW.
+2. Remove the development addon folder from the test client and restore the **matching pre-test** addon-folder backup.
+3. Restore the paired `NaxxLootLottery.lua` / `.lua.bak` SavedVariables copies from the same date and any matching character copies.
+4. Restart WoW and verify `/nll status`, gear plans and recorded history. Never revert only code while leaving newly migrated SavedVariables without evaluating compatibility.
+
+## 5. Acceptance / evidence
+
+- [ ] Latest GitHub Actions Lua 5.1 regression workflow passes
+- [ ] WoW 3.3.5a UI check passes at the owner's actual UI scale
+- [ ] No Vanilla option/artwork and existing Dark appearance retained
+- [ ] SavedVariables and award history preserved
+- [ ] Simulator passes without live award effects
+- [ ] Backup and rollback instructions verified on the test copy
+- [ ] Owner explicitly authorises any merge/release
+
+Record actual observations; do not convert offline test PASS into a claim of live Master Loot delivery.

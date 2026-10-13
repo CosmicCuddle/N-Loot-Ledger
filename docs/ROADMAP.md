@@ -73,6 +73,7 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [x] Owner ran MC40 `Preview Pool` against Gauntlets of Might: SimWar1 uniquely selected in Tier 1; two Tier 2 candidates waiting; zero excluded. UI/chat both explicitly say no roll or award. Screenshots inspected on 13 October 2026.
 - [x] In-client MC40 fake ticket preparation verified visually on 13 October 2026: Gauntlets of Might shows one Tier 1 ticket ready; chat also confirms one fake ticket prepared. Start Roll/award still pending. Cosmetic follow-up: use singular `ticket` for 1 in UI/chat.
 - [x] MC40 in-client fake roll verified visually on 13 October 2026: SimWar1 wins Gauntlets of Might with ticket #1, winner overlay and item-row history update, `PENDING AWARD` remains; fake/no-real-award text visible. Next: duplicate-roll guard and separate simulated award review (not a real transfer).
+- [x] Owner confirmed the duplicate-roll UI gate after fake MC40 Gauntlets of Might win: Start Roll cannot be activated while SimWar1 (#1) remains the winner and status is PENDING AWARD. This checks the disabled UI gate, not a second invocation of the underlying rejection handler. Next: simulated award review and fake receipt.
 - [ ] Inspect remaining WoW 3.3.5a award panels and complete the simulator's non-destructive ticket/roll checks.
 - [ ] Confirm installation and matched SavedVariables rollback with an expendable/throwaway test copy.
 - [ ] Only with owner's approval merge or publish; update v0.1.0.27 references when a **new** version is explicitly agreed.

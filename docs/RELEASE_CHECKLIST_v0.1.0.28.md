@@ -5,7 +5,7 @@
 ## Completed evidence
 
 - [x] Owner chose tag/version `v0.1.0.28` for release **preparation** (not merge/publication).
-- [x] WoW 3.3.5a UI checks: Overview, My Wishlist, Gear Plans, Recipes, Raid Loot Search, Priority Setup, Debug Lab, Current Loot, Award History, Inbox (including post-fix visual acceptance).
+- [x] Earlier WoW 3.3.5a UI checks: Overview, My Wishlist, Gear Plans, Recipes, Raid Loot Search, Priority Setup, Debug Lab, Current Loot, Award History, Inbox. **New Priority Setup text overlap reported afterwards: Issue #7; its new candidate fix still needs the owner's visual retest.**
 - [x] Owner verified 15 saved wishlist reservations (11 Gear / Items; 4 Recipes), and Recipes persisted through `/reload`.
 - [x] Real 39-person raid roster showed correct names/classes/statuses and NLL roles persisted through `/reload`.
 - [x] Fake MC40 lottery and fake award completed without actual loot transfer; real Award History showed 0 during the test.

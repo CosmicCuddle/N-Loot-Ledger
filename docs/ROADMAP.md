@@ -57,6 +57,18 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [ ] Only if the owner expressly authorises controlled live award testing: choose an expendable item and disposable/controlled recipient; capture before/after inventories or trustworthy server-side receipt and preserve rollback/backups. Record failure/uncertainty distinctly.
 - [ ] Preserve recovery winners as display-only when their original loot slot is closed or cannot be revalidated.
 
+### M5a — Dark-only UI (in review; not merged or released)
+
+- [x] Prepare isolated `dev/nll-dark-only-ui` branch from the verified 13 October `main`.
+- [x] Remove Vanilla presentation and selection; preserve NLL Dark visuals, widget dimensions and hover states.
+- [x] Normalize legacy skin preferences to `DARK` in the existing SavedVariables table, without touching loot or award records.
+- [x] Add an offline Lua 5.1 dark-skin/persistence/settings smoke test and a GitHub Actions regression workflow.
+- [ ] Confirm GitHub regression workflow and existing loot-history tests pass on the complete development branch.
+- [ ] Inspect actual WoW 3.3.5a Settings, Wishlists, Current Loot, Priority Setup, Debug Lab and award panels at the owner's UI scale.
+- [ ] Confirm installation and matched SavedVariables rollback with an expendable/throwaway test copy.
+- [ ] Only with owner's approval merge or publish; update v0.1.0.27 references when a **new** version is explicitly agreed.
+- Reference: [Dark-only testing checklist](TESTING_DARK_ONLY_UI.md).
+
 ### M5 — UI, raid policy and release candidate (future proposals, not yet agreed scope)
 
 - [ ] Ask owner which NLL enhancement, interface screen or problem they want addressed first. Avoid speculative feature batches.

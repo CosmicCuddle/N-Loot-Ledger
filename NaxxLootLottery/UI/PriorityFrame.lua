@@ -386,11 +386,14 @@ function UI:CreatePrioritySettingsContent(parent)
         if ok then UI:RefreshPrioritySetup() end
     end)
     self.priorityUndoButton=undo
-    self.priorityBrowseSummary=Font(browse,"GameFontDisableSmall","",8,-361,745)
+    -- Leave room below pagination and above the preset control.
+    self.priorityBrowseSummary=Font(browse,"GameFontDisableSmall","",8,-351,745)
 
     -- This is a reversible on/off switch, not a bulk write to SavedVariables.
+    -- Anchor to the panel BOTTOM, not a hardcoded top offset that overflows
+    -- the 3.3.5a Settings content area at the normal addon dimensions.
     local presetToggle=self:CreateTextButton(browse,"Enable Presets",145)
-    presetToggle:SetPoint("TOPLEFT",browse,"TOPLEFT",8,-389)
+    presetToggle:SetPoint("BOTTOMLEFT",browse,"BOTTOMLEFT",8,10)
     presetToggle:SetScript("OnClick",function()
         local engine=NLL.PriorityEngine
         local enabled=not engine:PresetsEnabled()
@@ -402,7 +405,9 @@ function UI:CreatePrioritySettingsContent(parent)
         if UI.RefreshCurrentLootPanel then UI:RefreshCurrentLootPanel() end
     end)
     self.priorityPresetToggleButton=presetToggle
-    self.priorityPresetExplanation=Font(browse,"GameFontDisableSmall","",165,-394,580)
+    self.priorityPresetExplanation=Font(browse,"GameFontDisableSmall","",0,0,580)
+    self.priorityPresetExplanation:ClearAllPoints()
+    self.priorityPresetExplanation:SetPoint("LEFT",presetToggle,"RIGHT",12,0)
 
     -- EDIT VIEW: no item browser controls exist in this visible frame.
     local editor=CreateFrame("Frame",nil,panel)

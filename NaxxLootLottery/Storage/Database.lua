@@ -36,15 +36,9 @@ function Database:Initialize()
         db.settings.priorityPresetsEnabled = false
     end
 
-    -- v0.1.0.5 renames the old CLASSIC placeholder skin to
-    -- VANILLA and upgrades it to a parchment-style Blizzard UI.
-    if db.settings.skin == "CLASSIC" then
-        db.settings.skin = "VANILLA"
-    end
-
-    if db.settings.skin ~= "DARK"
-        and db.settings.skin ~= "VANILLA" then
-
+    -- Only the NLL Dark appearance remains. Normalize obsolete UI choices
+    -- without replacing the SavedVariables table or any persisted loot data.
+    if db.settings.skin ~= "DARK" then
         db.settings.skin = "DARK"
     end
 

@@ -1,0 +1,32 @@
+name: NLL Lua 5.1 regression tests
+
+on:
+  push:
+    branches:
+      - main
+      - 'dev/**'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lua51:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.1
+      - name: Syntax-check all addon and test Lua files
+        run: |
+          find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Existing loot-identity regression
+        run: lua5.1 tests/test_loot_identity.lua
+      - name: Historical loot and Playerbot regression
+        run: lua5.1 tests/test_loot_history_and_bots.lua
+      - name: Dark-only UI and SavedVariables regression
+        run: lua5.1 tests/test_dark_skin.lua

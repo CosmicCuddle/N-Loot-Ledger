@@ -47,7 +47,8 @@ The `NLL Lua 5.1 regression tests` GitHub Actions workflow runs these checks on 
 ## 5. Acceptance / evidence
 
 - [x] Lua 5.1 regression workflow passed on development-source commit `a00e88cc` ([run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38396113585)); re-check if source changes again
-- [ ] Full WoW 3.3.5a UI check passes at the owner's actual UI scale (dark Settings, Wishlists, Gear Plans, Priority Setup, Debug Lab, Raid Roles, Current Loot and Award Review inspected; owner verbally confirmed Overview looks normal; Raid Loot Search and Inbox still pending).
+- [ ] Full WoW 3.3.5a UI check passes at the owner's actual UI scale (dark Settings, Wishlists, Gear Plans, Priority Setup, Debug Lab, Raid Roles, Current Loot and Award Review inspected; owner verbally confirmed Overview looks normal and Raid Loot Search (`Arcanist`) works without issues; Inbox still pending).
+- [x] Owner verbally confirmed the Molten Core Raid Loot Search item list loads and `Arcanist` text search works, with no reported text overlap or Lua errors (13 October 2026).
 - [x] Owner confirmed Overview looks and works correctly with no reported visual defects after ending MC40 simulation (13 October 2026); screenshot not required for a routine positive check.
 - [x] Priority Setup footer visually retested by owner on 13 October 2026: Disable Presets button and explanation fit inside panel; statistics, four item rows and pagination remain visible. 136 presets shown enabled. Screenshot evidence provided in development conversation; no preset toggle was performed.
 - [x] Owner's WoW 3.3.5a Settings screenshots show the Vanilla appearance selector absent, with the existing NLL Dark theme, active buttons and corrected Priority Setup footer visible.

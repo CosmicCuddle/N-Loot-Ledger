@@ -95,6 +95,8 @@ Run `/nll botcheck` in an **actual raid** (not the Debug Lab) after saving Playe
 
 ## Documents
 
+- [Project handover — new development chats](docs/PROJECT-HANDOVER.md)
+- [Development roadmap and safety milestones](docs/ROADMAP.md)
 - [Changelog](CHANGELOG.md)
 - [Latest bulk-test checklist](docs/TESTING_v0.1.0.27.txt)
 - [Current release notes](docs/RELEASE_NOTES_v0.1.0.27.txt)

@@ -7,6 +7,8 @@
 **Client:** World of Warcraft 3.3.5a, Interface 30300, Lua 5.1  
 **Status:** Development **pre-release**; not independently certified for real Master Loot delivery.
 
+**Unreleased development checkpoint (13 October 2026):** Owner elected to continue with a dark-only UI cleanup. The isolated branch `dev/nll-dark-only-ui` removes the Vanilla theme and appearance-selection panel, retaining existing NLL Dark styling; obsolete skin preferences normalize to DARK without replacing the DB. The branch adds offline Lua 5.1 smoke tests and branch regression CI. Treat this as **pending review and client acceptance**, not a merged fix or public release. No real loot award or SavedVariables destructive operation is authorised. See [dark-only testing checklist](TESTING_DARK_ONLY_UI.md) and the roadmap M5a milestone.
+
 ## 1. Purpose and scope
 
 Naxxramas Loot Ledger manages raid loot planning, raid-role and class/gear-needs reviews, wishlists for human players and manual Playerbot gear plans, drop-specific post-drop ticket lotteries, winner/award history and optional opt-in live Master Loot requests. The initial data package is focused on Molten Core. The 40-character/eight-group/13-drop **simulator** is separate from live raid data and does not transfer real items.

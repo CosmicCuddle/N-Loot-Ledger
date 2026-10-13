@@ -14,6 +14,8 @@ local UI = NLL.UI
 
 local LOCAL_ROWS = 8
 local PLAN_ROWS = 7
+-- Reserve a dedicated footer below the Inbox item grid at large UI font scales.
+local INBOX_ITEM_ROWS = 4
 
 local function SetRowBackdrop(row, alternate)
     UI:RegisterSkinnedFrame(
@@ -1429,7 +1431,7 @@ function UI:CreateInboxContent(parent)
 
     self.inboxItemRows = {}
 
-    for rowIndex = 1, 5 do
+    for rowIndex = 1, INBOX_ITEM_ROWS do
         local row = CreateFrame(
             "Frame",
             nil,
@@ -1511,8 +1513,8 @@ function UI:CreateInboxContent(parent)
     local previousItem =
         self:CreateTextButton(
             content,
-            "Prev Items",
-            82
+            "Previous",
+            100
         )
     previousItem:SetPoint(
         "BOTTOMLEFT",
@@ -1525,14 +1527,14 @@ function UI:CreateInboxContent(parent)
     local nextItem =
         self:CreateTextButton(
             content,
-            "Next Items",
-            82
+            "Next",
+            72
         )
     nextItem:SetPoint(
         "LEFT",
         previousItem,
         "RIGHT",
-        4,
+        12,
         0
     )
 
@@ -1546,9 +1548,11 @@ function UI:CreateInboxContent(parent)
         "LEFT",
         nextItem,
         "RIGHT",
-        8,
+        12,
         0
     )
+    itemPageText:SetWidth(110)
+    itemPageText:SetJustifyH("LEFT")
 
     previousItem:SetScript(
         "OnClick",
@@ -1741,7 +1745,7 @@ function UI:RefreshInbox()
         #(selected.itemIDs or {})
 
     local totalPages =
-        math.ceil(totalItems / 5)
+        math.ceil(totalItems / INBOX_ITEM_ROWS)
 
     if totalPages < 1 then
         totalPages = 1
@@ -1754,12 +1758,12 @@ function UI:RefreshInbox()
     end
 
     local firstIndex =
-        ((self.inboxItemPage - 1) * 5) + 1
+        ((self.inboxItemPage - 1) * INBOX_ITEM_ROWS) + 1
 
     selected.excluded =
         selected.excluded or {}
 
-    for rowIndex = 1, 5 do
+    for rowIndex = 1, INBOX_ITEM_ROWS do
         local row =
             self.inboxItemRows[rowIndex]
 

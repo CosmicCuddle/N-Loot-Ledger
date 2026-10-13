@@ -18,7 +18,7 @@
 - [x] Write release notes, install/rollback instructions and a reproducible addon-only package script.
 - [x] Add read-only candidate CI with Lua 5.1 tests and a downloadable workflow artifact, **without any tag/release creation**.
 - [x] Automated [candidate CI run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38433305898) passed and created `Naxxramas-Loot-Ledger-v0.1.0.28-REVIEW` artifact (ZIP + SHA256SUMS). ZIP verifier confirmed exactly 32 Lua modules + one TOC, a single `NaxxLootLottery` folder, no WTF/SavedVariables, matching internal/TOC versions and OFF-by-default direct awarding. ZIP SHA256: `1f1158cd66d0d76dd578451f018508ee6a8d2cfdcc8428a711b63370cccf755d`.
-- [ ] Before recommending installation, manually inspect/download the exact candidate artifact from successful branch HEAD; a fresh run on updated documentation may have a different run ID but should produce the same ZIP hash if addon sources are unchanged.
+- [x] Candidate archive structure and checksum inspected through [successful automated build logs](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38438569554) at source commit `f1e1a3c60fac4f9cb606ddb92a9ec8718f492018`. It produced the same checksum `1f1158cd66d0d76dd578451f018508ee6a8d2cfdcc8428a711b63370cccf755d` for 32 Lua modules plus TOC with no SavedVariables. Owner installed the downloadable candidate; no independent manual extraction of the CI archive bytes was performed in this review.
 - [x] Owner installed the candidate build and provided a real WoW chat screenshot showing `[NLL] Naxxramas Loot Ledger version 0.1.0.28` and `[NLL] Initialization status: READY.` (13 October 2026). No NLL Lua error is visible in this screenshot; this is not an exhaustive error check.
 - [x] Owner confirmed the v0.1.0.28 candidate still shows **15 total wishlist reservations**, that assigned **raid roles remain saved**, and that **Direct Master Loot is OFF** (13 October 2026). This is owner-reported acceptance without screenshots of these three panels; item-by-item reconciliation, reset on a fresh candidate `/reload`, and actual item delivery remain untested.
 - [x] **Prior checks carried forward by owner confirmation (13 October 2026):** Priority Setup preset count/settings (previously **136** active), Award History's previously verified state, and previously reviewed UI screens are reported unchanged after installing v0.1.0.28. No duplicate screenshots or repeated page-by-page tests requested. This is an owner-reported unchanged-state check, **not a new exhaustive screenshot-backed history/persistence test**.
@@ -29,9 +29,10 @@
 
 ## Publication requires new, separate approvals
 
-- [ ] Review and explicitly approve **draft PR #2** (Dark-only UI); merge only after approval.
-- [ ] Review and explicitly approve **draft PR #3** (recipe and UI fixes); then retarget from PR #2's branch to `main` if appropriate and merge only after approval.
-- [ ] Review and explicitly approve [**release-prep draft PR #6**](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/6); merge only after approval.
+- [x] Owner separately approved [PR #2 — Dark-only UI](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2); merged to `main` as `7cd0db208f571c04cd8b513898947106b74456c1`.
+- [x] Owner separately approved [PR #3 — Recipes and UI fixes](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/3); retargeted and merged to `main` as `82800507003082b4698ce9d1c3e47c99d0f2f694`.
+- [x] [Release-preparation PR #6](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/6) retargeted to `main` after PR #3 was merged; the owner authorised **review/retarget only**. GitHub reported no merge conflicts and the candidate Lua 5.1 and packaging workflows passed at commit `f1e1a3c60fac4f9cb606ddb92a9ec8718f492018`.
+- [ ] Obtain **separate explicit owner approval** to merge PR #6 into `main`; this is not permission to publish a release.
 - [ ] Rebuild from final merged commit; ensure checksum and in-game smoke-test results match the intended GitHub release asset.
 - [ ] Obtain **separate explicit publication approval** before creating the `v0.1.0.28` tag and GitHub **non-prerelease** release with installable ZIP, SHA256 and these scoped notes.
 - [ ] Keep all prior pre-release tags/assets unchanged. Update N Addon Collection only after separate approval.

@@ -103,6 +103,14 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [ ] Preserve the existing isolated 40-person/eight-group/13-drop stress test and no-SavedVariables/no-server-transfer guarantees; validate realistic, size-dependent compositions and contender pools.
 - [ ] Agree exact UI scope, fixtures, regression tests and a separate reviewable development branch with owner before implementing.
 
+### M5c — Recipe wishlist separation (requested before first stable release; review branch)
+
+- [x] Owner requests that **reserved recipes have their own area under My Wishlist** so they are no longer mixed with gear (13 October 2026).
+- [x] Implement **Gear / Items** and **Recipes** subviews without changing the existing wishlist SavedVariables table, recipe manual-only allocation, combined leader submissions or any live award path; independent branch `dev/nll-recipe-wishlist-tabs` is based on unmerged dark-only PR #2.
+- [x] Add `tests/test_recipe_wishlist.lua` and run in GitHub Actions Lua 5.1 workflow; see [recipe acceptance checklist](TESTING_RECIPE_WISHLIST.md).
+- [ ] Owner installs reviewed source only after matched folder/SavedVariables backups; verifies existing four Arcanist wishes, tests one reversible recipe reservation and `/reload`, then removes test reservation.
+- [ ] Review this separate draft PR and get express owner merge approval. No stable release is authorised by the feature request.
+
 ### M6 — First non-prerelease GitHub release (proposed; no release authorised)
 
 **Goal:** ship a clearly scoped, tested WoW 3.3.5a addon without implying that currently unverified direct Master Loot delivery or Playerbot inventory receipt has been certified. Stable is a GitHub release designation, not a guarantee of every optional feature.
@@ -127,7 +135,7 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [ ] Only with the owner's **explicit separate release approval**, merge the approved branch and create a **new GitHub release without the prerelease flag**. Preserve old prerelease tags/assets unchanged.
 - [ ] Optionally update N Addon Collection and other documentation only after the new artifact is verified and separately approved.
 
-**Not blockers unless the owner promotes them into scope:** recipes/profession wishlists, copy/paste wishlist import/export, new raid-size simulator controls, cosmetic singular/plural text refinements, and broad future raid expansions.
+**Not blockers unless the owner promotes them into scope:** copy/paste wishlist import/export, new raid-size simulator controls, cosmetic singular/plural text refinements, and broad future raid expansions. **Recipe wishlist separation is now explicitly required before the stable release**, with in-client acceptance pending.
 
 ### M5 — UI, raid policy and release candidate (future proposals, not yet agreed scope)
 

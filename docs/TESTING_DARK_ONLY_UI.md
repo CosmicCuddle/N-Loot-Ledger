@@ -56,6 +56,7 @@ The `NLL Lua 5.1 regression tests` GitHub Actions workflow runs these checks on 
 - [ ] SavedVariables and award history preserved
 - [x] Owner screenshot confirms in-client MC40 simulator displays `[SIMULATION - FAKE RAID]`, Raid Roles `40 bots / 8 groups`, and `Page 1 / 4` with visible fake member classes, group assignments and NLL roles. Only first roster page was inspected; other pages, all 13 simulated drops, and fake roll/award remain untested.
 - [x] Owner inspected **Current Loot** during active MC40 simulation on 13 October 2026: 13 fake boss drops, first five visible on page 1/3, matching character/role/presence/priority columns with Gauntlets of Might showing three in-raid candidates (SimWar1 tier 1; SimWar2/SimWar3 tier 2), no apparent layout clipping. Built-in suggestion correctly marked not saved. **Preview/prepare/roll/award not yet exercised in this test.**
+- [x] Owner screenshot confirms **Preview Pool** on first MC40 simulated Gauntlets of Might drop: message `Tier 1 has 1 equal-priority candidate(s); 2 waiting; 0 excluded. Preview only: no roll or award.` Chat log reports `Pool 1: SimWar1`. This verifies the visible highest-tier selection, not ticket preparation or a roll. No real transfer occurred.
 - [ ] Simulator passes without live award effects
 - [ ] Backup and rollback instructions verified on the test copy
 - [ ] Owner explicitly authorises any merge/release

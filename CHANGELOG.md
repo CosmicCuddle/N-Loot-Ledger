@@ -5,7 +5,8 @@
 - Add **Gear / Items** and **Recipes** subviews inside My Wishlist, retaining the NLL Dark layout and normal wishlist pagination.
 - Automatically classify reserved Molten Core plans, schematics, formulas, patterns and recipes using the existing `Profession recipe` metadata. Equipment and crafting materials remain under Gear / Items.
 - Preserve the original per-player item-ID reservations, `Submit to Leader` combined payload, role priorities and manual-only recipe allocation. No database migration, new real-award path or client API changes.
-- Add Lua 5.1 regression coverage for classification, reservation, leader-submission compatibility and category navigation. In-game owner acceptance is pending; there is no new release yet.
+- Fix an obsolete **Overview** overflow-row message claiming the full wishlist would arrive in Phase 4. Direct players to the existing **Wishlists → My Wishlist** screen; provide simulation-specific guidance for fake plans.
+- Add Lua 5.1 regression coverage for classification, reservation, leader-submission compatibility, category navigation and Overview overflow messaging. In-game owner acceptance is pending; there is no new release yet.
 
 ## Unreleased — Dark-only UI cleanup (development branch; not shipped)
 

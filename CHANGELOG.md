@@ -6,7 +6,8 @@
 - Automatically classify reserved Molten Core plans, schematics, formulas, patterns and recipes using the existing `Profession recipe` metadata. Equipment and crafting materials remain under Gear / Items.
 - Preserve the original per-player item-ID reservations, `Submit to Leader` combined payload, role priorities and manual-only recipe allocation. No database migration, new real-award path or client API changes.
 - Fix an obsolete **Overview** overflow-row message claiming the full wishlist would arrive in Phase 4. Direct players to the existing **Wishlists → My Wishlist** screen; provide simulation-specific guidance for fake plans.
-- Add Lua 5.1 regression coverage for classification, reservation, leader-submission compatibility, category navigation and Overview overflow messaging. In-game owner acceptance is pending; there is no new release yet.
+- Address Raid Loot Search's long recipe-name/Item-ID collision and overflowing `Manual: Profession recipe` priority at the owner's custom UI scale: constrain name/ID to separate single-line regions, use compact readable search labels and priorities, retain full item and policy tooltips. Owner visual retest pending; the underlying priorities and reservations are unchanged.
+- Add Lua 5.1 regression coverage for classification, reservation, leader-submission compatibility, category navigation, Overview overflow messaging and long-name search layout. In-game Search visual acceptance is still pending; no new release yet.
 
 ## Unreleased — Dark-only UI cleanup (development branch; not shipped)
 

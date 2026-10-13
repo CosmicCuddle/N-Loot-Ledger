@@ -7,7 +7,7 @@
 **Client:** World of Warcraft 3.3.5a, Interface 30300, Lua 5.1  
 **Status:** Development **pre-release**; not independently certified for real Master Loot delivery.
 
-**Unreleased development checkpoint (13 October 2026):** Owner elected to continue with a dark-only UI cleanup. The isolated branch `dev/nll-dark-only-ui` removes the Vanilla theme and appearance-selection panel, retaining existing NLL Dark styling; obsolete skin preferences normalize to DARK without replacing the DB. The branch adds offline Lua 5.1 smoke tests and branch regression CI. Treat this as **pending review and client acceptance**, not a merged fix or public release. No real loot award or SavedVariables destructive operation is authorised. See [dark-only testing checklist](TESTING_DARK_ONLY_UI.md) and the roadmap M5a milestone.
+**Unreleased development checkpoint (13 October 2026):** Owner elected to continue with a dark-only UI cleanup. The isolated branch `dev/nll-dark-only-ui` removes the Vanilla theme and appearance-selection panel, retaining existing NLL Dark styling; obsolete skin preferences normalize to DARK without replacing the DB. The branch adds offline Lua 5.1 smoke tests and branch regression CI. The [draft PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2) has passed [automated Lua 5.1 tests](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38396113585); it remains **pending in-client visual review and owner's approval**, not a merged fix or public release. No real loot award or SavedVariables destructive operation is authorised. See [dark-only testing checklist](TESTING_DARK_ONLY_UI.md) and the roadmap M5a milestone.
 
 ## 1. Purpose and scope
 

@@ -28,7 +28,7 @@
 
 - [ ] Review and explicitly approve **draft PR #2** (Dark-only UI); merge only after approval.
 - [ ] Review and explicitly approve **draft PR #3** (recipe and UI fixes); then retarget from PR #2's branch to `main` if appropriate and merge only after approval.
-- [ ] Review and explicitly approve **v0.1.0.28 release-prep draft PR**; merge only after approval.
+- [ ] Review and explicitly approve [**release-prep draft PR #6**](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/6); merge only after approval.
 - [ ] Rebuild from final merged commit; ensure checksum and in-game smoke-test results match the intended GitHub release asset.
 - [ ] Obtain **separate explicit publication approval** before creating the `v0.1.0.28` tag and GitHub **non-prerelease** release with installable ZIP, SHA256 and these scoped notes.
 - [ ] Keep all prior pre-release tags/assets unchanged. Update N Addon Collection only after separate approval.

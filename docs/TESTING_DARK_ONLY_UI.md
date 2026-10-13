@@ -55,6 +55,7 @@ The `NLL Lua 5.1 regression tests` GitHub Actions workflow runs these checks on 
 - [x] Debug Lab panel visually checked in owner's WoW 3.3.5a client on 13 October 2026: scenario controls, class dropdown, action buttons and status text displayed without obvious overlapping or clipping. Simulator not yet started; owner suggested a future raid-size-focused layout instead of prominent Mage Contest scenario controls.
 - [ ] SavedVariables and award history preserved
 - [x] Owner screenshot confirms in-client MC40 simulator displays `[SIMULATION - FAKE RAID]`, Raid Roles `40 bots / 8 groups`, and `Page 1 / 4` with visible fake member classes, group assignments and NLL roles. Only first roster page was inspected; other pages, all 13 simulated drops, and fake roll/award remain untested.
+- [x] Owner inspected **Current Loot** during active MC40 simulation on 13 October 2026: 13 fake boss drops, first five visible on page 1/3, matching character/role/presence/priority columns with Gauntlets of Might showing three in-raid candidates (SimWar1 tier 1; SimWar2/SimWar3 tier 2), no apparent layout clipping. Built-in suggestion correctly marked not saved. **Preview/prepare/roll/award not yet exercised in this test.**
 - [ ] Simulator passes without live award effects
 - [ ] Backup and rollback instructions verified on the test copy
 - [ ] Owner explicitly authorises any merge/release

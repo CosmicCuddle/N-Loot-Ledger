@@ -30,3 +30,5 @@ jobs:
         run: lua5.1 tests/test_loot_history_and_bots.lua
       - name: Dark-only UI and SavedVariables regression
         run: lua5.1 tests/test_dark_skin.lua
+      - name: Gear/items and recipe wishlist separation regression
+        run: lua5.1 tests/test_recipe_wishlist.lua

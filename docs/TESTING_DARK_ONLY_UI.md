@@ -46,7 +46,7 @@ The `NLL Lua 5.1 regression tests` GitHub Actions workflow runs these checks on 
 
 ## 5. Acceptance / evidence
 
-- [ ] Latest GitHub Actions Lua 5.1 regression workflow passes
+- [x] Lua 5.1 regression workflow passed on development-source commit `a00e88cc` ([run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38396113585)); re-check if source changes again
 - [ ] WoW 3.3.5a UI check passes at the owner's actual UI scale
 - [ ] No Vanilla option/artwork and existing Dark appearance retained
 - [ ] SavedVariables and award history preserved

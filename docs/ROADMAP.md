@@ -67,7 +67,8 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 - [x] Owner's first WoW screenshot confirms Dark-only Settings tabs and Direct Master Loot OFF. Priority Setup screenshot revealed preset controls overlapping the bottom border; footer anchoring and regression test added to draft PR #2 (awaiting owner visual retest).
 - [x] Priority Setup footer visually rechecked in the owner's WoW 3.3.5a client on 13 October 2026: footer now entirely inside the panel, 136 presets still displayed enabled, paging and summary visible. No functional priority changes made.
 - [x] Owner's My Wishlist screenshot reviewed: four Molten Core entries visible; layout/navigation intact and owner confirms retained entries. Gear Plans and remaining panels still require review.
-- [ ] Inspect remaining WoW 3.3.5a Gear Plans, Current Loot, Debug Lab and award panels at the owner's UI scale.
+- [x] Owner's Gear Plans screenshot reviewed on 13 October 2026: empty list (0 saved needs), entry controls, filtering and navigation display correctly. No Playerbot plans were created or modified.
+- [ ] Inspect remaining WoW 3.3.5a Current Loot, Debug Lab and award panels at the owner's UI scale.
 - [ ] Confirm installation and matched SavedVariables rollback with an expendable/throwaway test copy.
 - [ ] Only with owner's approval merge or publish; update v0.1.0.27 references when a **new** version is explicitly agreed.
 - Review: [draft PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2) (not merged). Reference: [Dark-only testing checklist](TESTING_DARK_ONLY_UI.md).

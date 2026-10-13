@@ -43,7 +43,7 @@ The recipe test loads real Molten Core recipe data, checks unchanged SavedVariab
 - [ ] Revisit **My Wishlist → Recipes**. Verify the newly reserved recipe appears here, not under **Gear / Items**. The combined count should increase by exactly one from the recorded baseline.
 - [ ] Run `/reload`; verify the test recipe remains in **Recipes**, all original gear/items are still listed, and the total count remains one above baseline.
 - [ ] To undo the test, click **Remove** only on the recipe newly reserved during this test. Verify it disappears and the combined count returns to the recorded baseline (**11 in the most recent screenshot**, unless changed beforehand). Do not remove earlier reservations.
-- [ ] On **Overview**, with more than five reservations, confirm the summary shows `+ N more reserved item(s)` and **`Full list: Wishlists > My Wishlist.`**, rather than the obsolete Phase 4 statement. No overlap or clipping.
+- [x] Owner's post-install Overview screenshot (13 October 2026) shows **11** locally reserved Molten Core items, **39** raid members, `+ 6 more reserved item(s)` and **`Full list: Wishlists > My Wishlist.`** across two lines without visible overlap/clipping. The old Phase 4 placeholder is absent; real-award safety footer remains.
 - [ ] Check NLL 136 optional presets and Direct Master Loot remains OFF. No fake or real award-history changes expected.
 
 ## Safeguards

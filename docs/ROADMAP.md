@@ -19,19 +19,35 @@ The current published NLL source is `v0.1.0.28`. The prior milestones below pres
 
 ## Milestones
 
-### M7 — Fallback / Off-Spec loot interest (16 October 2026; review branch)
+### M7 — Need Before Greed (16 October 2026; draft PR #8, NOT released)
 
-- [x] Verify latest `main`, published `v0.1.0.28`, historical branches and merged PRs before coding.
-- [x] Create isolated `dev/nll-fallback-offspec-loot` branch from current `main`, preserving all release history and installations.
-- [x] Implement Gear Plan `FALLBACK` status, new-entry selector, separate matching and a last-choice fallback pool after normal tiers 1–3. Keep old status meanings unchanged.
-- [x] Keep class/role priorities, explicit leader exclusions, manual-only items, presence checks, duplicate character deduplication and existing ticket pool revalidation mandatory.
-- [x] Add dedicated Lua 5.1 regression and in-client acceptance checklist; ensure workflow runs test against review branch.
-- [x] GitHub Lua 5.1 CI passed with new fallback tests and all existing suites on 16 October 2026 ([run 38884455388](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38884455388)); rerun/verify any newer branch head before accepting.
-- [x] Open [draft PR #8](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/8) with prototype, safety evidence, open design conflict and explicit no-merge gate.
-- [ ] Align the initial `FALLBACK` prototype with the subsequent owner request for a separate `GREED` stage (not Tier 4) before considering acceptance. This is intentionally deferred until the next development stage.
-- [ ] Complete in-game/UI layout and safety review; the owner separately reported Gear Plans overlap and proposed multiple-copy gear needs and bulk import/export. Those are deferred, not fixed by this prototype.
-- [ ] Owner tests backed-up development build in WoW 3.3.5a, checking Gear Plan selector/status, Current Loot, leader review, off-spec preview, botcheck, existing saved data and history without real loot transfers.
-- [ ] Explicit owner approval required separately for merge and eventual next version/release; neither has been authorised.
+- [x] Verify current `v0.1.0.28` release/HEAD before development; keep `main`, existing installed files and data untouched.
+- [x] Create isolated `dev/nll-fallback-offspec-loot` branch and [draft PR #8](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/8), initially prototyped as fallback, then refactored per the owner's specification.
+- [x] Implement true `GREED` Gear Plan interest, **separate from Need Tier 1/2/3** (never a fourth Need tier). Maintain last-choice status, eligibility, unmatched class/role blocking, manual-only items and duplicate-source deduplication.
+- [x] Require explicit status change to upgrade an existing GREED interest to NEED; no automatic candidate promotion.
+- [x] Record selection type with real completed winner, saved loot-identity history, new lottery/award history and visual winner announcement.
+- [x] Extend 40-bot Debug Lab with separate `mc40greed` scenario and keep original `mc40` unchanged.
+- [x] Correct the owner's 19-plan pagination/footer overlap by using six rows/page; add offline UI test.
+- [x] Add Lua 5.1 Need Before Greed, 40-bot simulation, Gear Plans layout and history persistence regressions.
+- [ ] Reconfirm complete PR-head GitHub CI after final documentation changes; distinguish offline tests from actual client approval.
+- [ ] Owner verifies on a backed-up test copy in WoW 3.3.5a: UI scaling, six-row footer, Greed status/reload, Need-vs-Greed preview, fake `mc40greed`, no real award.
+- [ ] Review live loot/corpse evidence separately; do not claim Master Loot delivered or verified Playerbot inventory.
+- [ ] Obtain explicit owner approval before any merge, packaging, release or installed-client change.
+- **Acceptance/rollback:** [Need Before Greed guide](TESTING_NEED_BEFORE_GREED.md).
+
+### M8 — Multi-copy equipment reservations (planned, not implemented)
+
+- [ ] Add requested copy counts for rings/trinkets/other items **only where verified equippable in multiple identical copies** on this AzerothCore/3.3.5a realm.
+- [ ] Preserve existing 1-copy wishlist booleans and original Gear Plan keys; design independent per-copy status so one obtained copy cannot silently satisfy two requested copies.
+- [ ] Confirm per-item unique/unique-equipped restrictions before enabling a second copy, especially for item 19147 (Ring of Spell Power).
+- [ ] Do not permit multiple tickets for the same character and same physical loot copy.
+
+### M9 — Safe Gear Plan import/export (planned, not implemented)
+
+- [ ] Export readable leader-managed bot plans (name, type, role, item, need/greed, future copy count) to pasteable text in WoW 3.3.5a.
+- [ ] Import only through parse/preview/diff/confirmation, never by blind overwriting existing plans or history.
+- [ ] Bound size, reject duplicates, invalid statuses/item IDs/roles, and preserve rollback/migration without touching AzerothCore.
+- **Design blueprint:** [multi-copy and import/export](MULTI_COPY_IMPORT_EXPORT_BLUEPRINT.md).
 
 ### M0 — Handover and branch hygiene (documentation only; complete)
 

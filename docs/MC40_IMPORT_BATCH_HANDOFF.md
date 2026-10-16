@@ -21,6 +21,15 @@ The blueprint reports **40 distinct bots** (10 Raid01, 10 Raid02, 10 Raid03, 10 
 
 **Important:** This importer stores *only* the eight-field format: `Character|PLAYERBOT|Role|MOLTEN_CORE|ItemID|BOT_GEAR_PLAN|NEEDED_or_GREED|1`, preceded by `NLL-GEARPLANS-1`. It does **not** import P1/P2 metadata, A/B planning hints, item names, group identifiers or raid tier settings. Keep the readable source/CSV for those.
 
+## Owner's current bench exclusions — Ruby and Arley
+
+**Owner decision (16 October 2026): Ruby and Arley are benched and must be EXCLUDED from this particular Molten Core Gear Plans import.** Exclude every plan row for either character across all five input batches, using case-insensitive exact character-name matching (not substrings). Preserve the remaining characters, role labels, item IDs, and Need/Greed statuses exactly as supplied.
+
+- This is **an import-file filter**, not a permanent ban, new Gear Need status, deletion, DISABLED conversion, character renaming, or change to the bots' raid roles.
+- Existing Ruby/Arley reservations in the user's live or backed-up `NaxxLootLotteryDB` must remain untouched. Do not remove/overwrite any stored entries or historical records.
+- Once the actual files arrive, first identify which batch(es) and how many source rows belong to Ruby and Arley. Then produce filtered, independently validated import text and report the actual remaining bot count, per-batch counts, total NEED/GREED, and item catalogue checks. Do not guess the new row totals by assuming equal distributions.
+- Verify neither `Ruby` nor `Arley` appears anywhere in the final 8-field import rows before presenting any batch for in-game preview. Preserve the unmodified source data as a backup for later reactivation.
+
 ## Actual input files are still required
 
 Ask the owner to provide the five prepared `NLL_Import_*.txt` files, or the original `NLL_40_Bot_Quick_Entry.txt` used to generate them. After receipt, perform **offline** tests before any in-game import:

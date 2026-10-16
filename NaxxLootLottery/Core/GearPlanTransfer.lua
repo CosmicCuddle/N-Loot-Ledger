@@ -44,6 +44,35 @@ local function SafeName(s)
     end
     return count>=2
 end
+-- Only for collision detection: WoW character identity is case-insensitive,
+-- while old stored keys must remain byte-for-byte unchanged. Fold Latin-1
+-- uppercase letters (including Ø -> ø) in *comparisons*, never in exports.
+local function CasefoldName(value)
+    local out={}
+    local i=1
+    value=tostring(value or "")
+    while i<=#value do
+        local b=value:byte(i)
+        if b==195 and i<#value then
+            local nextByte=value:byte(i+1)
+            if (nextByte>=128 and nextByte<=150) or
+               (nextByte>=152 and nextByte<=158) then
+                out[#out+1]=string.char(195,nextByte+32)
+            else
+                out[#out+1]=value:sub(i,i+1)
+            end
+            i=i+2
+        else
+            out[#out+1]=string.lower(value:sub(i,i))
+            i=i+1
+        end
+    end
+    return table.concat(out)
+end
+local function SameCharacterItemKey(row)
+    return CasefoldName(row.character).."|"..tostring(row.raidKey).."|"..
+        tostring(row.itemID).."|"..tostring(row.source)
+end
 local function Fields(line)
     local cells={}
     -- Capture empty fields too; do not let a missing status shift columns.
@@ -226,10 +255,12 @@ function T:Parse(text)
         if not valid then return nil,"Line "..lineNo..": "..why end
         local key=NLL.GearNeeds:MakeKey(
             row.character,row.raidKey,row.itemID,row.source)
-        if seen[key] then
-            return nil,"Line "..lineNo.." repeats the same character/item/source."
+        local foldedKey=SameCharacterItemKey(row)
+        if seen[foldedKey] then
+            return nil,"Line "..lineNo..
+                " repeats a character/item/source (including UTF-8 case variants)."
         end
-        seen[key]=true
+        seen[foldedKey]=true
         row.key=key
         rows[#rows+1]=row
     end
@@ -249,9 +280,26 @@ function T:Preview(text)
         sourceText=text,rows={},additions={},unchanged=0,
         conflicts={},newCount=0,currentSnapshot=Snapshot(),used=false
     }
+    -- Build read-only alias map: importing TangØ must not create a second
+    -- character/item row if a legacy save uses Tangø (different UTF-8 case).
+    local foldedExisting={}
+    for key,saved in pairs(gear) do
+        if type(saved)=="table" and type(saved.character)=="string" and
+           saved.itemID and saved.raidKey and saved.source then
+            local alias=SameCharacterItemKey(saved)
+            if foldedExisting[alias] and foldedExisting[alias]~=key then
+                return nil,"Existing saved Gear Plans contain case-colliding keys."
+            end
+            foldedExisting[alias]=key
+        end
+    end
     for _,row in ipairs(rows) do
         local saved=gear[row.key]
-        if saved==nil then
+        local aliasKey=foldedExisting[SameCharacterItemKey(row)]
+        if saved==nil and aliasKey~=nil then
+            preview.conflicts[#preview.conflicts+1]={
+                character=row.character,itemID=row.itemID,key=aliasKey}
+        elseif saved==nil then
             preview.additions[#preview.additions+1]=row
             preview.newCount=preview.newCount+1
         elseif type(saved)=="table" and Matching(saved,row) then

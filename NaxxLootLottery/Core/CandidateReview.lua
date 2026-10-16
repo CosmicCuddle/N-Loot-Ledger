@@ -159,7 +159,7 @@ function R:Exclude(entry,name,reason)
     local state=self:GetState(entry)
     local key=Key(name)
     local found=false
-    for _,m in ipairs(self:MergeMatches(entry,NLL.NeedMatcher:GetMatchesForItem(entry.itemID))) do
+    for _,m in ipairs(self:MergeMatches(entry,NLL.NeedMatcher:GetMatchesForReview(entry.itemID))) do
         if Key(m.character)==key then found=true break end
     end
     if not found then return false,'Character not in this drop candidate list.' end

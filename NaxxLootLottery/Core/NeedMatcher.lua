@@ -38,8 +38,8 @@ end
 function Matcher:GetMatchesForItem(itemID, status)
     status = status or "NEEDED"
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
-        if status == "NEEDED" and tonumber(itemID) == NLL.DebugSimulator.active.itemID then
-            return NLL.DebugSimulator:FakeMatches()
+        if tonumber(itemID) == NLL.DebugSimulator.active.itemID then
+            return NLL.DebugSimulator:FakeMatches(status)
         end
         return {}
     end

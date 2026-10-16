@@ -90,20 +90,20 @@ check(#N.NeedMatcher:GetMatchesForItem(100)==1,"legacy matcher still returns NEE
 check(#N.NeedMatcher:GetMatchesForItem(100,"GREED")==3,"greed matches separate")
 check(#N.NeedMatcher:GetMatchesForReview(100)==4,"leader sees primary and greed")
 local p=preview(100)
-check(p.ready and p.chosenTier==1 and #p.current==1 and
+check(p.ready and p.selectionType=="NEED" and p.chosenTier==1 and #p.current==1 and
     p.current[1].character=="Gorak","normal Tier 1 beats greed")
-check(#p.waiting==1 and p.waiting[1].tier==4,"greed remains waiting")
+check(#p.waiting==1 and p.waiting[1].selectionType=="GREED","greed remains waiting")
 check(G:GetNeed(off.key).status=="GREED",
     "greed saved independently")
 check(G:SetStatus(main.key,"OBTAINED"),"primary obtained")
 p=preview(100)
-check(p.ready and p.chosenTier==4 and #p.current==1 and
+check(p.ready and p.selectionType=="GREED" and p.chosenTier==nil and #p.current==1 and
     p.current[1].character=="Druzz","greed only if no primary available")
 check(#p.excluded==2,"offline and guild-excluded interests never enter pool")
 -- A legitimate Tier 2 need outranks optional/off-spec interest.
 local casterNeed=add("Druzz",100,"NEEDED","RAID_LEADER_MANUAL")
 p=preview(100)
-check(p.ready and p.chosenTier==2 and #p.current==1 and
+check(p.ready and p.selectionType=="NEED" and p.chosenTier==2 and #p.current==1 and
     p.current[1].character=="Druzz","Tier 2 Need beats greed")
 check(G:SetStatus(casterNeed.key,"DISABLED"),"optional secondary source disabled")
 -- Several greed contenders must share one equal-priority pool.
@@ -112,7 +112,7 @@ table.insert(roster,taenir)
 names.Taenir=taenir
 local other=add("Taenir",100,"GREED")
 p=preview(100)
-check(p.ready and p.chosenTier==4 and #p.current==2 and
+check(p.ready and p.selectionType=="GREED" and p.chosenTier==nil and #p.current==2 and
     p.current[1].character=="Druzz" and
     p.current[2].character=="Taenir","equal greed contenders share one pool")
 -- A missing greed role blocks greed but cannot obstruct a valid Need.
@@ -128,7 +128,7 @@ other.role="CASTER_DPS"
 check(G:SetStatus(other.key,"DISABLED"),"additional greed disabled for later tests")
 rules[100].rolePriority.MAIN_TANK=3
 p=preview(100)
-check(p.ready and p.chosenTier==3,"even Tier 3 need beats greed")
+check(p.ready and p.selectionType=="NEED" and p.chosenTier==3,"even Tier 3 need beats greed")
 rules[100].rolePriority.MAIN_TANK=1
 -- If primary and greed exist for the same person from separate sources,
 -- primary wins; the candidate must never obtain two tickets.
@@ -163,9 +163,9 @@ check(not p.ready and #p.excluded>0,"wrong-class greed excluded")
 -- A prepared greed draw cannot proceed after a new legitimate need appears.
 G:SetStatus(main.key,"OBTAINED")
 p=preview(100)
-check(p.ready and p.chosenTier==4,"greed pool can be prepared")
+check(p.ready and p.selectionType=="GREED" and p.chosenTier==nil,"greed pool can be prepared")
 N.TicketLottery.active={dropUID="drop-100",tier=p.chosenTier,
-    candidateKeys={"druzz"},tickets={{number=1,character="Druzz"}},
+    selectionType="GREED",candidateKeys={"druzz"},tickets={{number=1,character="Druzz"}},
     status="PREPARED"}
 local okay=N.TicketLottery:PoolStillMatches({
     itemID=100,itemName="Item",raidKey="MOLTEN_CORE",

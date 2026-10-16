@@ -300,7 +300,7 @@ function NLL:HandleSlashCommand(message)
         if sub == "list" or sub == "help" then
             ok=true
             msg="Scenarios: "..table.concat(sim:AvailableScenarios(),", ")
-        elseif sub == "all" or sub == "mc40" or sub == "all40" or
+        elseif sub == "all" or sub == "mc40" or sub == "mc40greed" or sub == "all40" or
             sub == "40" or sub == "healer" or sub == "manual" or
             sub == "missing" or sim:ClassTestInfo(sub) then
             ok,msg=sim:Start(sub)
@@ -330,7 +330,7 @@ function NLL:HandleSlashCommand(message)
         end
         self:Print(msg or "No simulator response.")
         if self.UI and self.UI.RefreshDebugLab then self.UI:RefreshDebugLab() end
-        if ok and (sub=="all" or sub=="mc40" or sub=="all40" or
+        if ok and (sub=="all" or sub=="mc40" or sub=="mc40greed" or sub=="all40" or
             sub=="40" or sub=="healer" or sub=="manual" or
             sub=="missing" or sim:ClassTestInfo(sub)) then
             self.UI:ShowMainFrame("roles")
@@ -572,6 +572,7 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll sim list - List all class and safety scenarios.")
         self:Print("/nll sim all - 20 fake bots across ten 3.3.5 classes.")
         self:Print("/nll sim mc40 - Molten Core 40-player raid, 8 groups.")
+        self:Print("/nll sim mc40greed - 40 bots, mixed Need/Greed fake raid.")
         self:Print("/nll sim <class> - Class-specific fake raid (e.g. rogue, deathknight).")
         self:Print("/nll sim preview|prepare|roll|next|reset|stop - Fake workflow.")
         self:Print("/nll testdrop <id> - Debug-only fake drop.")

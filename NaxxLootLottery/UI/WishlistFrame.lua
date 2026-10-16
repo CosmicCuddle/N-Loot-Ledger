@@ -13,7 +13,9 @@ local NLL = NaxxLootLottery
 local UI = NLL.UI
 
 local LOCAL_ROWS = 8
-local PLAN_ROWS = 7
+-- Six 42px rows leave a real footer gap at WoW 3.3.5a UI scales.
+-- Seven overlapped pagination in the owner's 19-entry Gear Plans screenshot.
+local PLAN_ROWS = 6
 -- Reserve a dedicated footer below the Inbox item grid at large UI font scales.
 local INBOX_ITEM_ROWS = 4
 
@@ -676,7 +678,7 @@ function UI:CreateGearPlansContent(parent)
     itemBox:SetAutoFocus(false)
 
     local addButton =
-        self:CreateTextButton(content, "Add Need", 78)
+        self:CreateTextButton(content, "Add Plan", 78)
     addButton:SetPoint(
         "TOPRIGHT",
         content,
@@ -690,6 +692,37 @@ function UI:CreateGearPlansContent(parent)
     self.gearRoleDrop = roleDrop
     self.gearSourceDrop = sourceDrop
     self.gearItemBox = itemBox
+
+    -- Choose the interest level before saving: an off-spec item should
+    -- never become a primary NEED even temporarily.
+    local interestLabel = content:CreateFontString(
+        nil, "OVERLAY", "GameFontNormalSmall")
+    interestLabel:SetPoint("TOPLEFT", content, "TOPLEFT", 350, -58)
+    interestLabel:SetText("New entry interest")
+    local interestDrop = CreateFrame("Frame",
+        "NaxxLootLotteryNewGearInterestDropDown", content,
+        "UIDropDownMenuTemplate")
+    interestDrop:SetPoint("TOPLEFT", content, "TOPLEFT", 331, -70)
+    UIDropDownMenu_SetWidth(interestDrop, 125)
+    interestDrop.value = "NEEDED"
+    UIDropDownMenu_Initialize(interestDrop, function()
+        for _, choice in ipairs({
+            {id="NEEDED", label="Needed (main)"},
+            {id="GREED", label="Greed / Off-Spec"}
+        }) do
+            local id, label = choice.id, choice.label
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = label
+            info.checked = interestDrop.value == id
+            info.func = function()
+                interestDrop.value = id
+                UIDropDownMenu_SetText(interestDrop, label)
+            end
+            UIDropDownMenu_AddButton(info)
+        end
+    end)
+    UIDropDownMenu_SetText(interestDrop, "Needed (main)")
+    self.gearInterestDrop = interestDrop
 
     addButton:SetScript("OnClick", function()
         local characterName =
@@ -711,7 +744,7 @@ function UI:CreateGearPlansContent(parent)
                 item.itemID,
                 "MOLTEN_CORE",
                 UI.gearRoleDrop.value,
-                "NEEDED",
+                UI.gearInterestDrop.value,
                 UI.gearSourceDrop.value,
                 UI.gearTypeDrop.value
             )
@@ -725,7 +758,7 @@ function UI:CreateGearPlansContent(parent)
             item.name ..
             " added for " ..
             result.character ..
-            "."
+            " (" .. result.status .. ")."
         )
 
         UI.gearItemBox:SetText("")
@@ -955,6 +988,7 @@ function UI:CreateGearPlansContent(parent)
             function()
                 local statuses = {
                     "NEEDED",
+                    "GREED",
                     "OBTAINED",
                     "DISABLED"
                 }

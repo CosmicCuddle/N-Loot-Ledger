@@ -64,7 +64,8 @@ function L:Record(state, roll, reason)
     local row={
         status=state, itemID=a.itemID, itemName=a.itemName,
         raidKey=a.raidKey, dropUID=a.dropUID, boss=a.boss,
-        tier=a.tier, tickets=CopyTickets(a.tickets),
+        tier=a.tier, selectionType=a.selectionType or 'NEED',
+        tickets=CopyTickets(a.tickets),
         winningTicket=roll, winner=a.winner,
         test=a.test, method=a.method, note=reason,
         when=date and date('%Y-%m-%d %H:%M:%S') or 'unknown'
@@ -118,12 +119,15 @@ function L:Prepare(entry, matches)
     end
     self.active={
         dropUID=entry.dropUID, itemID=entry.itemID, itemName=entry.itemName,
-        raidKey=entry.raidKey, boss=entry.boss, tier=preview.chosenTier,
+        raidKey=entry.raidKey, boss=entry.boss,
+        selectionType=preview.selectionType or 'NEED', tier=preview.chosenTier,
         tickets=tickets, candidateKeys=snapshot,
         status='PREPARED', test=isTest, createdAt=Now(), method=nil
     }
+    local stageLabel = preview.selectionType == 'GREED' and 'GREED' or
+        ('NEED - Tier ' .. tostring(preview.chosenTier))
     NLL:Print((isTest and '[TEST] ' or '') .. 'Prepared ' .. #tickets ..
-        ' tickets for ' .. entry.itemName .. ' (priority tier ' .. preview.chosenTier .. ').')
+        ' tickets for ' .. entry.itemName .. ' (' .. stageLabel .. ').')
     for _,t in ipairs(tickets) do
         NLL:Print('Ticket ' .. t.number .. ' - ' .. t.character)
     end
@@ -134,6 +138,7 @@ function L:PoolStillMatches(entry)
     if not a then return false,'Drop changed. Prepare tickets again.' end
     local preview=NLL.TicketPlanner:BuildPreview(entry)
     if not preview.ready or preview.chosenTier~=a.tier or
+        (preview.selectionType or 'NEED')~=(a.selectionType or 'NEED') or
         #preview.current~=#a.tickets then
         return false,'Roster/priority changed. Cancel and prepare new tickets.'
     end
@@ -169,7 +174,8 @@ function L:Finish(roll,method)
     a.awardStatus=nil -- not an award until a separate confirmation
     self.results[a.dropUID]=a
     if not a.test and NLL.LootIdentity then
-        NLL.LootIdentity:MarkCompleted(a.dropUID,a.winner,roll,method)
+        NLL.LootIdentity:MarkCompleted(a.dropUID,a.winner,roll,method,
+            a.selectionType or 'NEED',a.tier)
     end
     self:Record('COMPLETE',roll,'Result only. Loot award remains manual.')
     NLL:Print((a.test and '[TEST - no loot awarded] ' or '') ..
@@ -179,7 +185,8 @@ function L:Finish(roll,method)
         NLL.UI:RefreshCurrentLootPanel()
     end
     if NLL.UI and NLL.UI.ShowWinnerAnnouncement then
-        NLL.UI:ShowWinnerAnnouncement(a.itemName, a.winner, roll, a.test == true)
+        NLL.UI:ShowWinnerAnnouncement(a.itemName, a.winner, roll,
+            a.test == true, a.selectionType or 'NEED', a.tier)
     end
     return true
 end

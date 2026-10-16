@@ -617,6 +617,24 @@ function UI:CreateCurrentLootPanel(parent)
         priority:SetWidth(92)
         priority:SetJustifyH("LEFT")
 
+        -- Keep this narrow column single-line, with the complete eligibility
+        -- reason in a standard WoW 3.3.5a tooltip on hover.
+        local priorityHit=CreateFrame("Frame",nil,row)
+        priorityHit:SetPoint("LEFT",row,"LEFT",370,0)
+        priorityHit:SetWidth(92)
+        priorityHit:SetHeight(34)
+        priorityHit:EnableMouse(true)
+        priorityHit:SetScript("OnEnter",function()
+            if GameTooltip and row.priorityExplanation then
+                GameTooltip:SetOwner(priorityHit,"ANCHOR_RIGHT")
+                GameTooltip:SetText(row.priorityExplanation)
+                GameTooltip:Show()
+            end
+        end)
+        priorityHit:SetScript("OnLeave",function()
+            if GameTooltip then GameTooltip:Hide() end
+        end)
+
         row.nameText = name
         row.roleText = role
         row.typeText = charType
@@ -807,13 +825,12 @@ function UI:RefreshCurrentLootPanel()
     self:RefreshTicketLotteryControls(selected)
     self.currentLootPreviewButton:Enable()
     self.currentLootPreviewStatus:SetText(
-        "Preview Pool: shows highest eligible tier; no rolling or awarding."
+        "Preview: Need tiers first, then optional greed. No roll or award."
     )
 
-    local matches =
-        NLL.NeedMatcher:GetMatchesForItem(
-            selected.itemID
-        )
+    local neededMatches = NLL.NeedMatcher:GetMatchesForItem(selected.itemID)
+    local matches = NLL.NeedMatcher:GetMatchesForReview(selected.itemID)
+    local greedCount = #matches - #neededMatches
     if not simulation then
         matches=NLL.CandidateReview:MergeMatches(selected,matches)
     end
@@ -842,13 +859,10 @@ function UI:RefreshCurrentLootPanel()
         priorityLabel="Fake rule: "..tostring(source)
     end
     local statusText =
-        tostring(#matches) ..
-        " NEEDED character(s); " ..
-        tostring(eligible) ..
-        " currently eligible by raid presence.  " ..
-        "Priority: " ..
-        priorityLabel ..
-        "."
+        "Need: " .. tostring(#neededMatches) ..
+        " | Greed: " .. tostring(greedCount) ..
+        " | Present: " .. tostring(eligible) ..
+        " (before priority checks) | Rule: " .. priorityLabel
 
     if selected.manualOnly then
         statusText =
@@ -934,13 +948,25 @@ function UI:RefreshCurrentLootPanel()
                     match
                 )
 
+            row.priorityExplanation = tostring(priorityLabel or "Unresolved")
             if simulation then
                 local _,simLabel=NLL.DebugSimulator:GetCandidatePriority(match)
                 if NLL.DebugSimulator.active.exclusions[
                    string.lower(match.character or "")] then simLabel="Excluded" end
                 row.priorityText:SetText(simLabel or "Unconfigured")
+                row.priorityExplanation=tostring(simLabel or "Unconfigured")
             elseif NLL.CandidateReview:IsExcluded(selected,match.character) then
                 row.priorityText:SetText('Excluded')
+                row.priorityExplanation="Leader exclusion for this drop"
+            elseif match.interestStatus == 'GREED' then
+                local greedEligible = priorityLabel == "Tier 1" or
+                    priorityLabel == "Tier 2" or priorityLabel == "Tier 3"
+                row.priorityExplanation="GREED interest: "..
+                    tostring(priorityLabel or "Unresolved")
+                local shortLabel=greedEligible and "GREED" or
+                    (priorityLabel=="Wrong class" and "G:Class" or
+                     priorityLabel=="Not eligible" and "G:Excluded" or "G:Review")
+                row.priorityText:SetText(shortLabel)
             else
                 row.priorityText:SetText(priorityLabel or '')
             end
@@ -960,11 +986,13 @@ function UI:RefreshTicketLotteryControls(selected)
         local a=S.active
         if a.result then
             self.currentLootLotteryNote:SetText(
-              "|cff66ff99SIM WINNER: "..a.result.winner.." (#"..a.result.number..")|r" ..
+              "|cff66ff99SIM "..tostring(a.result.selectionType or "NEED")..
+              " WINNER: "..a.result.winner.." (#"..a.result.number..")|r" ..
               (a.result.awardStatus and ' [FAKE AWARDED]' or ' [PENDING AWARD]'))
         elseif a.prepared then
             self.currentLootLotteryNote:SetText(
-              "[SIMULATION] "..#a.prepared.tickets.." tickets ready")
+              "[SIMULATION] "..tostring(a.prepared.selectionType or "NEED")..
+              " - "..#a.prepared.tickets.." tickets ready")
         else
             self.currentLootLotteryNote:SetText(
               "[SIMULATION] Prepare tickets to test a fake roll.")
@@ -990,7 +1018,8 @@ function UI:RefreshTicketLotteryControls(selected)
         elseif a.awardStatus == 'AWARD_OUTCOME_UNKNOWN' then awardTag='[UNKNOWN]' end
         self.currentLootLotteryNote:SetText(
           (a.test and "|cff66ff99TEST WINNER: " or "|cff66ff99WINNER: ") ..
-          a.winner .. " (#" .. tostring(a.winningTicket) .. ")|r " .. awardTag)
+          tostring(a.selectionType or "NEED").." "..a.winner ..
+          " (#" .. tostring(a.winningTicket) .. ")|r " .. awardTag)
     else
         self.currentLootLotteryNote:SetText(L:GetStatus(selected))
     end

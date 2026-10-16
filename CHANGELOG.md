@@ -1,8 +1,17 @@
 # Changelog
 
-## 0.1.0.28 — First stable-core release candidate (UNPUBLISHED)
+## Unreleased — Need Before Greed (draft PR #8; NOT PUBLISHED)
 
-**Proposed version only:** The owner chose `v0.1.0.28` for release preparation; no tag, release or merge has been authorised or performed.
+- Add explicit `GREED` interest to leader-managed Gear Plans alongside `NEEDED`, `OBTAINED` and `DISABLED`; old statuses, keys and SavedVariables remain intact.
+- Keep the existing Need Tier 1–3 priorities unchanged. GREED forms **an independent equal-opportunity stage, not Tier 4**, only when no valid Need contender or unresolved Need blocker exists.
+- Preserve existing role/class, offline, manual-only item, leader exclusion, loot identity and duplicate-roll rules. Block manually promoting a character's Greed into Need without deliberately editing their Gear Plan.
+- Persist NEED/GREED selection type (and optional Need tier) with completed lottery, recovered loot identity and new real award-history events. An old untyped winner remains backward-compatible.
+- Extend the safe Debug Lab with `/nll sim mc40greed` (40 fake bots, eight groups, normal Need drops plus a Greed-only Quick Strike Ring scenario), entirely isolated from real loot and SavedVariables.
+- Fix Gear Plans footer collision seen with 19 entries by limiting each page to **six rows**; add a Lua 5.1 paginated-layout regression.
+- Add strict Lua 5.1 stage, persistence, 40-bot simulation and visual-control regressions and in-client acceptance checklist. Extend coverage to real v0.1.0.28 SavedVariables initialization/reload and actual lottery Finish acceptance/cancellation when the Need pool changes. **GitHub test success does not certify live award delivery or WoW UI scaling.**
+- Multi-copy equipped-item wishlists and guarded import/export are documented future milestones, not bundled into this change.
+
+## 0.1.0.28 — First stable-core release (published 2026-10-13)
 
 - Make **NLL Dark** the only interface style. Normalize old Vanilla/Classic saved display settings without replacing existing SavedVariables or other records.
 - Separate **My Wishlist → Gear / Items** and **Recipes** while retaining existing item-ID reservations and the combined raid-leader submission payload; profession recipes stay manual allocation.

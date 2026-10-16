@@ -35,17 +35,18 @@ function Matcher:FindRaidMember(characterName)
     return nil
 end
 
-function Matcher:GetMatchesForItem(itemID)
+function Matcher:GetMatchesForItem(itemID, status)
+    status = status or "NEEDED"
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
         if tonumber(itemID) == NLL.DebugSimulator.active.itemID then
-            return NLL.DebugSimulator:FakeMatches()
+            return NLL.DebugSimulator:FakeMatches(status)
         end
         return {}
     end
     local needs =
         NLL.GearNeeds:GetNeedsForItem(
             tonumber(itemID),
-            "NEEDED"
+            status
         )
 
     local merged = {}
@@ -62,6 +63,7 @@ function Matcher:GetMatchesForItem(itemID)
                 if not match then
                     match = {
                         character = need.character,
+                        interestStatus = status,
                         role = need.role,
                         characterType =
                             need.characterType
@@ -160,6 +162,25 @@ function Matcher:GetMatchesForItem(itemID)
     )
 
     return output
+end
+
+-- A review may show greed interest, but never count the same character
+-- twice when another source also declares that item NEEDED.
+function Matcher:GetMatchesForReview(itemID)
+    local primary = self:GetMatchesForItem(itemID)
+    local greed = self:GetMatchesForItem(itemID, "GREED")
+    local seen = {}
+    for _, match in ipairs(primary) do
+        seen[NormalizeName(match.character)] = true
+    end
+    for _, match in ipairs(greed) do
+        local key = NormalizeName(match.character)
+        if not seen[key] then
+            seen[key] = true
+            table.insert(primary, match)
+        end
+    end
+    return primary
 end
 
 function Matcher:GetEligibleMatchesForItem(itemID)

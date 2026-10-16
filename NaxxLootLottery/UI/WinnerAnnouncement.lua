@@ -74,7 +74,7 @@ function UI:HideWinnerAnnouncement()
     if self.winnerAnnouncement then self.winnerAnnouncement:Hide() end
 end
 
-function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated)
+function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated, selectionType, tier)
     if not itemName or not winner or not ticketNumber then return false end
     if not self.mainFrame then return false end
     self:CreateWinnerAnnouncement()
@@ -82,7 +82,10 @@ function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated)
     if not self.mainFrame:IsShown() then
         self:ShowMainFrame("currentloot")
     end
-    local label = simulated and "SIMULATION WINNER" or "LOTTERY WINNER"
+    local interest = selectionType == 'GREED' and 'GREED' or
+        ('NEED' .. (tier and (' - Tier '..tostring(tier)) or ''))
+    local label = (simulated and 'SIMULATION' or 'LOTTERY') ..
+        ' WINNER - ' .. interest
     self.winnerAnnouncementTitle:SetText("|cffffd568" .. label .. "|r")
     self.winnerAnnouncementName:SetText("|cff66ff99" .. tostring(winner) .. "|r")
     self.winnerAnnouncementItem:SetText(tostring(itemName))

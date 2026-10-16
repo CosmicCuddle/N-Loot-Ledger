@@ -37,7 +37,7 @@ local CLASS_TESTS = {
 local CLASS_ORDER={"warrior","paladin","hunter","rogue","priest",
     "deathknight","shaman","mage","warlock","druid"}
 function S:AvailableScenarios()
-    return {"all", "mc40", "warrior", "paladin", "hunter", "rogue", "priest",
+    return {"all", "mc40", "mc40greed", "warrior", "paladin", "hunter", "rogue", "priest",
         "deathknight", "shaman", "mage", "warlock", "druid",
         "healer", "manual", "missing"}
 end
@@ -170,10 +170,12 @@ function S:Start(scenario)
     if scenario == "" then scenario="mage" end
     if scenario == "40" or scenario == "all40" then scenario="mc40" end
     local classScenario=(scenario=="all" or scenario=="mc40" or
+        scenario=="mc40greed" or
         (CLASS_TESTS[scenario] and scenario~="mage"))
     local customPlayers,customWishlists,customDrops
     if classScenario then
-        customPlayers,customWishlists,customDrops=self:BuildClassScenario(scenario)
+        customPlayers,customWishlists,customDrops=self:BuildClassScenario(
+            scenario=="mc40greed" and "mc40" or scenario)
     end
     local ids = {mage=16800, healer=19140, manual=18564, missing=16800}
     local itemID = classScenario and customDrops[1] or ids[scenario]
@@ -203,9 +205,16 @@ function S:Start(scenario)
     if customWishlists then wishlists=customWishlists end
     for _,p in ipairs(players) do
         p.wantedItems={}
+        p.greedItems={}
         p.obtainedItems={}
         for _,id in ipairs(wishlists[p.character] or {}) do
-            p.wantedItems[id]=true
+            -- Dedicated GREED-only Quick Strike Ring in this test fixture;
+            -- normal MC40 and all other loot are unchanged.
+            if scenario=="mc40greed" and id==18821 then
+                p.greedItems[id]=true
+            else
+                p.wantedItems[id]=true
+            end
         end
         p.characterType="PLAYERBOT"
         p.name=p.character
@@ -319,16 +328,21 @@ end
 function S:GetPlayers()
     return self.active and self.active.players or {}
 end
-function S:FakeMatches()
+function S:FakeMatches(status)
     local output={}
     for _,p in ipairs(self:GetPlayers()) do
-        if (p.need and not (p.obtainedItems and p.obtainedItems[self.active.itemID])
-            and self.active.itemID ==
+        local id=self.active.itemID
+        local obtained=p.obtainedItems and p.obtainedItems[id]
+        local primary = ((p.need and id ==
             (self.active.scenario == "healer" and 19140 or
              self.active.scenario == "manual" and 18564 or 16800)) or
-            (p.wantedItems and p.wantedItems[self.active.itemID] and
-                not (p.obtainedItems and p.obtainedItems[self.active.itemID])) then
+            (p.wantedItems and p.wantedItems[id])) and not obtained
+        local greed = p.greedItems and p.greedItems[id] and not obtained
+        if (not status and (primary or greed)) or
+            (status == "NEEDED" and primary) or
+            (status == "GREED" and greed and not primary) then
             local m=Copy(p)
+            m.interestStatus=primary and "NEEDED" or "GREED"
             m.inRaid=p.inRaid ~= false
             m.online=p.online == true
             m.eligiblePresence=m.inRaid and m.online
@@ -356,7 +370,8 @@ local function Snapshot(a,preview)
     -- The signature includes the rule AND all fake players. Changing any
     -- role, eligibility setting, presence, or need invalidates old tickets.
     local rule = NLL.DebugSimulator:GetRule(a.itemID)
-    local parts={tostring(a.itemID),tostring(preview.chosenTier)}
+    local parts={tostring(a.itemID),tostring(preview.selectionType),
+        tostring(preview.chosenTier)}
     for _,r in ipairs(NLL.roles) do
         parts[#parts+1] = r.id .. "=" .. tostring(rule and
             rule.rolePriority and rule.rolePriority[r.id] or "UNSET")
@@ -369,6 +384,8 @@ local function Snapshot(a,preview)
     for _,p in ipairs(a.players) do
         table.insert(parts,table.concat({p.character,p.classFile or "?",
             p.role or "?",tostring(p.need),tostring(p.online),
+            tostring(p.wantedItems and p.wantedItems[a.itemID]),
+            tostring(p.greedItems and p.greedItems[a.itemID]),
             tostring(p.inRaid~=false),tostring(a.exclusions[Key(p.character)] == true)},":"))
     end
     for _,m in ipairs(preview.current) do
@@ -386,9 +403,12 @@ function S:Prepare()
     for i,m in ipairs(preview.current) do
         tickets[i]={number=i,character=m.character}
     end
-    a.prepared={tickets=tickets,signature=Snapshot(a,preview),tier=preview.chosenTier}
+    a.prepared={tickets=tickets,signature=Snapshot(a,preview),
+        selectionType=preview.selectionType,tier=preview.chosenTier}
     self:RefreshUI()
-    return true,"[SIMULATION] Prepared "..#tickets.." fake tickets (Tier "..preview.chosenTier..")."
+    local label=preview.selectionType=="GREED" and "GREED" or
+        ("NEED - Tier "..tostring(preview.chosenTier))
+    return true,"[SIMULATION] Prepared "..#tickets.." fake tickets ("..label..")."
 end
 function S:Roll()
     if not Enabled() then return false,"Debug Lab disabled." end
@@ -404,12 +424,14 @@ function S:Roll()
     end
     local winningTicket=math.random(1,#a.prepared.tickets)
     local winner=a.prepared.tickets[winningTicket].character
-    a.result={winner=winner,number=winningTicket,method="LOCAL_SIMULATION_ONLY"}
+    a.result={winner=winner,number=winningTicket,method="LOCAL_SIMULATION_ONLY",
+        selectionType=a.prepared.selectionType,tier=a.prepared.tier}
     -- Gear remains NEEDED until the separate award confirmation.
     self.history[#self.history+1]=a.result
     self:RefreshUI()
     if NLL.UI and NLL.UI.ShowWinnerAnnouncement then
-        NLL.UI:ShowWinnerAnnouncement(a.entry.itemName, winner, winningTicket, true)
+        NLL.UI:ShowWinnerAnnouncement(a.entry.itemName, winner, winningTicket,
+            true,a.prepared.selectionType,a.prepared.tier)
     end
     return true,"[SIMULATION] Fake ticket #"..winningTicket.." = "..winner..". No server roll or loot award."
 end
@@ -509,6 +531,14 @@ function S:GetNeeds()
                   state=p.obtainedItems and p.obtainedItems[id] and "OBTAINED" or "NEEDED"}
             end
         end
+        for id,wanted in pairs(p.greedItems or {}) do
+            if wanted then
+                rows[#rows+1]={character=p.character,classFile=p.classFile,
+                  role=p.role,online=p.online,itemID=id,
+                  itemName=(NLL.Data.MoltenCore:GetItem(id) or {}).name or tostring(id),
+                  state=p.obtainedItems and p.obtainedItems[id] and "OBTAINED" or "GREED"}
+            end
+        end
     end
     table.sort(rows,function(a,b)
         if a.character==b.character then return a.itemID<b.itemID end
@@ -525,7 +555,10 @@ function S:GetCandidatePriority(match)
           match.classFile,rule) then return "EXCLUDE","Wrong class" end
     if not match.role then return nil,"Role unknown" end
     local n=rule.rolePriority and rule.rolePriority[match.role]
-    if n==1 or n==2 or n==3 then return n,"Tier "..n end
+    if n==1 or n==2 or n==3 then
+        if match.interestStatus=="GREED" then return "GREED","Greed" end
+        return n,"Tier "..n
+    end
     return n,"Not eligible"
 end
 function S:NextDrop()

@@ -32,10 +32,11 @@ function P:ReadPlans()
             need.source=='BOT_GEAR_PLAN') and Key(need.character)~='' then
             local k=Key(need.character)
             if not plans[k] then
-                plans[k]={name=need.character,needed=0,obtained=0,disabled=0}
+                plans[k]={name=need.character,needed=0,greed=0,obtained=0,disabled=0}
             end
             local p=plans[k]
             if need.status=='NEEDED' then p.needed=p.needed+1
+            elseif need.status=='GREED' then p.greed=p.greed+1
             elseif need.status=='OBTAINED' then p.obtained=p.obtained+1
             elseif need.status=='DISABLED' then p.disabled=p.disabled+1 end
         end
@@ -98,7 +99,7 @@ function P:Inspect(name, knownCandidates, knownNote)
         ('LISTED INDEX '..candidates[k]) or 'NOT LISTED FOR SELECTED ITEM' end
     return {name=plan.name,member=member,status=status,issue=issue,
         classFile=ClassFor(plan.name,member),role=ConfiguredRole(plan.name,member),
-        needed=plan.needed,obtained=plan.obtained,disabled=plan.disabled,
+        needed=plan.needed,greed=plan.greed,obtained=plan.obtained,disabled=plan.disabled,
         candidate=candidate,candidateNote=detail}
 end
 function P:Report(name)
@@ -127,7 +128,7 @@ function P:Report(name)
             shown=shown+1
             NLL:Print(p.name..': '..p.status..' | '..tostring(p.classFile or '?')..
                 ' / '..tostring(p.role or '?')..' | NEEDED '..p.needed..
-                ' | Master Loot: '..p.candidate)
+                ' | GREED '..p.greed..' | Master Loot: '..p.candidate)
             if one==key then
                 NLL:Print(p.issue)
                 NLL:Print(p.candidateNote)

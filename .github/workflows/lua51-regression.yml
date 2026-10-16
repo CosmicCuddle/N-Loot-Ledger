@@ -28,6 +28,14 @@ jobs:
         run: lua5.1 tests/test_loot_identity.lua
       - name: Historical loot and Playerbot regression
         run: lua5.1 tests/test_loot_history_and_bots.lua
+      - name: Need Before Greed pool safety regression
+        run: lua5.1 tests/test_need_before_greed.lua
+      - name: SavedVariables upgrade and reload preservation
+        run: lua5.1 tests/test_need_greed_savedvariables.lua
+      - name: Mixed 40-bot Need Before Greed simulator regression
+        run: lua5.1 tests/test_need_before_greed_sim.lua
+      - name: Gear Plans six-row footer and status menus regression
+        run: lua5.1 tests/test_gear_plans_layout.lua
       - name: Dark-only UI and SavedVariables regression
         run: lua5.1 tests/test_dark_skin.lua
       - name: Gear/items and recipe wishlist separation regression

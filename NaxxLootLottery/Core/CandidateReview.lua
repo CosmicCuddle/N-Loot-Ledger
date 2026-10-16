@@ -90,8 +90,15 @@ function R:MergeMatches(entry,matches)
     end
     local state=self:GetState(entry)
     if state then
+        -- A saved GREED reservation must remain GREED even when an older
+        -- drop-scoped manual addition was created before the plan changed.
+        local greedKeys={}
+        for _,greed in ipairs(NLL.NeedMatcher:GetMatchesForItem(
+            entry.itemID,"GREED")) do
+            greedKeys[Key(greed.character)]=true
+        end
         for key,m in pairs(state.manual) do
-            if not seen[key] then
+            if not seen[key] and not greedKeys[key] then
                 -- Never trust a cached manual addition as proof the
                 -- character is still in the live raid roster.
                 local member=self:FindRosterMember(m.character)
@@ -129,6 +136,14 @@ function R:AddCandidate(entry,name)
             return false,'Already has a NEEDED entry; use Restore if excluded.'
         end
     end
+    -- Never promote an existing GREED reservation to NEED via a manual
+    -- drop-scoped candidate addition: the owner must deliberately change
+    -- the Gear Plan's saved interest instead.
+    for _,m in ipairs(NLL.NeedMatcher:GetMatchesForItem(entry.itemID,'GREED')) do
+        if Key(m.character)==key then
+            return false,'Character has GREED interest. Change their Gear Plan to NEEDED first.'
+        end
+    end
     if state.manual[key] then return false,'Already manually added.' end
     local classFile=member.classFile
     local role=member.assignedRole or NLL.Database:GetRoleAssignment(member.name)
@@ -159,7 +174,7 @@ function R:Exclude(entry,name,reason)
     local state=self:GetState(entry)
     local key=Key(name)
     local found=false
-    for _,m in ipairs(self:MergeMatches(entry,NLL.NeedMatcher:GetMatchesForItem(entry.itemID))) do
+    for _,m in ipairs(self:MergeMatches(entry,NLL.NeedMatcher:GetMatchesForReview(entry.itemID))) do
         if Key(m.character)==key then found=true break end
     end
     if not found then return false,'Character not in this drop candidate list.' end

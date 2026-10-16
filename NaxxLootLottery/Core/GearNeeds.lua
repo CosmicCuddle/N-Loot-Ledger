@@ -23,6 +23,7 @@ local GearNeeds = NLL.GearNeeds
 
 GearNeeds.validStatuses = {
     NEEDED = true,
+    GREED = true, -- optional/off-spec interest; never competes with NEEDED tiers
     OBTAINED = true,
     DISABLED = true
 }

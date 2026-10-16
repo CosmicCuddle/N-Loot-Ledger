@@ -706,7 +706,7 @@ function UI:CreateGearPlansContent(parent)
     UIDropDownMenu_Initialize(interestDrop, function()
         for _, choice in ipairs({
             {id="NEEDED", label="Needed (main)"},
-            {id="FALLBACK", label="Fallback / Off-Spec"}
+            {id="GREED", label="Greed / Off-Spec"}
         }) do
             local id, label = choice.id, choice.label
             local info = UIDropDownMenu_CreateInfo()
@@ -986,7 +986,7 @@ function UI:CreateGearPlansContent(parent)
             function()
                 local statuses = {
                     "NEEDED",
-                    "FALLBACK",
+                    "GREED",
                     "OBTAINED",
                     "DISABLED"
                 }

@@ -129,6 +129,14 @@ function R:AddCandidate(entry,name)
             return false,'Already has a NEEDED entry; use Restore if excluded.'
         end
     end
+    -- Never promote an existing GREED reservation to NEED via a manual
+    -- drop-scoped candidate addition: the owner must deliberately change
+    -- the Gear Plan's saved interest instead.
+    for _,m in ipairs(NLL.NeedMatcher:GetMatchesForItem(entry.itemID,'GREED')) do
+        if Key(m.character)==key then
+            return false,'Character has GREED interest. Change their Gear Plan to NEEDED first.'
+        end
+    end
     if state.manual[key] then return false,'Already manually added.' end
     local classFile=member.classFile
     local role=member.assignedRole or NLL.Database:GetRoleAssignment(member.name)

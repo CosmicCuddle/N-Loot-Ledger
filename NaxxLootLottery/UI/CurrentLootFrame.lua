@@ -807,7 +807,7 @@ function UI:RefreshCurrentLootPanel()
     self:RefreshTicketLotteryControls(selected)
     self.currentLootPreviewButton:Enable()
     self.currentLootPreviewStatus:SetText(
-        "Preview Pool: shows highest eligible tier; no rolling or awarding."
+        "Preview: Need tiers first, then optional fallback. No roll or award."
     )
 
     local neededMatches = NLL.NeedMatcher:GetMatchesForItem(selected.itemID)
@@ -841,14 +841,10 @@ function UI:RefreshCurrentLootPanel()
         priorityLabel="Fake rule: "..tostring(source)
     end
     local statusText =
-        tostring(#neededMatches) ..
-        " NEEDED, " .. tostring(fallbackCount) ..
-        " FALLBACK character(s); " ..
-        tostring(eligible) ..
-        " currently present/online (before priority checks).  " ..
-        "Priority: " ..
-        priorityLabel ..
-        "."
+        "Need: " .. tostring(#neededMatches) ..
+        " | Fallback: " .. tostring(fallbackCount) ..
+        " | Present: " .. tostring(eligible) ..
+        " (before priority checks) | Rule: " .. priorityLabel
 
     if selected.manualOnly then
         statusText =
@@ -942,7 +938,10 @@ function UI:RefreshCurrentLootPanel()
             elseif NLL.CandidateReview:IsExcluded(selected,match.character) then
                 row.priorityText:SetText('Excluded')
             elseif match.interestStatus == 'FALLBACK' then
-                row.priorityText:SetText('Fallback')
+                local fallbackEligible = priorityLabel == "Tier 1" or
+                    priorityLabel == "Tier 2" or priorityLabel == "Tier 3"
+                row.priorityText:SetText(fallbackEligible and "Fallback" or
+                    ("FB: " .. tostring(priorityLabel or "Unresolved")))
             else
                 row.priorityText:SetText(priorityLabel or '')
             end

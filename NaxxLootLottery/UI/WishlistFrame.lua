@@ -2171,10 +2171,19 @@ function UI:CreateGearPlanTransfer()
     end)
 
     importButton:SetScript("OnClick",function()
+        local alreadyImport=(mode=="IMPORT")
         SetMode("IMPORT")
-        edit:SetText("")
+        -- Only discard the read-only export when FIRST entering import mode.
+        -- A second click must not silently delete a player's pasted raid list.
+        if not alreadyImport then
+            edit:SetText("")
+        end
         edit:SetFocus()
-        SetStatus("Paste your NLL-GEARPLANS-1 text, then press Preview Changes. No existing plans will be edited.")
+        if alreadyImport then
+            SetStatus("Import mode: existing pasted text kept. Click in the large box and press Ctrl+V if needed, then Preview Changes.")
+        else
+            SetStatus("Import mode ready. Click inside the large text box and press Ctrl+V, THEN Preview Changes. No plans changed.")
+        end
     end)
 
     previewButton:SetScript("OnClick",function()
@@ -2183,7 +2192,12 @@ function UI:CreateGearPlanTransfer()
             SetStatus("Choose Paste / Import before previewing.")
             return
         end
-        local candidate,errorText=NLL.GearPlanTransfer:Preview(edit:GetText())
+        local pastedText=edit:GetText() or ""
+        if #pastedText==0 then
+            SetStatus("PREVIEW BLOCKED: The import text box is EMPTY. Click inside the large box and press Ctrl+V. Do not click Import Mode again after pasting.")
+            return
+        end
+        local candidate,errorText=NLL.GearPlanTransfer:Preview(pastedText)
         if not candidate then
             SetStatus("PREVIEW BLOCKED: "..tostring(errorText))
             return

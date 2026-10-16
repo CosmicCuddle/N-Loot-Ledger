@@ -35,7 +35,7 @@ with tempfile.TemporaryDirectory() as tmp:
         assert "db.settings.directMasterLootEnabled = false" in db
         assert "Live Loot Awards (Experimental)" in award_settings
         assert "GiveMasterLoot" not in award_settings.split("heading:SetText")[0]
-        assert len(archive.namelist()) == 33
+        assert len(archive.namelist()) == 34
     # Two successive builds have identical ZIP bytes for the same source.
     second = Path(tmp) / "again.zip"
     assert module.build(second) == digest, "ZIP is not deterministic"

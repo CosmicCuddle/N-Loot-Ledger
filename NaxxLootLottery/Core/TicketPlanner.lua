@@ -18,9 +18,9 @@ function Planner:BuildPreview(entry, matches, options)
         ready = false,
         message = "",
         itemID = entry and entry.itemID or nil,
-        chosenTier = nil,
+        chosenTier = nil, selectionType = nil,
         current = {}, waiting = {}, excluded = {}, unresolved = {},
-        fallbackUnresolved = {},
+        greedUnresolved = {}, needCount = 0, greedCount = 0,
         -- no pre-drop or post-drop lottery ticket objects created
         previewOnly = true,
         debug = entry and entry.slotIndex == 0 or false
@@ -64,49 +64,44 @@ function Planner:BuildPreview(entry, matches, options)
     if not sandbox and NLL.CandidateReview then
         matches = NLL.CandidateReview:MergeMatches(entry,matches)
     end
-    -- Primary matches (including explicit leader additions) are always
-    -- processed first. FALLBACK is evaluated only after all NEEDED tiers.
-    -- This also prevents two sources from giving one character two tickets.
+    -- NEED and GREED are different stages. GREED is NOT Tier 4.
+    -- Explicit leader additions are NEED candidates only when the player
+    -- does not already have a saved GREED reservation (checked in review).
+    -- Primary entries always come first to avoid duplicate character tickets.
     local candidates = {}
     for _, match in ipairs(matches) do
-        table.insert(candidates, match)
+        candidates[#candidates+1] = match
     end
     if not sandbox then
         for _, match in ipairs(NLL.NeedMatcher:GetMatchesForItem(
-            entry.itemID, "FALLBACK")) do
-            table.insert(candidates, match)
+            entry.itemID, "GREED")) do
+            candidates[#candidates+1] = match
         end
     end
-    local pools = { {}, {}, {}, {} }
+    local needPools = {{}, {}, {}}
+    local greedPool = {}
     local seen = {}
-    for i = 1, #candidates do
-        local m = candidates[i]
-        local isFallback = m.interestStatus == "FALLBACK"
+    for _, m in ipairs(candidates) do
+        local isGreed = m.interestStatus == "GREED"
         local key = string.lower((m.character or ""):match("^([^%-]+)") or "")
         if key ~= "" and not seen[key] then
             seen[key] = true
-            -- Explicit leader exclusions are auditable and never rewrite plans.
+            local unresolved = isGreed and result.greedUnresolved or result.unresolved
             if sandbox and options.excluded and options.excluded[key] then
-                table.insert(result.excluded, {match=m,
-                    reason="Simulated leader exclusion"})
+                table.insert(result.excluded, {match=m, reason="Simulated leader exclusion"})
             elseif not sandbox and NLL.CandidateReview and
                 NLL.CandidateReview:IsExcluded(entry,m.character) then
-                table.insert(result.excluded,{match=m,reason='Leader exclusion: '..
+                table.insert(result.excluded, {match=m, reason="Leader exclusion: " ..
                     tostring(NLL.CandidateReview:IsExcluded(entry,m.character))})
-            -- Check presence first. Off-raid plans never enter this pool.
             elseif not m.inRaid or not m.online or m.eligiblePresence == false then
                 table.insert(result.excluded, {match=m, reason="Not present/online"})
             elseif not m.classFile or not NLL:IsValidClass(m.classFile) then
-                table.insert(isFallback and result.fallbackUnresolved or result.unresolved,
-                    {match=m, reason="Class unknown"})
+                table.insert(unresolved, {match=m, reason="Class unknown"})
             elseif not m.role or not NLL.roleLabels[m.role] then
-                table.insert(isFallback and result.fallbackUnresolved or result.unresolved,
-                    {match=m, reason="Role unassigned"})
+                table.insert(unresolved, {match=m, reason="Role unassigned"})
             else
                 local tier, explanation
                 if sandbox then
-                    -- Use the REAL class-eligibility evaluator against the
-                    -- sandbox's selected rule, never changing saved guild rules.
                     if not NLL.PriorityEngine:IsClassEligible(
                         raidKey, entry.itemID, m.classFile, options.rule) then
                         tier = NLL.PriorityEngine.EXCLUDE
@@ -121,59 +116,79 @@ function Planner:BuildPreview(entry, matches, options)
                         raidKey, entry.itemID, m)
                 end
                 if tier == 1 or tier == 2 or tier == 3 then
-                    -- The configured role tier validates eligibility; it never
-                    -- promotes a declared FALLBACK above a primary need.
-                    table.insert(pools[isFallback and 4 or tier], m)
+                    if isGreed then
+                        greedPool[#greedPool+1] = m
+                    else
+                        needPools[tier][#needPools[tier]+1] = m
+                    end
                 elseif tier == NLL.PriorityEngine.EXCLUDE then
                     table.insert(result.excluded, {match=m, reason=explanation or "Excluded"})
                 else
-                    table.insert(isFallback and result.fallbackUnresolved or result.unresolved,
-                        {match=m, reason=explanation or "Unresolved"})
+                    table.insert(unresolved, {match=m, reason=explanation or "Unresolved"})
                 end
             end
         end
     end
-    for tier = 1, 4 do table.sort(pools[tier], ByName) end
-    for tier = 1, 4 do
-        if #pools[tier] > 0 then result.chosenTier=tier break end
+    for tier = 1, 3 do
+        table.sort(needPools[tier], ByName)
+        result.needCount = result.needCount + #needPools[tier]
     end
-    for tier = 1, 4 do
-        for _, m in ipairs(pools[tier]) do
-            if tier == result.chosenTier then
-                table.insert(result.current, m)
-            else
-                table.insert(result.waiting, {match=m, tier=tier})
+    table.sort(greedPool, ByName)
+    result.greedCount = #greedPool
+    for tier = 1, 3 do
+        if #needPools[tier] > 0 and not result.chosenTier then
+            result.chosenTier = tier
+        end
+    end
+    if result.chosenTier then
+        result.selectionType = "NEED"
+        for tier = 1, 3 do
+            for _, m in ipairs(needPools[tier]) do
+                if tier == result.chosenTier then
+                    result.current[#result.current+1] = m
+                else
+                    result.waiting[#result.waiting+1] = {
+                        match=m, selectionType="NEED", tier=tier}
+                end
             end
+        end
+        for _, m in ipairs(greedPool) do
+            result.waiting[#result.waiting+1] = {
+                match=m, selectionType="GREED"}
+        end
+    elseif #greedPool > 0 then
+        result.selectionType = "GREED"
+        for _, m in ipairs(greedPool) do
+            result.current[#result.current+1] = m
         end
     end
     if #result.unresolved > 0 then
-        result.message = tostring(#result.unresolved) ..
-            " present NEEDED character(s) have missing role/class information. " ..
-            "Resolve before using this pool. No roll or award."
+        result.message = #result.unresolved ..
+            " present NEED character(s) have unresolved class/role/policy. " ..
+            "No roll or award until reviewed."
         return result
     end
-    if (not result.chosenTier or result.chosenTier == 4) and
-        #result.fallbackUnresolved > 0 then
-        result.message = tostring(#result.fallbackUnresolved) ..
-            " present FALLBACK character(s) have missing role/class information. " ..
-            "Resolve before a fallback roll. No roll or award."
+    if not result.chosenTier and #result.greedUnresolved > 0 then
+        result.message = #result.greedUnresolved ..
+            " present GREED character(s) have unresolved class/role/policy. " ..
+            "No Greed roll or award until reviewed."
         return result
     end
-    if not result.chosenTier then
-        result.message = "No eligible, present NEEDED or FALLBACK characters " ..
-            "under the configured class/role rules."
+    if not result.selectionType then
+        result.message = "No eligible NEED or GREED candidates. " ..
+            "Leave the item for manual distribution; no roll or award."
         return result
     end
     result.ready = true
-    if result.chosenTier == 4 then
-        result.message = "Fallback / Off-Spec: " .. #result.current ..
-            " candidate(s) after all eligible NEEDED tiers are empty; " ..
+    if result.selectionType == "GREED" then
+        result.message = "GREED lottery: " .. #result.current ..
+            " equal-interest candidate(s), after all NEED tiers are empty. " ..
             #result.excluded .. " excluded. Preview only: no roll or award."
     else
-        result.message = "Tier " .. result.chosenTier .. " has " ..
-            #result.current .. " equal-priority candidate(s); " ..
-            #result.waiting .. " waiting (including fallback interest); " ..
-            #result.excluded .. " excluded. Preview only: no roll or award."
+        result.message = "NEED - Tier " .. result.chosenTier .. ": " ..
+            #result.current .. " candidate(s), " .. #result.waiting ..
+            " waiting (including Greed); " .. #result.excluded ..
+            " excluded. Preview only: no roll or award."
     end
     return result
 end

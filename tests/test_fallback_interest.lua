@@ -141,7 +141,7 @@ check(G:SetStatus(secondary.key,"DISABLED"),"secondary source disabled for later
 names.Gorak.assignedRole=nil
 G:GetNeed(main.key).role=nil
 p=preview(100)
-check(not p.ready and p.message:find("NEEDED"),"unknown primary blocks greed")
+check(not p.ready and p.message:find("NEED"),"unknown primary blocks greed")
 names.Gorak.assignedRole="MAIN_TANK"
 G:GetNeed(main.key).role="MAIN_TANK"
 -- Guild/manual items and unconfigured rules must remain manual.

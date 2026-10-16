@@ -107,11 +107,11 @@ UI.gearTransferTextBox:SetText(source.."\n")
 ok(not UI.gearTransferConfirm.enabled,
     "editing after preview immediately revokes confirmation")
 UI.gearTransferPreview.events.OnClick()
-ok(not UI.gearTransferConfirm.enabled,
-    "trailing junk line is normalized/empty; no fake apply expected only after explicit preview")
--- Empty trailing newline itself is harmless and can still preview: test
--- the input mutation invalidation, then re-preview and confirm.
+ok(UI.gearTransferConfirm.enabled,
+    "explicitly re-previewing harmless trailing whitespace enables confirmation")
+-- Switching back to the original text cancels the re-preview until done again.
 UI.gearTransferTextBox:SetText(source)
+ok(not UI.gearTransferConfirm.enabled,"subsequent edit revokes the confirmation")
 UI.gearTransferPreview.events.OnClick()
 ok(UI.gearTransferConfirm.enabled,"valid preview may be re-requested")
 UI.gearTransferConfirm.events.OnClick()

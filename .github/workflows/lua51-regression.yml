@@ -34,6 +34,8 @@ jobs:
         run: lua5.1 tests/test_need_greed_savedvariables.lua
       - name: Playerbot plan import/export and non-destructive apply
         run: lua5.1 tests/test_gear_plan_transfer.lua
+      - name: Playerbot plan import/export dialog interaction
+        run: lua5.1 tests/test_gear_plan_transfer_ui.lua
       - name: Mixed 40-bot Need Before Greed simulator regression
         run: lua5.1 tests/test_need_before_greed_sim.lua
       - name: Gear Plans six-row footer and status menus regression

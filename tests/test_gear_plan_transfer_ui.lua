@@ -116,11 +116,27 @@ UI.gearTransferImport.events.OnClick()
 ok(UI.gearTransferPreview.enabled and
     not UI.gearTransferConfirm.enabled and UI.gearTransferTextBox.text=="",
     "import starts blank, enables preview and disables confirmation")
+UI.gearTransferPreview.events.OnClick()
+ok(not UI.gearTransferConfirm.enabled and
+   UI.gearTransferStatus.text:find("text box is EMPTY",1,true),
+   "blank paste reports empty text, not a misleading file-format error")
 local source="NLL-GEARPLANS-1\nEiga|PLAYERBOT|CASTER_DPS|MOLTEN_CORE|19147|BOT_GEAR_PLAN|GREED|1"
 UI.gearTransferTextBox:SetText(source)
 ok(UI.gearTransferTextBox.multiline,"paste textbox is multiline")
+UI.gearTransferImport.events.OnClick()
+ok(UI.gearTransferTextBox.text==source,
+    "repeated Paste / Import click must NOT clear an already pasted batch")
+ok(not UI.gearTransferConfirm.enabled,
+    "repeated mode click cancels any pending confirmation")
 UI.gearTransferPreview.events.OnClick()
 ok(UI.gearTransferConfirm.enabled,"validated new plan enables Confirm ADD")
+UI.gearTransferImport.events.OnClick()
+ok(UI.gearTransferTextBox.text==source and
+   not UI.gearTransferConfirm.enabled,
+    "repeated import-mode click preserves text and revokes stale approval")
+UI.gearTransferPreview.events.OnClick()
+ok(UI.gearTransferConfirm.enabled,
+    "re-preview after import-mode click permits safe confirmation")
 ok(refresh==0,"preview alone does not refresh or mutate plans")
 -- Editing one byte AFTER preview must invalidate confirmation.
 UI.gearTransferTextBox:SetText(source.."\n")

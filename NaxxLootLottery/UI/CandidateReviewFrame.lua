@@ -35,7 +35,7 @@ function UI:RefreshCandidateReview()
     if not entry then self.candidateReviewPanel:Hide() return end
     local review=NLL.CandidateReview
     self.candidateReviewTitle:SetText('Review Candidates - '..tostring(entry.itemName))
-    local raw=NLL.NeedMatcher:GetMatchesForItem(entry.itemID)
+    local raw=NLL.NeedMatcher:GetMatchesForReview(entry.itemID)
     local merged=review:MergeMatches(entry,raw)
     self.candidateReviewMatches=merged
     local canEdit,why=review:CanChange(entry)
@@ -62,7 +62,9 @@ function UI:RefreshCandidateReview()
                     return text
                 end)())
             row.state:SetText(excluded and ('Excluded: '..excluded) or
-                (manual and 'Manually added' or (m.inRaid and m.online and 'In raid' or 'Not present')))
+                (manual and 'Manually added' or
+                (m.interestStatus=='FALLBACK' and 'Fallback / Off-Spec' or
+                (m.inRaid and m.online and 'In raid' or 'Not present'))))
             row.action.label:SetText(excluded and 'Restore' or 'Exclude')
             row.remove:Hide()
             if manual then row.remove:Show() end

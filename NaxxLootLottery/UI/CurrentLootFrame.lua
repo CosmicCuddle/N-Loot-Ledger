@@ -617,6 +617,24 @@ function UI:CreateCurrentLootPanel(parent)
         priority:SetWidth(92)
         priority:SetJustifyH("LEFT")
 
+        -- Keep this narrow column single-line, with the complete eligibility
+        -- reason in a standard WoW 3.3.5a tooltip on hover.
+        local priorityHit=CreateFrame("Frame",nil,row)
+        priorityHit:SetPoint("LEFT",row,"LEFT",370,0)
+        priorityHit:SetWidth(92)
+        priorityHit:SetHeight(34)
+        priorityHit:EnableMouse(true)
+        priorityHit:SetScript("OnEnter",function()
+            if GameTooltip and row.priorityExplanation then
+                GameTooltip:SetOwner(priorityHit,"ANCHOR_RIGHT")
+                GameTooltip:SetText(row.priorityExplanation)
+                GameTooltip:Show()
+            end
+        end)
+        priorityHit:SetScript("OnLeave",function()
+            if GameTooltip then GameTooltip:Hide() end
+        end)
+
         row.nameText = name
         row.roleText = role
         row.typeText = charType
@@ -930,18 +948,25 @@ function UI:RefreshCurrentLootPanel()
                     match
                 )
 
+            row.priorityExplanation = tostring(priorityLabel or "Unresolved")
             if simulation then
                 local _,simLabel=NLL.DebugSimulator:GetCandidatePriority(match)
                 if NLL.DebugSimulator.active.exclusions[
                    string.lower(match.character or "")] then simLabel="Excluded" end
                 row.priorityText:SetText(simLabel or "Unconfigured")
+                row.priorityExplanation=tostring(simLabel or "Unconfigured")
             elseif NLL.CandidateReview:IsExcluded(selected,match.character) then
                 row.priorityText:SetText('Excluded')
+                row.priorityExplanation="Leader exclusion for this drop"
             elseif match.interestStatus == 'GREED' then
                 local greedEligible = priorityLabel == "Tier 1" or
                     priorityLabel == "Tier 2" or priorityLabel == "Tier 3"
-                row.priorityText:SetText(greedEligible and "Greed" or
-                    ("GREED: " .. tostring(priorityLabel or "Unresolved")))
+                row.priorityExplanation="GREED interest: "..
+                    tostring(priorityLabel or "Unresolved")
+                local shortLabel=greedEligible and "GREED" or
+                    (priorityLabel=="Wrong class" and "G:Class" or
+                     priorityLabel=="Not eligible" and "G:Excluded" or "G:Review")
+                row.priorityText:SetText(shortLabel)
             else
                 row.priorityText:SetText(priorityLabel or '')
             end

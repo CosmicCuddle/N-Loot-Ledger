@@ -90,8 +90,15 @@ function R:MergeMatches(entry,matches)
     end
     local state=self:GetState(entry)
     if state then
+        -- A saved GREED reservation must remain GREED even when an older
+        -- drop-scoped manual addition was created before the plan changed.
+        local greedKeys={}
+        for _,greed in ipairs(NLL.NeedMatcher:GetMatchesForItem(
+            entry.itemID,"GREED")) do
+            greedKeys[Key(greed.character)]=true
+        end
         for key,m in pairs(state.manual) do
-            if not seen[key] then
+            if not seen[key] and not greedKeys[key] then
                 -- Never trust a cached manual addition as proof the
                 -- character is still in the live raid roster.
                 local member=self:FindRosterMember(m.character)

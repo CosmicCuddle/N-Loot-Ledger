@@ -4,6 +4,7 @@
 
 - Add a `Wishlists > Gear Plans > Import / Export` dialog with a copyable export and pasteable versioned `NLL-GEARPLANS-1` text format.
 - Support **add-only** guarded import: Preview Changes identifies new/identical/conflicting entries; any conflict refuses the whole batch; Confirm ADD must be a separate explicit action and is invalidated by edits or changed Gear Plans.
+- Preserve real Latin-1 UTF-8 character names (including TangØ); reject malformed bytes and case-colliding TangØ/Tangø reservations rather than generating duplicate Playerbot entries.
 - Restrict the first version to PLAYERBOT / BOT_GEAR_PLAN, configured Molten Core item IDs, NLL role IDs and statuses NEEDED/GREED/OBTAINED/DISABLED. No duplicate-copy reservations (copy index must be 1). Limit each batch to 250 rows / 48KB.
 - Do not modify existing Gear Plans, raid-role assignments, personal wishlists, loot identity, lottery/award history, priority rules, network, server or real loot; do not migrate SavedVariables.
 - Add offline Lua 5.1 backend and UI interaction regressions, packaging checks, and a paired-backup owner test checklist. **Not yet installed, accepted, merged, tagged or released.**

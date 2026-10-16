@@ -28,6 +28,8 @@ jobs:
         run: lua5.1 tests/test_loot_identity.lua
       - name: Historical loot and Playerbot regression
         run: lua5.1 tests/test_loot_history_and_bots.lua
+      - name: Fallback and off-spec pool safety regression
+        run: lua5.1 tests/test_fallback_interest.lua
       - name: Dark-only UI and SavedVariables regression
         run: lua5.1 tests/test_dark_skin.lua
       - name: Gear/items and recipe wishlist separation regression

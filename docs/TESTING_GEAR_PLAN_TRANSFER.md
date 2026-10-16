@@ -20,7 +20,7 @@ Gorak|PLAYERBOT|MAIN_TANK|MOLTEN_CORE|18821|BOT_GEAR_PLAN|DISABLED|1
 ```
 
 Header is mandatory. Each row is: Character | PLAYERBOT | Role | MOLTEN_CORE | Item ID | BOT_GEAR_PLAN | Status | Copy index.
-Statuses: NEEDED, GREED, OBTAINED, DISABLED. The last value **must be 1**; multi-copy rings are a separate future milestone. Source/type are restricted to bot Gear Plans, and role must be an existing NLL role ID. Item IDs must exist in the Molten Core catalogue.
+Statuses: NEEDED, GREED, OBTAINED, DISABLED. The importer accepts ASCII and carefully validated Latin-1 UTF-8 character letters, including the actual Raid04 character **TangØ**, without renaming. Invalid sequences and TangØ/Tangø duplicate-key collisions fail closed. The last value **must be 1**; multi-copy rings are a separate future milestone. Source/type are restricted to bot Gear Plans, and role must be an existing NLL role ID. Item IDs must exist in the Molten Core catalogue.
 
 The first version allows up to **250 plans or 48,000 bytes per paste**. Invalid, duplicated or malformed rows, unknown roles/items, manual or player-submitted sources, and old/different status conflicts are rejected before any mutation. If a batch is edited after preview, the confirm button is disabled automatically. No automation, local disk I/O, network transfer, SQL or live loot award is involved.
 

@@ -531,6 +531,14 @@ function S:GetNeeds()
                   state=p.obtainedItems and p.obtainedItems[id] and "OBTAINED" or "NEEDED"}
             end
         end
+        for id,wanted in pairs(p.greedItems or {}) do
+            if wanted then
+                rows[#rows+1]={character=p.character,classFile=p.classFile,
+                  role=p.role,online=p.online,itemID=id,
+                  itemName=(NLL.Data.MoltenCore:GetItem(id) or {}).name or tostring(id),
+                  state=p.obtainedItems and p.obtainedItems[id] and "OBTAINED" or "GREED"}
+            end
+        end
     end
     table.sort(rows,function(a,b)
         if a.character==b.character then return a.itemID<b.itemID end
@@ -547,7 +555,10 @@ function S:GetCandidatePriority(match)
           match.classFile,rule) then return "EXCLUDE","Wrong class" end
     if not match.role then return nil,"Role unknown" end
     local n=rule.rolePriority and rule.rolePriority[match.role]
-    if n==1 or n==2 or n==3 then return n,"Tier "..n end
+    if n==1 or n==2 or n==3 then
+        if match.interestStatus=="GREED" then return "GREED","Greed" end
+        return n,"Tier "..n
+    end
     return n,"Not eligible"
 end
 function S:NextDrop()

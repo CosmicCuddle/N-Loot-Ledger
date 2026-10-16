@@ -13,7 +13,9 @@ local NLL = NaxxLootLottery
 local UI = NLL.UI
 
 local LOCAL_ROWS = 8
-local PLAN_ROWS = 7
+-- Six 42px rows leave a real footer gap at WoW 3.3.5a UI scales.
+-- Seven overlapped pagination in the owner's 19-entry Gear Plans screenshot.
+local PLAN_ROWS = 6
 -- Reserve a dedicated footer below the Inbox item grid at large UI font scales.
 local INBOX_ITEM_ROWS = 4
 
@@ -676,7 +678,7 @@ function UI:CreateGearPlansContent(parent)
     itemBox:SetAutoFocus(false)
 
     local addButton =
-        self:CreateTextButton(content, "Add Need", 78)
+        self:CreateTextButton(content, "Add Plan", 78)
     addButton:SetPoint(
         "TOPRIGHT",
         content,

@@ -45,7 +45,7 @@ jobs:
           cd dist
           sha256sum NLL-PR9-Gear-Plans-Import-Export-TEST-ONLY.zip > SHA256SUMS.txt
           cat > README-PR9-TEST-ONLY.txt <<'NOTE'
-          NAXXRAMAS LOOT LEDGER - PR #8 GEAR PLANS IMPORT / EXPORT
+          NAXXRAMAS LOOT LEDGER - PR #9 GEAR PLANS IMPORT / EXPORT
           EXPERIMENTAL TEST BUILD ONLY - NOT A PUBLISHED RELEASE
 
           This ZIP is from an unmerged development PR. It is not v0.1.0.28,

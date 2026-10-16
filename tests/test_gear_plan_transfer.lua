@@ -125,6 +125,24 @@ invalid("Eiga|PLAYERBOT|HEALER|MOLTEN_CORE|x|BOT_GEAR_PLAN|GREED|1",
 local malformed,explain=T:Preview("no valid header\n"..second)
 ok(not malformed and explain:find("Wrong file format"),
     "unknown format version refused")
+-- An in-client multiline Ctrl+V may alter the clipboard payload even
+-- when the .txt file is correct. A malformed first line MUST fail closed,
+-- but now reports safe diagnostic lengths/bytes instead of vague failure.
+local joined,joinedReason=T:Preview(header..first)
+ok(not joined and joinedReason:find("LF=0",1,true) and
+    joinedReason:find("first=[NLL-GEARPLANS-1",1,true),
+    "joined header and record are refused with missing-LF diagnostic")
+ok(joinedReason:find("hex=4E 4C 4C 2D",1,true),
+    "diagnostic exposes first bytes in safe hex for 3.3.5a clipboard debugging")
+local bom,bomWhy=T:Preview(string.char(239,187,191)..header.."\n"..first)
+ok(not bom and bomWhy:find("hex=EF BB BF",1,true),
+    "invisible UTF-8 BOM is identified and never silently auto-removed")
+local wrongHeader,wrongWhy=T:Preview("NLL-GEARPLANS-X\n"..first)
+ok(not wrongHeader and wrongWhy:find("Expected "..header,1,true),
+    "unknown format version remains blocked")
+ok(n.db.gearNeeds[needKey]==refs.existing and
+    n.db.roleAssignments==refs.roles,
+    "all failed clipboard previews leave pre-existing records untouched")
 local nilData=T:Preview(header)
 ok(not nilData,"header-only import refused")
 local long=T:Preview(string.rep("X",T.MAX_BYTES+1))

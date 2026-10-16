@@ -35,6 +35,8 @@ local function HistoryRow(entry, result, status, note, verified)
         dropUID = entry.dropUID, slotIndex = verified and verified.slot,
         candidateIndex = verified and verified.candidateIndex,
         winner = result.winner, winningTicket = result.winningTicket,
+        selectionType = result.selectionType or 'NEED',
+        priorityTier = result.tier,
         status = status, note = note,
         when = date and date('%Y-%m-%d %H:%M:%S') or 'unknown'
     }

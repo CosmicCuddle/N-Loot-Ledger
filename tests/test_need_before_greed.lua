@@ -190,4 +190,17 @@ check(not allow and reason:find("GREED"),
     "drop-scoped manual Add Candidate cannot bypass Greed interest")
 check(#(N.db.candidateAudit or {})==auditBefore,
     "blocked Greed-to-Need promotion creates no misleading audit")
+-- Also reject a stale manual candidate cached *before* a Gear Plan became Greed.
+local drop={dropUID="drop-100",state="DETECTED",itemID=100,
+    raidKey="MOLTEN_CORE",slotIndex=1,itemName="Item"}
+local reviewState=N.CandidateReview:GetState(drop)
+reviewState.manual.druzz={character="Druzz",role="CASTER_DPS",
+    classFile="MAGE",manualAddition=true}
+local reviewed=N.CandidateReview:MergeMatches(drop,
+    N.NeedMatcher:GetMatchesForItem(100))
+for _,match in ipairs(reviewed) do
+    check(match.character~="Druzz",
+        "cached manual candidate cannot bypass newly saved Greed")
+end
+reviewState.manual.druzz=nil
 print("PASS: "..assertions.." greed/off-spec interest assertions")

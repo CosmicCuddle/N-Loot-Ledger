@@ -9,7 +9,7 @@ local NLL = NaxxLootLottery
 
 NLL.name = "Naxxramas Loot Ledger"
 NLL.shortName = "NLL"
-NLL.version = "0.1.0.28"
+NLL.version = "0.1.0.29-rc.1"
 NLL.databaseVersion = 1
 NLL.initialized = false
 NLL.initializeAttempted = false

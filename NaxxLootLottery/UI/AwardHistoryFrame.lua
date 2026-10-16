@@ -62,6 +62,9 @@ function UI:CreateAwardHistoryContent(parent)
             if line.record then
                 UI.awardHistoryDetail:SetText(
                     tostring(line.record.itemName)..' -> '..tostring(line.record.winner)..
+                    ' | '..(line.record.selectionType=='GREED' and 'GREED' or
+                        ('NEED'..(line.record.priorityTier and
+                         (' Tier '..tostring(line.record.priorityTier)) or '')))..
                     ' | '..Label(line.record)..' | '..tostring(line.record.note or 'No note'))
             end
         end)

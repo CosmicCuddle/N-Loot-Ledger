@@ -48,6 +48,8 @@ end
 local first=scan({16800})[1]
 n.LootIdentity:MarkCompleted(first.dropUID,'MageOne',1,'SERVER_RANDOM_ROLL')
 ok(n.LootIdentity:IsProcessed(first.dropUID),'A processed')
+ok(n.LootIdentity:RestoreOutcome(first).selectionType=='NEED',
+   'historic untyped winner restores as Need')
 local second=scan({18821})[1]
 ok(second.dropUID~=first.dropUID,'B is another group')
 ok(#n.LootIdentity:GetGroup().groups==1,'A archived')
@@ -61,10 +63,18 @@ ok(not allowed and why:find('already has a winner'),'second A roll blocked')
 -- Interleaved multiple signatures, live saved reload, old groups not erased.
 local third=scan({16812})[1]
 ok(third.dropUID~=first.dropUID,'C new group')
+n.LootIdentity:MarkCompleted(third.dropUID,'GreedWinner',1,
+    'SERVER_RANDOM_ROLL','GREED',nil)
+ok(n.LootIdentity:RestoreOutcome(third).selectionType=='GREED',
+   'Greed category stored with a completed winner')
 n.LootIdentity.initialized=false
 n.LootIdentity:Initialize()
 local aagain=scan({16800})[1]
 ok(aagain.dropUID==first.dropUID,'saved history survives reload')
+local greedAgain=scan({16812})[1]
+ok(n.LootIdentity:RestoreOutcome(greedAgain).selectionType=='GREED',
+   'Greed category survives reload and archive recovery')
+scan({16800})
 -- Legitimate NEW A requires explicit action and remains stable on rescans.
 local arm=n.LootIdentity:PrepareReset()
 ok(arm,'leader may request new genuine corpse')

@@ -1,14 +1,14 @@
 # Naxxramas Loot Ledger — Development Roadmap
 
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger  
-**Current baseline:** `v0.1.0.27` pre-release, `main` source `7169f5d7b8e959d1f0b86f9b7f98913d5288b1bb` at handover  
-**Last reviewed:** 13 October 2026  
+**Published baseline:** `v0.1.0.28` (stable-core), `main` `6125fa94f19b1e532f39a881e16c6d1ba666f829`  
+**Last reviewed:** 16 October 2026  
 **Scope:** N-Loot-Ledger / `NaxxLootLottery` addon, WoW 3.3.5a, Lua 5.1.  
 **Companion handover:** [PROJECT-HANDOVER.md](PROJECT-HANDOVER.md)
 
 ## Current position
 
-The NLL source is published as development pre-release `0.1.0.27`. The latest completed additions are:
+The current published NLL source is `v0.1.0.28`. The prior milestones below preserve historical in-client acceptance notes from the original pre-release development. The latest completed baseline additions are:
 
 - Historical loot-opportunity identity recovery across A → B → A visits and `/reload`, with bounded archived groups, conservative ambiguous-group denial and in-place schema-2-to-3 migration.
 - Explicit, logged manual `/nll newloot` / `/nll newloot confirm` for a **different** physical corpse with overlapping loot, not for re-rolling a previously completed drop.
@@ -18,6 +18,18 @@ The NLL source is published as development pre-release `0.1.0.27`. The latest co
 **Evidence boundary:** the repo reports in-game simulation testing, and contains Lua regression tests. It does **not** claim successful real Master Loot delivery to players or Playerbots. No real-award integration test has been newly performed or authorised during this handover. Do not treat source tests, a candidate dropdown or a disappearing loot slot as a delivered-item receipt.
 
 ## Milestones
+
+### M7 — Fallback / Off-Spec loot interest (16 October 2026; review branch)
+
+- [x] Verify latest `main`, published `v0.1.0.28`, historical branches and merged PRs before coding.
+- [x] Create isolated `dev/nll-fallback-offspec-loot` branch from current `main`, preserving all release history and installations.
+- [x] Implement Gear Plan `FALLBACK` status, new-entry selector, separate matching and a last-choice fallback pool after normal tiers 1–3. Keep old status meanings unchanged.
+- [x] Keep class/role priorities, explicit leader exclusions, manual-only items, presence checks, duplicate character deduplication and existing ticket pool revalidation mandatory.
+- [x] Add dedicated Lua 5.1 regression and in-client acceptance checklist; ensure workflow runs test against review branch.
+- [ ] Verify all new CI tests pass on exact draft PR head.
+- [ ] Review draft PR code, complete risk and UI audit, and confirm no unintended SavedVariables or award path modifications.
+- [ ] Owner tests backed-up development build in WoW 3.3.5a, checking Gear Plan selector/status, Current Loot, leader review, off-spec preview, botcheck, existing saved data and history without real loot transfers.
+- [ ] Explicit owner approval required separately for merge and eventual next version/release; neither has been authorised.
 
 ### M0 — Handover and branch hygiene (documentation only; complete)
 

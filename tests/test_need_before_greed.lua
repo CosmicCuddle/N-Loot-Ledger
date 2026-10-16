@@ -213,4 +213,61 @@ for _,match in ipairs(reviewed) do
         "cached manual candidate cannot bypass newly saved Greed")
 end
 reviewState.manual.druzz=nil
+-- Exercise the *real* TicketLottery:Finish path, not merely the preview.
+-- No RandomRoll or GiveMasterLoot is called in this offline verification.
+local activeDrop={itemID=100,itemName="Shared Equipment",raidKey="MOLTEN_CORE",
+    dropUID="greed-finish",slotIndex=1,state="DETECTED"}
+N.LootDetection.GetCurrentLoot=function()return {activeDrop}end
+G:SetStatus(main.key,"OBTAINED")
+local ready=N.TicketPlanner:BuildPreview(activeDrop)
+check(ready.ready and ready.selectionType=="GREED" and
+    #ready.current==1,"Greed ready for real-ticket result revalidation")
+local function pending(entry,result)
+    local keys,tickets={},{}
+    for i,m in ipairs(result.current) do
+        keys[i]=string.lower(m.character)
+        tickets[i]={number=i,character=m.character}
+    end
+    N.TicketLottery.active={
+        status="WAITING_FOR_ROLL",dropUID=entry.dropUID,itemID=entry.itemID,
+        itemName=entry.itemName,raidKey=entry.raidKey,boss="Ragnaros",
+        selectionType=result.selectionType,tier=result.chosenTier,
+        tickets=tickets,candidateKeys=keys,test=false
+    }
+end
+local oldHistory=N.db.lotteryHistory[1]
+pending(activeDrop,ready)
+local finished=N.TicketLottery:Finish(1,"SERVER_RANDOM_ROLL")
+check(finished,"unchanged Greed draw completes through real finish code")
+check(N.TicketLottery.active.status=="COMPLETE" and
+    N.TicketLottery.active.winner=="Druzz" and
+    N.TicketLottery.active.selectionType=="GREED" and
+    N.TicketLottery.active.tier==nil,"Greed winner never masquerades as Need tier")
+local latest=N.db.lotteryHistory[#N.db.lotteryHistory]
+check(latest.status=="COMPLETE" and latest.selectionType=="GREED" and
+    latest.tier==nil and latest.winner=="Druzz",
+    "real ticket history records Greed stage with no fourth tier")
+check(N.db.lotteryHistory[1]==oldHistory and
+    oldHistory.winner=="Historic","new Greed result preserves old history")
+check(not N.TicketLottery:Finish(1,"SERVER_RANDOM_ROLL"),
+    "same finished drop cannot finish twice")
+-- If a Need appears AFTER Start Roll but BEFORE its result, fail closed.
+local lateDrop={itemID=100,itemName="Shared Equipment",raidKey="MOLTEN_CORE",
+    dropUID="late-need",slotIndex=1,state="DETECTED"}
+N.LootDetection.GetCurrentLoot=function()return {lateDrop}end
+ready=N.TicketPlanner:BuildPreview(lateDrop)
+check(ready.ready and ready.selectionType=="GREED","late Need test starts in Greed")
+pending(lateDrop,ready)
+G:SetStatus(main.key,"NEEDED")
+finished=N.TicketLottery:Finish(1,"SERVER_RANDOM_ROLL")
+check(not finished and
+    N.TicketLottery.active.status=="ROLL_UNCONFIRMED" and
+    N.TicketLottery.active.winner==nil,
+    "late Need prevents a Greed server roll result being accepted")
+latest=N.db.lotteryHistory[#N.db.lotteryHistory]
+check(latest.status=="UNVERIFIED" and latest.winner==nil and
+    latest.selectionType=="GREED",
+    "unaccepted result is audited, not saved as a second winner")
+check(N.db.lotteryHistory[1]==oldHistory,
+    "late Need guard never erases historical results")
 print("PASS: "..assertions.." greed/off-spec interest assertions")

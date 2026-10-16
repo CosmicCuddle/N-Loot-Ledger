@@ -4,11 +4,12 @@ local function ok(condition,message)
     assert(condition,message);checks=checks+1
 end
 local n=NaxxLootLottery or {}
-n.roleLabels={CASTER_DPS="Caster DPS",MAIN_TANK="Main Tank",
+n.roleLabels={CASTER_DPS="Caster DPS",MAIN_TANK="Main Tank",TANK="Tank",
     HEALER="Healer",MELEE_DPS="Melee DPS"}
 n.Data={MoltenCore={GetItem=function(_,id)
     return ({[19147]={name="Ring of Spell Power"},
         [18821]={name="Quick Strike Ring"},
+        [17066]={name="Drillborer Disk"},
         [16800]={name="Arcanist Boots"}})[tonumber(id)]
 end}}
 n.IsValidRole=function(self,id)return self.roleLabels[id]~=nil end
@@ -239,4 +240,67 @@ ok(n.db.localWishlists.Owner.MOLTEN_CORE==refs.wish and
     n.db.lootAwardHistory==refs.award and
     n.db.lotteryHistory==refs.lottery,
     "UTF-8 name handling never changes protected save tables")
-print("PASS: "..checks.." Playerbot import/export, conflict, UTF-8 name and history safety checks")
+-- Actual 3.3.5a Ctrl+V evidence: owner's WoW EditBox turned each
+-- literal pipe separator into TWO pipes. Seven -> fourteen separators.
+local function WoWEscaped(s)
+    return (s:gsub("|","||"))
+end
+local gorak="Gorak|PLAYERBOT|TANK|MOLTEN_CORE|17066|BOT_GEAR_PLAN|NEEDED|1"
+local wowGorak=WoWEscaped(gorak)
+local _,numBars=wowGorak:gsub("|","")
+ok(numBars==14,"reproduce exactly 14 pipes from owner screenshot")
+local wowPaste=header.."\n"..first.."\n"..WoWEscaped(second)..
+    "\n"..wowGorak
+local wowPreview,wowReason=T:Preview(wowPaste)
+ok(wowPreview and wowPreview.ready and #wowPreview.rows==3 and
+    wowPreview.newCount==1 and wowPreview.unchanged==2,wowReason or
+    "mixed single/doubled pipes should parse exactly three rows")
+ok(wowPreview.additions[1].character=="Gorak" and
+    wowPreview.additions[1].itemID==17066 and
+    wowPreview.additions[1].status=="NEEDED" and
+    wowPreview.additions[1].role=="TANK",
+    "Gorak's real row retains the exact correct values after unescaping")
+ok(n.db.gearNeeds[G:MakeKey("Gorak","MOLTEN_CORE",17066,"BOT_GEAR_PLAN")]==nil,
+    "read-only mixed-separator preview does not import")
+local mismatch,mismatchWhy=T:Apply(wowPreview,header.."\n"..first..
+    "\n"..second.."\n"..gorak)
+ok(not mismatch and mismatchWhy:find("Preview again"),
+    "confirm requires exact originally-previewed doubled-pipe source")
+local wowApplied,wowMessage=T:Apply(wowPreview,wowPaste)
+ok(wowApplied,wowMessage)
+local gorakKey=G:MakeKey("Gorak","MOLTEN_CORE",17066,"BOT_GEAR_PLAN")
+ok(n.db.gearNeeds[gorakKey] and
+    n.db.gearNeeds[gorakKey].character=="Gorak" and
+    n.db.gearNeeds[gorakKey].status=="NEEDED",
+    "explicit confirmation persists an exact original Gorak Need record")
+local cleanExport,cleanCount=T:Export()
+ok(cleanCount==5 and cleanExport:find(gorak,1,true) and
+    not cleanExport:find(wowGorak,1,true),
+    "export stays single-pipe, regardless of WoW clipboard escaping")
+local repeatedWow=T:Preview(header.."\n"..wowGorak)
+ok(repeatedWow and not repeatedWow.ready and repeatedWow.unchanged==1,
+    "doubled-pipe import stays idempotent")
+-- Every field remains strictly validated even with doubled delimiters.
+invalid(WoWEscaped("Eiga|PLAYERBOT|HEALER|MOLTEN_CORE|18821|BOT_GEAR_PLAN|BOGUS|1"),
+    "Invalid interest")
+invalid(WoWEscaped("Eiga|PLAYERBOT|HEALER|MOLTEN_CORE|999999|BOT_GEAR_PLAN|GREED|1"),
+    "Unknown/invalid")
+invalid(WoWEscaped("Eiga|PLAYERBOT|HEALER|MOLTEN_CORE|18821|BOT_GEAR_PLAN|GREED|2"),
+    "Multi-copy")
+invalid("Eiga||PLAYERBOT|HEALER|MOLTEN_CORE|18821|BOT_GEAR_PLAN|GREED|1",
+    "eight")
+invalid(wowGorak:gsub("||","|||",1),"eight")
+invalid(wowGorak:gsub("||","|",1),"eight")
+invalid(wowGorak.."|","eight")
+local badBatch,badMessage=T:Preview(header.."\n"..wowGorak..
+    "\n"..WoWEscaped("Ghost|PLAYERBOT|TANK|MOLTEN_CORE|17066|BOT_GEAR_PLAN|BOGUS|1"))
+ok(not badBatch and badMessage and badMessage:find("Invalid interest",1,true),
+    "a rejected doubled-pipe row blocks the entire batch")
+ok(n.db.gearNeeds[needKey]==refs.existing and
+    n.db.gearNeeds[legacy.key]==refs.legacy and
+    n.db.roleAssignments==refs.roles and
+    n.db.localWishlists.Owner.MOLTEN_CORE==refs.wish and
+    n.db.lootAwardHistory==refs.award and
+    n.db.lotteryHistory==refs.lottery,
+    "safe doubled-separator import preserves all original tables")
+print("PASS: "..checks.." Playerbot import/export, UTF-8, WoW doubled separators and history safety checks")

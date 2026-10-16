@@ -32,6 +32,8 @@ jobs:
         run: lua5.1 tests/test_fallback_interest.lua
       - name: Mixed 40-bot Need Before Greed simulator regression
         run: lua5.1 tests/test_need_before_greed_sim.lua
+      - name: Gear Plans six-row footer and status menus regression
+        run: lua5.1 tests/test_gear_plans_layout.lua
       - name: Dark-only UI and SavedVariables regression
         run: lua5.1 tests/test_dark_skin.lua
       - name: Gear/items and recipe wishlist separation regression

@@ -1,12 +1,15 @@
 # Changelog
 
-## Unreleased — Fallback / Off-Spec Gear Plan interest (development branch)
+## Unreleased — Need Before Greed (draft PR #8; NOT PUBLISHED)
 
-- Add a separate `FALLBACK` Gear Need status for optional/off-spec interest, selectable before creating the need or later from an existing plan. The old status and storage keys remain valid.
-- Place fallback contenders behind configured primary tiers 1, 2 and 3; preserve class/role restrictions, excluded candidates, manual-only item policy, raid-presence checks and missing-role fail-closed handling.
-- Revalidate the fallback candidate pool before a roll and when accepting a roll result. A newly eligible `NEEDED` contender invalidates a previously prepared fallback pool.
-- Show fallback interest separately in Current Loot, leader candidate review and read-only Playerbot diagnostics.
-- Add Lua 5.1 fallback regression coverage and an acceptance/rollback checklist. **This is not a new released version, and in-client acceptance is outstanding.**
+- Add explicit `GREED` interest to leader-managed Gear Plans alongside `NEEDED`, `OBTAINED` and `DISABLED`; old statuses, keys and SavedVariables remain intact.
+- Keep the existing Need Tier 1–3 priorities unchanged. GREED forms **an independent equal-opportunity stage, not Tier 4**, only when no valid Need contender or unresolved Need blocker exists.
+- Preserve existing role/class, offline, manual-only item, leader exclusion, loot identity and duplicate-roll rules. Block manually promoting a character's Greed into Need without deliberately editing their Gear Plan.
+- Persist NEED/GREED selection type (and optional Need tier) with completed lottery, recovered loot identity and new real award-history events. An old untyped winner remains backward-compatible.
+- Extend the safe Debug Lab with `/nll sim mc40greed` (40 fake bots, eight groups, normal Need drops plus a Greed-only Quick Strike Ring scenario), entirely isolated from real loot and SavedVariables.
+- Fix Gear Plans footer collision seen with 19 entries by limiting each page to **six rows**; add a Lua 5.1 paginated-layout regression.
+- Add strict Lua 5.1 stage, persistence, 40-bot simulation and visual-control regressions and in-client acceptance checklist. **GitHub test success does not certify live award delivery or WoW UI scaling.**
+- Multi-copy equipped-item wishlists and guarded import/export are documented future milestones, not bundled into this change.
 
 ## 0.1.0.28 — First stable-core release (published 2026-10-13)
 

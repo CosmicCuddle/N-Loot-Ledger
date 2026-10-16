@@ -120,7 +120,7 @@ function L:Prepare(entry, matches)
     self.active={
         dropUID=entry.dropUID, itemID=entry.itemID, itemName=entry.itemName,
         raidKey=entry.raidKey, boss=entry.boss,
-        selectionType=preview.selectionType, tier=preview.chosenTier,
+        selectionType=preview.selectionType or 'NEED', tier=preview.chosenTier,
         tickets=tickets, candidateKeys=snapshot,
         status='PREPARED', test=isTest, createdAt=Now(), method=nil
     }
@@ -138,7 +138,7 @@ function L:PoolStillMatches(entry)
     if not a then return false,'Drop changed. Prepare tickets again.' end
     local preview=NLL.TicketPlanner:BuildPreview(entry)
     if not preview.ready or preview.chosenTier~=a.tier or
-        preview.selectionType~=(a.selectionType or 'NEED') or
+        (preview.selectionType or 'NEED')~=(a.selectionType or 'NEED') or
         #preview.current~=#a.tickets then
         return false,'Roster/priority changed. Cancel and prepare new tickets.'
     end

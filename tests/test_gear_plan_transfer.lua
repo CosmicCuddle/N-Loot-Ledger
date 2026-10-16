@@ -165,4 +165,51 @@ ok(n.db.gearNeeds[needKey]==refs.existing and
     n.db.roleAssignments==refs.roles and
     n.db.lootAwardHistory==refs.award,
     "all initial references remain stable")
-print("PASS: "..checks.." Playerbot import/export, conflict, role/history safety checks")
+-- The owner's original Raid04 bot is TangØ (U+00D8).
+-- Preserve the exact UTF-8 bytes; TangO is NOT the same character.
+local tangName="TangØ"
+local tangRecord=header.."\n"..tangName..
+    "|PLAYERBOT|CASTER_DPS|MOLTEN_CORE|19147|BOT_GEAR_PLAN|GREED|1"
+local tangPreview,tangWhy=T:Preview(tangRecord)
+ok(tangPreview and tangPreview.ready and tangPreview.newCount==1,tangWhy)
+ok(tangPreview.additions[1].character==tangName,
+    "UTF-8 Latin-1 name preserved byte-for-byte in the preview")
+local tangOK,tangReason=T:Apply(tangPreview,tangRecord)
+ok(tangOK,tangReason)
+local tangKey=G:MakeKey(tangName,"MOLTEN_CORE",19147,"BOT_GEAR_PLAN")
+ok(n.db.gearNeeds[tangKey] and
+    n.db.gearNeeds[tangKey].character==tangName and
+    n.db.gearNeeds[tangKey].status=="GREED",
+    "TangØ saved with exact name and Greed status")
+local afterTang,exportCount=T:Export()
+ok(exportCount==4 and afterTang:find(tangName,1,true),
+    "export preserves original UTF-8 name, not TangO")
+local tangAgain=T:Preview(tangRecord)
+ok(tangAgain and tangAgain.unchanged==1 and not tangAgain.ready,
+    "TangØ import remains idempotent")
+local renamed=T:Preview((tangRecord:gsub(tangName,"TangO")))
+ok(renamed and renamed.ready and renamed.newCount==1,
+    "a differently spelled TangO is never silently merged into TangØ")
+ok(n.db.gearNeeds[tangKey].character==tangName,
+    "checking a different name does not edit the original")
+local function invalidCharacter(name)
+    local record=header.."\n"..name..
+        "|PLAYERBOT|CASTER_DPS|MOLTEN_CORE|19147|BOT_GEAR_PLAN|GREED|1"
+    local before=G:GetCount()
+    local result,why=T:Preview(record)
+    ok(not result and why and why:find("Invalid character name",1,true),
+        "reject malformed UTF-8 or unsafe character: "..tostring(why))
+    ok(G:GetCount()==before,"malformed names never change Gear Plans")
+end
+invalidCharacter("Tang"..string.char(195))           -- cut UTF-8
+invalidCharacter("Tang"..string.char(195,151))       -- multiplication sign
+invalidCharacter("Tang"..string.char(195,183))       -- division sign
+invalidCharacter("Tang"..string.char(192,175))       -- overlong UTF-8
+invalidCharacter("Tang_".."O")                       -- punctuation
+invalidCharacter("X"..string.rep("y",40))            -- 41 Unicode characters
+ok(n.db.localWishlists.Owner.MOLTEN_CORE==refs.wish and
+    n.db.roleAssignments==refs.roles and
+    n.db.lootAwardHistory==refs.award and
+    n.db.lotteryHistory==refs.lottery,
+    "UTF-8 name handling never changes protected save tables")
+print("PASS: "..checks.." Playerbot import/export, conflict, UTF-8 name and history safety checks")

@@ -2096,7 +2096,16 @@ function UI:CreateGearPlanTransfer()
     well:SetPoint("TOPLEFT",panel,"TOPLEFT",16,-129)
     well:SetPoint("BOTTOMRIGHT",panel,"BOTTOMRIGHT",-16,86)
     self:RegisterSkinnedFrame(well,"row")
-    local scroll=CreateFrame("ScrollFrame",nil,well,"UIPanelScrollFrameTemplate")
+    -- Wrath 3.3.5a's UIPanelScrollFrameTemplate accesses
+    -- frame:GetName() while creating $parentScrollBar. An unnamed
+    -- ScrollFrame makes FrameXML/ScrollFrame_OnLoad concatenate nil.
+    -- Give this singleton dialog's scroll frame a stable global name.
+    local scroll=CreateFrame(
+        "ScrollFrame",
+        "NaxxLootLotteryGearTransferScrollFrame",
+        well,
+        "UIPanelScrollFrameTemplate"
+    )
     scroll:SetPoint("TOPLEFT",well,"TOPLEFT",8,-8)
     scroll:SetPoint("BOTTOMRIGHT",well,"BOTTOMRIGHT",-30,8)
     local edit=CreateFrame("EditBox",nil,scroll)

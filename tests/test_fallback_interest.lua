@@ -93,7 +93,7 @@ local p=preview(100)
 check(p.ready and p.chosenTier==1 and #p.current==1 and
     p.current[1].character=="Gorak","normal Tier 1 beats fallback")
 check(#p.waiting==1 and p.waiting[1].tier==4,"fallback remains waiting")
-check(not G:GetNeed(off.key).status=="NEEDED" or G:GetNeed(off.key).status=="FALLBACK",
+check(G:GetNeed(off.key).status=="FALLBACK",
     "fallback saved independently")
 check(G:SetStatus(main.key,"OBTAINED"),"primary obtained")
 p=preview(100)

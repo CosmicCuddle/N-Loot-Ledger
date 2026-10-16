@@ -36,7 +36,26 @@ local function frame()
     function f:Disable()self.enabled=false end
     return f
 end
-CreateFrame=function()return frame()end
+-- Simulate the native Wrath UIPanelScrollFrameTemplate OnLoad rule:
+-- FrameXML builds '$parentScrollBar' from self:GetName(); nil crashes
+-- with "attempt to concatenate a nil value" in ScrollFrame_OnLoad.
+local scrollTemplates=0
+CreateFrame=function(frameType, frameName, parent, template)
+    local created=frame()
+    created.frameType=frameType
+    created.frameName=frameName
+    function created:GetName()return self.frameName end
+    if template=="UIPanelScrollFrameTemplate" then
+        scrollTemplates=scrollTemplates+1
+        assert(frameType=="ScrollFrame","scroll template requires ScrollFrame")
+        assert(type(created:GetName())=="string" and
+            created:GetName()~="","Wrath 3.3.5a scroll template requires a name")
+        local scrollbarName=created:GetName().."ScrollBar"
+        assert(scrollbarName=="NaxxLootLotteryGearTransferScrollFrameScrollBar",
+            "scrollbar must resolve to the intended named widget")
+    end
+    return created
+end
 UIParent=frame()
 ChatFontNormal={}
 NaxxLootLottery={
@@ -81,6 +100,7 @@ local refs={gear=N.db.gearNeeds,original=N.db.gearNeeds[key],
 local dialog=UI:ShowGearPlanTransfer()
 ok(UI.gearTransferDialog and UI.gearTransferDialog.visible,
     "transfer dialog can open as independent panel")
+ok(scrollTemplates==1,"actual Wrath scroll template was created exactly once")
 ok(UI.gearTransferTextBox.text:find("Druzz",1,true),
     "opens with existing bot plans automatically exported")
 ok(UI.gearTransferTextBox.highlighted and UI.gearTransferTextBox.focused,

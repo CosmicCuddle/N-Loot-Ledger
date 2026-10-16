@@ -162,10 +162,13 @@ function UI:RefreshDebugLab()
         math.ceil(#a.players/5).." groups. All fake; no server bots spawned."}
     local needed={}
     for _,p in ipairs(a.players) do
-        if p.need or (p.wantedItems and p.wantedItems[a.itemID]) then
+        if p.need or (p.wantedItems and p.wantedItems[a.itemID]) or
+            (p.greedItems and p.greedItems[a.itemID]) then
             local mark=(p.online and "online" or "offline")
             if a.exclusions[string.lower(p.character)] then mark=mark..", excluded" end
-            table.insert(needed,p.character.." ["..(p.classFile or "?")..", "..
+            local interest=p.greedItems and p.greedItems[a.itemID] and
+                not (p.wantedItems and p.wantedItems[a.itemID]) and "GREED" or "NEED"
+            table.insert(needed,p.character.." ["..interest..", "..(p.classFile or "?")..", "..
                 (p.role or "UNASSIGNED")..", "..mark.."]")
         end
     end
@@ -173,7 +176,7 @@ function UI:RefreshDebugLab()
     -- Roles windows page through all 40 players and their gear needs.
     local shown={}
     for i=1,math.min(#needed,5) do shown[#shown+1]=needed[i] end
-    table.insert(rows,"Selected drop needs ("..#needed.."): "..
+    table.insert(rows,"Selected drop Need/Greed interest ("..#needed.."): "..
         table.concat(shown,"   |   ")..
         (#needed>5 and "  ... see Wishlists" or ""))
     local preview=a.lastPreview
@@ -184,7 +187,9 @@ function UI:RefreshDebugLab()
         for _,m in ipairs(preview.current) do names[#names+1]=m.character end
         local firstNames={}
         for i=1,math.min(#names,8) do firstNames[#firstNames+1]=names[i] end
-        table.insert(rows,"Highest eligible tier ("..#names.." players): "..
+        local selectedLabel=preview.selectionType=="GREED" and "GREED pool" or
+            ("NEED - Tier "..tostring(preview.chosenTier))
+        table.insert(rows,selectedLabel.." ("..#names.." players): "..
             (#names>0 and table.concat(firstNames,", ") or "none")..
             (#names>8 and ", ..." or ""))
     end
@@ -199,7 +204,8 @@ function UI:RefreshDebugLab()
             (#t>8 and ", ..." or ""))
     end
     if a.result then
-        table.insert(rows,"FAKE WINNER: "..a.result.winner.." (#"..a.result.number..") - NEVER awarded")
+        table.insert(rows,"FAKE WINNER ("..tostring(a.result.selectionType or "NEED").."): "..
+            a.result.winner.." (#"..a.result.number..") - fake only")
     end
     self.debugLabDetail:SetText(table.concat(rows,"\n"))
 end

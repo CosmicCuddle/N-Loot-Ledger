@@ -74,11 +74,28 @@ local function SameCharacterItemKey(row)
         tostring(row.itemID).."|"..tostring(row.source)
 end
 local function Fields(line)
+    -- Wrath 3.3.5a's EditBox can escape a literal | to || when using
+    -- Ctrl+V. In the owner's real client, the seven expected separators
+    -- arrived as fourteen (seven exact || pairs).
+    --
+    -- Normalize ONLY whole rows with exactly seven single separators OR
+    -- exactly seven double separators. Never broadly replace pipes in
+    -- unvalidated text: mixed/triple separators fail closed.
+    local _,pipeCount=line:gsub("|","")
+    if pipeCount==14 then
+        if line:find("|||",1,true) then return nil end
+        local pairs
+        line,pairs=line:gsub("||","|")
+        if pairs~=7 then return nil end
+    elseif pipeCount~=7 then
+        return nil
+    end
     local cells={}
-    -- Capture empty fields too; do not let a missing status shift columns.
+    -- Capture empty fields too; a missing field must not shift columns.
     for value in (line.."|"):gmatch("(.-)|") do
         cells[#cells+1]=value
     end
+    if #cells~=8 then return nil end
     return cells
 end
 local function SortRows(a,b)
@@ -252,8 +269,9 @@ function T:Parse(text)
     local rows,seen={},{}
     for lineNo=2,#lines do
         local fields=Fields(lines[lineNo])
-        if #fields~=8 then
-            return nil,"Line "..lineNo.." needs exactly eight | fields."
+        if not fields or #fields~=8 then
+            return nil,"Line "..lineNo..
+                " needs exactly eight | fields (7 single | or 7 doubled || separators)."
         end
         local rawID=fields[5]
         if not rawID:match("^%d+$") then

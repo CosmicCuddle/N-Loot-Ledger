@@ -178,4 +178,16 @@ okay=N.TicketLottery:PoolStillMatches({
 check(not okay,"new NEED invalidates prepared greed pool")
 check(N.db.lotteryHistory[1].winner=="Historic","old winner history untouched")
 check(G:GetNeed(off.key).status=="GREED","greed SavedVariables preserved")
+-- A leader manually adding a Greed character must not silently promote it.
+N.TicketLottery.liveLootObserved=true
+N.TicketLottery.AuthorityAllowed=function()return true end
+load("Core/CandidateReview.lua")
+local auditBefore=#(N.db.candidateAudit or {})
+local allow,reason=N.CandidateReview:AddCandidate({
+    dropUID="drop-100",state="DETECTED",itemID=100,
+    raidKey="MOLTEN_CORE",slotIndex=1,itemName="Item"}, "Druzz")
+check(not allow and reason:find("GREED"),
+    "drop-scoped manual Add Candidate cannot bypass Greed interest")
+check(#(N.db.candidateAudit or {})==auditBefore,
+    "blocked Greed-to-Need promotion creates no misleading audit")
 print("PASS: "..assertions.." greed/off-spec interest assertions")

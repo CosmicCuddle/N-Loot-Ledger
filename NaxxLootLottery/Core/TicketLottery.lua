@@ -174,7 +174,8 @@ function L:Finish(roll,method)
     a.awardStatus=nil -- not an award until a separate confirmation
     self.results[a.dropUID]=a
     if not a.test and NLL.LootIdentity then
-        NLL.LootIdentity:MarkCompleted(a.dropUID,a.winner,roll,method)
+        NLL.LootIdentity:MarkCompleted(a.dropUID,a.winner,roll,method,
+            a.selectionType or 'NEED',a.tier)
     end
     self:Record('COMPLETE',roll,'Result only. Loot award remains manual.')
     NLL:Print((a.test and '[TEST - no loot awarded] ' or '') ..

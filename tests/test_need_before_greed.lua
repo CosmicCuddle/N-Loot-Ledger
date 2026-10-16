@@ -270,4 +270,35 @@ check(latest.status=="UNVERIFIED" and latest.winner==nil and
     "unaccepted result is audited, not saved as a second winner")
 check(N.db.lotteryHistory[1]==oldHistory,
     "late Need guard never erases historical results")
+-- An unverified/changed server roll must be explicitly cancelled.
+local cancelled,message=N.TicketLottery:Cancel("Pool changed mid-roll")
+check(cancelled and N.TicketLottery.active==nil,
+    "unverified result can only be cleared by audited cancellation")
+latest=N.db.lotteryHistory[#N.db.lotteryHistory]
+check(latest.status=="CANCELLED" and latest.selectionType=="GREED" and
+    latest.winner==nil,"cancelled Greed result does not invent a winner")
+-- No stored plan is enough to place a character in a real raid.
+local absentOkay,absent=G:AddNeed("AbsentBot",100,"MOLTEN_CORE",
+    "CASTER_DPS","GREED","BOT_GEAR_PLAN","PLAYERBOT")
+check(absentOkay,"save absent bot Greed plan for preflight")
+G:SetStatus(main.key,"OBTAINED")
+p=preview(100)
+check(p.ready and p.selectionType=="GREED" and
+    #p.current==1 and p.current[1].character=="Druzz",
+    "missing raid member does not gain a Greed ticket")
+local absentFound=false
+for _,row in ipairs(p.excluded) do
+    if row.match.character=="AbsentBot" and
+        row.reason=="Not present/online" then absentFound=true end
+end
+check(absentFound,"absent Greed bot has explicit exclusion reason")
+-- Unknown class is unresolved, not an eligible Greed player.
+names.Druzz.classFile=nil
+p=preview(100)
+check(not p.ready and #p.greedUnresolved>0 and
+    p.message:find("GREED"),"invalid live/saved class blocks Greed")
+names.Druzz.classFile="MAGE"
+p=preview(100)
+check(p.ready and p.selectionType=="GREED",
+    "restoring verified class restores Greed-only preview")
 print("PASS: "..assertions.." greed/off-spec interest assertions")

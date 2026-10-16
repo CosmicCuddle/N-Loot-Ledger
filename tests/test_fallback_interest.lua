@@ -128,6 +128,8 @@ rules[100]={rolePriority={MAIN_TANK=1,CASTER_DPS=2,HEALER="EXCLUDE"}}
 G:SetStatus(main.key,"OBTAINED")
 N.CandidateReview.IsExcluded=function(_,entry,name) return name=="Druzz" and "Raid leader review" or false end
 p=preview(100)
+print("DEBUG fallback exclusion",tostring(p.ready),tostring(p.chosenTier),p.message,#p.current,#p.excluded)
+for _,row in ipairs(p.current) do print("DEBUG eligible",row.character) end
 check(not p.ready and not p.chosenTier,"leader exclusion blocks the only eligible fallback")
 N.CandidateReview.IsExcluded=function() return false end
 -- Actual item/class restrictions override fallback declarations.

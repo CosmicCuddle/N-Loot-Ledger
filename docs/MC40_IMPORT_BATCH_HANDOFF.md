@@ -15,7 +15,7 @@
 
 The blueprint reports **40 distinct bots** (10 Raid01, 10 Raid02, 10 Raid03, 10 Raid04), with **501 NEEDED** and **139 GREED** rows. P1: NEEDED 377, GREED 96; P2: NEEDED 124, GREED 43. Reported 123 distinct MC item IDs. The 640 actual input rows, uniqueness and row accuracy must be verified from the input files; this README does not contain them.
 
-**Special:** The actual character is **TangØ** (Unicode U+00D8), regardless of the ASCII filename `TangO_UTF8_REVIEW_ONLY`. Never replace the name with `TangO`. The importer now includes a Lua 5.1 Latin-1 UTF-8 byte validator with an exact-name roundtrip regression, but the installed game client needs a fresh experimental build before importing that batch.
+**Special:** The actual character is **TangØ** (Unicode U+00D8), regardless of the ASCII filename `TangO_UTF8_REVIEW_ONLY`. Never replace the name with `TangO`. The importer now includes a Lua 5.1 Latin-1 UTF-8 byte validator, exact-name roundtrip regression and case-variant collision protection (TangØ versus Tangø). **The owner's previously installed PR9 test build predates this fix**; a freshly built experimental package, paired backups, and separate test approval are needed before batch 05.
 
 **Hunters:** Meshana, Elki, Mani, Hettraz all require NLL role ID `RANGED_PHYSICAL_DPS`. Do not silently change their roles in the import or alter any global Raid Role assignment.
 

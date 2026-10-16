@@ -231,7 +231,20 @@ function T:Parse(text)
         if Trim(line)~="" then lines[#lines+1]=Trim(line) end
     end
     if lines[1]~=self.HEADER then
-        return nil,"Wrong file format. First line must be "..self.HEADER.."."
+        -- Diagnostic only: never auto-repair missing line breaks or accept an
+        -- unexpected header. The 3.3.5a clipboard can change pasted text.
+        -- Show a bounded printable prefix and raw leading bytes so the owner
+        -- can report what GetText ACTUALLY returned, without exposing plans.
+        local first=lines[1] or ""
+        local prefix=first:sub(1,24):gsub("[^%g ]","?")
+        local hex={}
+        for i=1,math.min(8,#text) do
+            hex[#hex+1]=string.format("%02X",text:byte(i))
+        end
+        local _,lineBreaks=text:gsub("\n","")
+        return nil,"Wrong file format. Expected "..self.HEADER..
+            ". Pasted "..#text.." bytes, LF="..lineBreaks..
+            ", first=["..prefix.."], hex="..table.concat(hex," ").."."
     end
     if #lines-1>self.MAX_ROWS then
         return nil,"More than "..self.MAX_ROWS.." plans; split the paste."

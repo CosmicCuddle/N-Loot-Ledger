@@ -200,13 +200,15 @@ function I:Assign(entries,forceNew)
     book.lastSeenAt=Wall()
     return entries
 end
-function I:MarkCompleted(uid,winner,ticket,method)
+function I:MarkCompleted(uid,winner,ticket,method,selectionType,tier)
     local row=self:GetRow(uid)
     if not row then return end -- standalone debug testdrop is separate
     row.processed=true
     row.winner=winner
     row.winningTicket=ticket
     row.method=method
+    row.selectionType=selectionType or 'NEED'
+    row.priorityTier=selectionType=='GREED' and nil or tier
     row.processedAt=Wall()
     row.awardContextClosed=false
 end
@@ -233,6 +235,7 @@ function I:RestoreOutcome(entry)
     return {dropUID=entry.dropUID,itemID=entry.itemID,itemName=entry.itemName,
         raidKey=entry.raidKey,boss=entry.boss,status='COMPLETE',
         winner=row.winner,winningTicket=row.winningTicket,
+        selectionType=row.selectionType or 'NEED',tier=row.priorityTier,
         method=row.method or 'RECOVERED',awardStatus=row.awardStatus,
         test=false,restored=true}
 end

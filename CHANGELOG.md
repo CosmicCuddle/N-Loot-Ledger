@@ -1,8 +1,14 @@
 # Changelog
 
-## 0.1.0.28 — First stable-core release candidate (UNPUBLISHED)
+## Unreleased — Fallback / Off-Spec Gear Plan interest (development branch)
 
-**Proposed version only:** The owner chose `v0.1.0.28` for release preparation; no tag, release or merge has been authorised or performed.
+- Add a separate `FALLBACK` Gear Need status for optional/off-spec interest, selectable before creating the need or later from an existing plan. The old status and storage keys remain valid.
+- Place fallback contenders behind configured primary tiers 1, 2 and 3; preserve class/role restrictions, excluded candidates, manual-only item policy, raid-presence checks and missing-role fail-closed handling.
+- Revalidate the fallback candidate pool before a roll and when accepting a roll result. A newly eligible `NEEDED` contender invalidates a previously prepared fallback pool.
+- Show fallback interest separately in Current Loot, leader candidate review and read-only Playerbot diagnostics.
+- Add Lua 5.1 fallback regression coverage and an acceptance/rollback checklist. **This is not a new released version, and in-client acceptance is outstanding.**
+
+## 0.1.0.28 — First stable-core release (published 2026-10-13)
 
 - Make **NLL Dark** the only interface style. Normalize old Vanilla/Classic saved display settings without replacing existing SavedVariables or other records.
 - Separate **My Wishlist → Gear / Items** and **Recipes** while retaining existing item-ID reservations and the combined raid-leader submission payload; profession recipes stay manual allocation.

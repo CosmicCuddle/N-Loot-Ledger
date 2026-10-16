@@ -187,6 +187,15 @@ ok(exportCount==4 and afterTang:find(tangName,1,true),
 local tangAgain=T:Preview(tangRecord)
 ok(tangAgain and tangAgain.unchanged==1 and not tangAgain.ready,
     "TangØ import remains idempotent")
+local caseVariant=tangRecord:gsub(tangName,"Tangø")
+local variantPreview=T:Preview(caseVariant)
+ok(variantPreview and not variantPreview.ready and
+    #variantPreview.conflicts==1 and variantPreview.newCount==0,
+    "Tangø cannot create a duplicate plan for existing TangØ")
+local duplicateVariant=T:Preview(tangRecord.."\n"..caseVariant:match("\n(.+)$"))
+ok(not duplicateVariant,"uppercase/lowercase Ø duplicate in same batch blocked")
+ok(n.db.gearNeeds[tangKey].character==tangName,
+    "UTF-8 collision checking never renames or changes saved TangØ")
 local renamed=T:Preview((tangRecord:gsub(tangName,"TangO")))
 ok(renamed and renamed.ready and renamed.newCount==1,
     "a differently spelled TangO is never silently merged into TangØ")

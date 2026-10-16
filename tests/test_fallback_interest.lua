@@ -107,7 +107,7 @@ check(p.ready and p.chosenTier==3,"even Tier 3 need beats fallback")
 rules[100].rolePriority.MAIN_TANK=1
 -- If primary and fallback exist for the same person from separate sources,
 -- primary wins; the candidate must never obtain two tickets.
-add("Gorak",100,"FALLBACK","RAID_LEADER_MANUAL")
+local secondary=add("Gorak",100,"FALLBACK","RAID_LEADER_MANUAL")
 p=preview(100)
 check(#p.current==1 and p.current[1].character=="Gorak" and
     #p.waiting==1,"same-character duplicate source is never another ticket")
@@ -128,8 +128,6 @@ rules[100]={rolePriority={MAIN_TANK=1,CASTER_DPS=2,HEALER="EXCLUDE"}}
 G:SetStatus(main.key,"OBTAINED")
 N.CandidateReview.IsExcluded=function(_,entry,name) return name=="Druzz" and "Raid leader review" or false end
 p=preview(100)
-print("DEBUG fallback exclusion",tostring(p.ready),tostring(p.chosenTier),p.message,#p.current,#p.excluded)
-for _,row in ipairs(p.current) do print("DEBUG eligible",row.character) end
 check(not p.ready and not p.chosenTier,"leader exclusion blocks the only eligible fallback")
 N.CandidateReview.IsExcluded=function() return false end
 -- Actual item/class restrictions override fallback declarations.

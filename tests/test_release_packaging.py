@@ -30,7 +30,7 @@ with tempfile.TemporaryDirectory() as tmp:
         ).decode()
         assert "## Interface: 30300" in toc
         assert "## SavedVariables: NaxxLootLotteryDB" in toc
-        assert "## Version: 0.1.0.28" in toc
+        assert "## Version: 0.1.0.29-rc.1" in toc
         assert 'NLL.version = "0.1.0.29-rc.1"' in core
         assert "db.settings.directMasterLootEnabled = false" in db
         assert "Live Loot Awards (Experimental)" in award_settings

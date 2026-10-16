@@ -30,6 +30,10 @@ The blueprint reports **40 distinct bots** (10 Raid01, 10 Raid02, 10 Raid03, 10 
 - Once the actual files arrive, first identify which batch(es) and how many source rows belong to Ruby and Arley. Then produce filtered, independently validated import text and report the actual remaining bot count, per-batch counts, total NEED/GREED, and item catalogue checks. Do not guess the new row totals by assuming equal distributions.
 - Verify neither `Ruby` nor `Arley` appears anywhere in the final 8-field import rows before presenting any batch for in-game preview. Preserve the unmodified source data as a backup for later reactivation.
 
+## Client paste compatibility (verified 16 October 2026)
+
+In WoW 3.3.5a, owner provided direct evidence that a correct Gorak row pasted as `Gorak||PLAYERBOT||TANK||...||NEEDED||1` with **14 pipes**, whereas the `.txt` source has 7. PR #9 now safely accepts all-seven-single or all-seven-doubled separators, and rejects malformed/mixed copies. **Do not manually double pipes** in the 604-entry import batches; the original versioned text files are still the source of truth. The owner must install a newer PR #9 test-only artifact after paired backups, preview just Raid01 and provide the NEW/UNCHANGED/CONFLICT counts before Confirm ADD. Ruby and Arley remain excluded. No saved plans were changed by these failed previews.
+
 ## Actual input files are still required
 
 Ask the owner to provide the five prepared `NLL_Import_*.txt` files, or the original `NLL_40_Bot_Quick_Entry.txt` used to generate them. After receipt, perform **offline** tests before any in-game import:

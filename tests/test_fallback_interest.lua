@@ -1,4 +1,4 @@
--- NLL / WoW 3.3.5a Lua 5.1 fallback/off-spec regression.
+-- NLL / WoW 3.3.5a Lua 5.1 greed/off-spec regression.
 -- Runs only offline; no WoW loot transfer APIs are called.
 local assertions=0
 local function check(value,reason)
@@ -81,101 +81,101 @@ local function preview(id)
     })
 end
 local main=add("Gorak",100,"NEEDED")
-local off=add("Druzz",100,"FALLBACK")
-local ghost=add("Offline",100,"FALLBACK")
-local excluded=add("Eiga",100,"FALLBACK")
-check(G:IsValidStatus("FALLBACK"),"fallback is valid")
+local off=add("Druzz",100,"GREED")
+local ghost=add("Offline",100,"GREED")
+local excluded=add("Eiga",100,"GREED")
+check(G:IsValidStatus("GREED"),"greed is valid")
 check(N.db.gearNeedsSchema==1,"no SavedVariables schema migration")
 check(#N.NeedMatcher:GetMatchesForItem(100)==1,"legacy matcher still returns NEEDED only")
-check(#N.NeedMatcher:GetMatchesForItem(100,"FALLBACK")==3,"fallback matches separate")
-check(#N.NeedMatcher:GetMatchesForReview(100)==4,"leader sees primary and fallback")
+check(#N.NeedMatcher:GetMatchesForItem(100,"GREED")==3,"greed matches separate")
+check(#N.NeedMatcher:GetMatchesForReview(100)==4,"leader sees primary and greed")
 local p=preview(100)
 check(p.ready and p.chosenTier==1 and #p.current==1 and
-    p.current[1].character=="Gorak","normal Tier 1 beats fallback")
-check(#p.waiting==1 and p.waiting[1].tier==4,"fallback remains waiting")
-check(G:GetNeed(off.key).status=="FALLBACK",
-    "fallback saved independently")
+    p.current[1].character=="Gorak","normal Tier 1 beats greed")
+check(#p.waiting==1 and p.waiting[1].tier==4,"greed remains waiting")
+check(G:GetNeed(off.key).status=="GREED",
+    "greed saved independently")
 check(G:SetStatus(main.key,"OBTAINED"),"primary obtained")
 p=preview(100)
 check(p.ready and p.chosenTier==4 and #p.current==1 and
-    p.current[1].character=="Druzz","fallback only if no primary available")
+    p.current[1].character=="Druzz","greed only if no primary available")
 check(#p.excluded==2,"offline and guild-excluded interests never enter pool")
 -- A legitimate Tier 2 need outranks optional/off-spec interest.
 local casterNeed=add("Druzz",100,"NEEDED","RAID_LEADER_MANUAL")
 p=preview(100)
 check(p.ready and p.chosenTier==2 and #p.current==1 and
-    p.current[1].character=="Druzz","Tier 2 Need beats fallback")
+    p.current[1].character=="Druzz","Tier 2 Need beats greed")
 check(G:SetStatus(casterNeed.key,"DISABLED"),"optional secondary source disabled")
--- Several fallback contenders must share one equal-priority pool.
+-- Several greed contenders must share one equal-priority pool.
 local taenir={name="Taenir",classFile="MAGE",online=true,assignedRole="CASTER_DPS"}
 table.insert(roster,taenir)
 names.Taenir=taenir
-local other=add("Taenir",100,"FALLBACK")
+local other=add("Taenir",100,"GREED")
 p=preview(100)
 check(p.ready and p.chosenTier==4 and #p.current==2 and
     p.current[1].character=="Druzz" and
-    p.current[2].character=="Taenir","equal fallback contenders share one pool")
--- A missing fallback role blocks fallback but cannot obstruct a valid Need.
+    p.current[2].character=="Taenir","equal greed contenders share one pool")
+-- A missing greed role blocks greed but cannot obstruct a valid Need.
 other.role=nil
 taenir.assignedRole=nil
 p=preview(100)
-check(not p.ready and p.message:find("FALLBACK"),"unknown fallback role fails closed")
+check(not p.ready and p.message:find("GREED"),"unknown greed role fails closed")
 check(G:SetStatus(main.key,"NEEDED"),"primary restored")
 p=preview(100)
-check(p.ready and p.chosenTier==1,"unresolved fallback does not block valid Need")
+check(p.ready and p.chosenTier==1,"unresolved greed does not block valid Need")
 taenir.assignedRole="CASTER_DPS"
 other.role="CASTER_DPS"
-check(G:SetStatus(other.key,"DISABLED"),"additional fallback disabled for later tests")
+check(G:SetStatus(other.key,"DISABLED"),"additional greed disabled for later tests")
 rules[100].rolePriority.MAIN_TANK=3
 p=preview(100)
-check(p.ready and p.chosenTier==3,"even Tier 3 need beats fallback")
+check(p.ready and p.chosenTier==3,"even Tier 3 need beats greed")
 rules[100].rolePriority.MAIN_TANK=1
--- If primary and fallback exist for the same person from separate sources,
+-- If primary and greed exist for the same person from separate sources,
 -- primary wins; the candidate must never obtain two tickets.
-local secondary=add("Gorak",100,"FALLBACK","RAID_LEADER_MANUAL")
+local secondary=add("Gorak",100,"GREED","RAID_LEADER_MANUAL")
 p=preview(100)
 check(#p.current==1 and p.current[1].character=="Gorak" and
     #p.waiting==1,"same-character duplicate source is never another ticket")
 check(G:SetStatus(secondary.key,"DISABLED"),"secondary source disabled for later fixtures")
--- All present primary role/class unknown blocks a fallback roll.
+-- All present primary role/class unknown blocks a greed roll.
 names.Gorak.assignedRole=nil
 G:GetNeed(main.key).role=nil
 p=preview(100)
-check(not p.ready and p.message:find("NEEDED"),"unknown primary blocks fallback")
+check(not p.ready and p.message:find("NEEDED"),"unknown primary blocks greed")
 names.Gorak.assignedRole="MAIN_TANK"
 G:GetNeed(main.key).role="MAIN_TANK"
 -- Guild/manual items and unconfigured rules must remain manual.
-add("Druzz",300,"FALLBACK")
+add("Druzz",300,"GREED")
 check(not preview(300).ready,"manual-only item cannot fall back")
 rules[100]=nil
-check(not preview(100).ready,"unconfigured priority blocks fallback")
+check(not preview(100).ready,"unconfigured priority blocks greed")
 rules[100]={rolePriority={MAIN_TANK=1,CASTER_DPS=2,HEALER="EXCLUDE"}}
--- Explicit leader exclusions must remain effective for fallback.
+-- Explicit leader exclusions must remain effective for greed.
 G:SetStatus(main.key,"OBTAINED")
 N.CandidateReview.IsExcluded=function(_,entry,name) return name=="Druzz" and "Raid leader review" or false end
 p=preview(100)
-check(not p.ready and not p.chosenTier,"leader exclusion blocks the only eligible fallback")
+check(not p.ready and not p.chosenTier,"leader exclusion blocks the only eligible greed")
 N.CandidateReview.IsExcluded=function() return false end
--- Actual item/class restrictions override fallback declarations.
-add("Gorak",200,"FALLBACK")
+-- Actual item/class restrictions override greed declarations.
+add("Gorak",200,"GREED")
 p=preview(200)
-check(not p.ready and #p.excluded>0,"wrong-class fallback excluded")
--- A prepared fallback draw cannot proceed after a new legitimate need appears.
+check(not p.ready and #p.excluded>0,"wrong-class greed excluded")
+-- A prepared greed draw cannot proceed after a new legitimate need appears.
 G:SetStatus(main.key,"OBTAINED")
 p=preview(100)
-check(p.ready and p.chosenTier==4,"fallback pool can be prepared")
+check(p.ready and p.chosenTier==4,"greed pool can be prepared")
 N.TicketLottery.active={dropUID="drop-100",tier=p.chosenTier,
     candidateKeys={"druzz"},tickets={{number=1,character="Druzz"}},
     status="PREPARED"}
 local okay=N.TicketLottery:PoolStillMatches({
     itemID=100,itemName="Item",raidKey="MOLTEN_CORE",
     dropUID="drop-100",slotIndex=1,state="DETECTED"})
-check(okay,"unchanged fallback pool valid")
+check(okay,"unchanged greed pool valid")
 G:SetStatus(main.key,"NEEDED")
 okay=N.TicketLottery:PoolStillMatches({
     itemID=100,itemName="Item",raidKey="MOLTEN_CORE",
     dropUID="drop-100",slotIndex=1,state="DETECTED"})
-check(not okay,"new NEED invalidates prepared fallback pool")
+check(not okay,"new NEED invalidates prepared greed pool")
 check(N.db.lotteryHistory[1].winner=="Historic","old winner history untouched")
-check(G:GetNeed(off.key).status=="FALLBACK","fallback SavedVariables preserved")
-print("PASS: "..assertions.." fallback/off-spec interest assertions")
+check(G:GetNeed(off.key).status=="GREED","greed SavedVariables preserved")
+print("PASS: "..assertions.." greed/off-spec interest assertions")

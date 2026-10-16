@@ -66,6 +66,7 @@ jobs:
             lua5.1 "$test_file"
           done
 
+      # Never publish when any version, Lua 5.1, or deterministic package check fails.
       - name: Check reproducible ZIP, version, contents and Direct Master Loot default OFF
         shell: bash
         run: |

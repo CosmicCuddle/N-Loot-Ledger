@@ -810,10 +810,9 @@ function UI:RefreshCurrentLootPanel()
         "Preview Pool: shows highest eligible tier; no rolling or awarding."
     )
 
-    local matches =
-        NLL.NeedMatcher:GetMatchesForItem(
-            selected.itemID
-        )
+    local neededMatches = NLL.NeedMatcher:GetMatchesForItem(selected.itemID)
+    local matches = NLL.NeedMatcher:GetMatchesForReview(selected.itemID)
+    local fallbackCount = #matches - #neededMatches
     if not simulation then
         matches=NLL.CandidateReview:MergeMatches(selected,matches)
     end
@@ -842,10 +841,11 @@ function UI:RefreshCurrentLootPanel()
         priorityLabel="Fake rule: "..tostring(source)
     end
     local statusText =
-        tostring(#matches) ..
-        " NEEDED character(s); " ..
+        tostring(#neededMatches) ..
+        " NEEDED, " .. tostring(fallbackCount) ..
+        " FALLBACK character(s); " ..
         tostring(eligible) ..
-        " currently eligible by raid presence.  " ..
+        " currently present/online (before priority checks).  " ..
         "Priority: " ..
         priorityLabel ..
         "."
@@ -941,6 +941,8 @@ function UI:RefreshCurrentLootPanel()
                 row.priorityText:SetText(simLabel or "Unconfigured")
             elseif NLL.CandidateReview:IsExcluded(selected,match.character) then
                 row.priorityText:SetText('Excluded')
+            elseif match.interestStatus == 'FALLBACK' then
+                row.priorityText:SetText('Fallback')
             else
                 row.priorityText:SetText(priorityLabel or '')
             end

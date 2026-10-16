@@ -131,7 +131,7 @@ ok(not malformed and explain:find("Wrong file format"),
 local joined,joinedReason=T:Preview(header..first)
 ok(not joined and joinedReason:find("LF=0",1,true) and
     joinedReason:find("first=[NLL-GEARPLANS-1",1,true),
-    "joined header and record are refused with missing-LF diagnostic")
+    "joined header and record are refused with missing-LF diagnostic: "..tostring(joinedReason))
 ok(joinedReason:find("hex=4E 4C 4C 2D",1,true),
     "diagnostic exposes first bytes in safe hex for 3.3.5a clipboard debugging")
 local bom,bomWhy=T:Preview(string.char(239,187,191)..header.."\n"..first)

@@ -2,10 +2,14 @@
 
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger  
 **Project short name:** NLL  
-**Development baseline:** `main` at `7169f5d7b8e959d1f0b86f9b7f98913d5288b1bb` (8 October 2026, version `0.1.0.27`)  
-**Handover prepared:** 13 October 2026  
+**Current published baseline (verified 16 October 2026):** `v0.1.0.28`, `main` at `6125fa94f19b1e532f39a881e16c6d1ba666f829`  
+**Original historical handover prepared:** 13 October 2026  
 **Client:** World of Warcraft 3.3.5a, Interface 30300, Lua 5.1  
-**Status:** Development **pre-release**; not independently certified for real Master Loot delivery.
+**Status:** Published stable-core v0.1.0.28; real Master Loot delivery remains experimental, OFF by default and not certified. Fallback interest is a separate, unreleased feature branch.
+
+**16 October 2026 continuation:** A clean development branch `dev/nll-fallback-offspec-loot` was created from current `main`. Add `FALLBACK` Gear Plan interest without replacing SavedVariables, with a last-resort fourth pool *behind* primary tiers 1–3, respecting configured priority and class/role eligibility, manual-only exclusions, drop-scoped candidate review, roster presence and ticket revalidation. Include new Lua 5.1 tests and [non-awarding acceptance checklist](TESTING_FALLBACK_INTEREST.md). The published release, installed addon, personal wishlist, award history and live transfer settings are unchanged. This is a proposed implementation requiring CI and later backed-up client validation; no merge, release or real award is approved.
+
+**Historical note:** The paragraphs and checkpoints below describe their dates, not current GitHub PR or release state. PRs #2, #3 and #6 were subsequently merged, and v0.1.0.28 was published.
 
 **Unreleased development checkpoint (13 October 2026):** Owner elected to continue with a dark-only UI cleanup. The isolated branch `dev/nll-dark-only-ui` removes the Vanilla theme and appearance-selection panel, retaining existing NLL Dark styling; obsolete skin preferences normalize to DARK without replacing the DB. The branch adds offline Lua 5.1 smoke tests and branch regression CI. The [draft PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2) has passed [automated Lua 5.1 tests](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38396113585); it remains **pending in-client visual review and owner's approval**, not a merged fix or public release. The first owner screenshots confirmed Dark styling and Settings tabs but exposed a Priority Setup preset-footer overflow; the same draft PR now anchors the footer inside the panel and includes a layout regression assertion. The updated footer still needs an owner screenshot after installing fresh branch code. No real loot award or SavedVariables destructive operation is authorised. See [dark-only testing checklist](TESTING_DARK_ONLY_UI.md) and the roadmap M5a milestone.
 
@@ -20,12 +24,12 @@ This is a **handover to a separate NLL development conversation**. The active N-
 - **Public project name:** Naxxramas Loot Ledger (NLL).
 - **GitHub repository:** `CosmicCuddle/N-Loot-Ledger`.
 - **Installed addon directory:** `Interface/AddOns/NaxxLootLottery/`.
-- **TOC filename:** `NaxxLootLottery.toc`, `## Interface: 30300`, `## Version: 0.1.0.27`.
+- **TOC filename:** `NaxxLootLottery.toc`, `## Interface: 30300`, `## Version: 0.1.0.28`.
 - **Global SavedVariables key:** `NaxxLootLotteryDB` (do not rename casually).
 - **Primary command:** `/nll`; legacy `/naxxlootlottery` remains.
 - Existing addon folders, SavedVariables and slash commands were intentionally kept during rebranding. Do not replace them just because public wording says N-Loot-Ledger.
 
-**Public releases:** `v0.1.0.25`, `v0.1.0.26` and `v0.1.0.27` were published as **pre-releases**. The latest published `v0.1.0.27` includes the installable `Naxxramas-Loot-Ledger-v0.1.0.27.zip` asset. No newer approved code version or open development PR was visible at this handover. Always verify the current branch, PRs, tags and CI again when resuming.
+**Public release update (16 October):** The latest approved published version is now `v0.1.0.28` (stable-core). The earlier v0.1.0.27 description was correct only at the 13 October historical checkpoint. Never infer a new release from a development PR.
 
 ## 3. Latest completed features (0.1.0.27)
 
@@ -52,7 +56,7 @@ This is a **handover to a separate NLL development conversation**. The active N-
 **Before any addon install:** exit WoW, copy `Interface/AddOns/NaxxLootLottery` and `WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua` plus `.lua.bak` (and any character-level copies if present). Preserve matching folder and SavedVariables backups together. To undo an upgrade, quit WoW and restore **both** backups; reverting only Lua files may not undo data migration.
 
 **Non-destructive first acceptance:**
-- `/nll version` should show `0.1.0.27`; `/nll status` should show READY.
+- `/nll version` should show `0.1.0.28` for the currently published release; `/nll status` should show READY.
 - `/nll lootidentity` reports the active opportunity and archived group count.
 - Check whether Debug is enabled before toggling `/nll debug`; `/nll sim mc40` starts an isolated 40-player simulation. Run fake tickets, inspect fake winner and simulated award, then `/nll sim stop`.
 - For real Playerbot diagnostics, stop simulation, enter a genuine raid and use `/nll botcheck` or `/nll botcheck BotName`; this is read-only.

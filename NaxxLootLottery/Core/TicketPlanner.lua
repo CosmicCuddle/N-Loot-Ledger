@@ -127,7 +127,8 @@ function Planner:BuildPreview(entry, matches, options)
                 elseif tier == NLL.PriorityEngine.EXCLUDE then
                     table.insert(result.excluded, {match=m, reason=explanation or "Excluded"})
                 else
-                    table.insert(result.unresolved, {match=m, reason=explanation or "Unresolved"})
+                    table.insert(isFallback and result.fallbackUnresolved or result.unresolved,
+                        {match=m, reason=explanation or "Unresolved"})
                 end
             end
         end

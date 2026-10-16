@@ -20,6 +20,7 @@ function Planner:BuildPreview(entry, matches, options)
         itemID = entry and entry.itemID or nil,
         chosenTier = nil,
         current = {}, waiting = {}, excluded = {}, unresolved = {},
+        fallbackUnresolved = {},
         -- no pre-drop or post-drop lottery ticket objects created
         previewOnly = true,
         debug = entry and entry.slotIndex == 0 or false
@@ -63,10 +64,24 @@ function Planner:BuildPreview(entry, matches, options)
     if not sandbox and NLL.CandidateReview then
         matches = NLL.CandidateReview:MergeMatches(entry,matches)
     end
-    local pools = { {}, {}, {} }
+    -- Primary matches (including explicit leader additions) are always
+    -- processed first. FALLBACK is evaluated only after all NEEDED tiers.
+    -- This also prevents two sources from giving one character two tickets.
+    local candidates = {}
+    for _, match in ipairs(matches) do
+        table.insert(candidates, match)
+    end
+    if not sandbox then
+        for _, match in ipairs(NLL.NeedMatcher:GetMatchesForItem(
+            entry.itemID, "FALLBACK")) do
+            table.insert(candidates, match)
+        end
+    end
+    local pools = { {}, {}, {}, {} }
     local seen = {}
-    for i = 1, #matches do
-        local m = matches[i]
+    for i = 1, #candidates do
+        local m = candidates[i]
+        local isFallback = m.interestStatus == "FALLBACK"
         local key = string.lower((m.character or ""):match("^([^%-]+)") or "")
         if key ~= "" and not seen[key] then
             seen[key] = true
@@ -82,9 +97,11 @@ function Planner:BuildPreview(entry, matches, options)
             elseif not m.inRaid or not m.online or m.eligiblePresence == false then
                 table.insert(result.excluded, {match=m, reason="Not present/online"})
             elseif not m.classFile or not NLL:IsValidClass(m.classFile) then
-                table.insert(result.unresolved, {match=m, reason="Class unknown"})
+                table.insert(isFallback and result.fallbackUnresolved or result.unresolved,
+                    {match=m, reason="Class unknown"})
             elseif not m.role or not NLL.roleLabels[m.role] then
-                table.insert(result.unresolved, {match=m, reason="Role unassigned"})
+                table.insert(isFallback and result.fallbackUnresolved or result.unresolved,
+                    {match=m, reason="Role unassigned"})
             else
                 local tier, explanation
                 if sandbox then
@@ -104,7 +121,9 @@ function Planner:BuildPreview(entry, matches, options)
                         raidKey, entry.itemID, m)
                 end
                 if tier == 1 or tier == 2 or tier == 3 then
-                    table.insert(pools[tier], m)
+                    -- The configured role tier validates eligibility; it never
+                    -- promotes a declared FALLBACK above a primary need.
+                    table.insert(pools[isFallback and 4 or tier], m)
                 elseif tier == NLL.PriorityEngine.EXCLUDE then
                     table.insert(result.excluded, {match=m, reason=explanation or "Excluded"})
                 else
@@ -113,11 +132,11 @@ function Planner:BuildPreview(entry, matches, options)
             end
         end
     end
-    for tier = 1, 3 do table.sort(pools[tier], ByName) end
-    for tier = 1, 3 do
+    for tier = 1, 4 do table.sort(pools[tier], ByName) end
+    for tier = 1, 4 do
         if #pools[tier] > 0 then result.chosenTier=tier break end
     end
-    for tier = 1, 3 do
+    for tier = 1, 4 do
         for _, m in ipairs(pools[tier]) do
             if tier == result.chosenTier then
                 table.insert(result.current, m)
@@ -132,15 +151,29 @@ function Planner:BuildPreview(entry, matches, options)
             "Resolve before using this pool. No roll or award."
         return result
     end
+    if (not result.chosenTier or result.chosenTier == 4) and
+        #result.fallbackUnresolved > 0 then
+        result.message = tostring(#result.fallbackUnresolved) ..
+            " present FALLBACK character(s) have missing role/class information. " ..
+            "Resolve before a fallback roll. No roll or award."
+        return result
+    end
     if not result.chosenTier then
-        result.message="No eligible, present NEEDED characters at any configured tier."
+        result.message = "No eligible, present NEEDED or FALLBACK characters " ..
+            "under the configured class/role rules."
         return result
     end
     result.ready = true
-    result.message = "Tier " .. result.chosenTier .. " has " ..
-        #result.current .. " equal-priority candidate(s); " ..
-        #result.waiting .. " waiting; " .. #result.excluded ..
-        " excluded. Preview only: no roll or award."
+    if result.chosenTier == 4 then
+        result.message = "Fallback / Off-Spec: " .. #result.current ..
+            " candidate(s) after all eligible NEEDED tiers are empty; " ..
+            #result.excluded .. " excluded. Preview only: no roll or award."
+    else
+        result.message = "Tier " .. result.chosenTier .. " has " ..
+            #result.current .. " equal-priority candidate(s); " ..
+            #result.waiting .. " waiting (including fallback interest); " ..
+            #result.excluded .. " excluded. Preview only: no roll or award."
+    end
     return result
 end
 

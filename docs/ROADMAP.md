@@ -26,8 +26,10 @@ The current published NLL source is `v0.1.0.28`. The prior milestones below pres
 - [x] Implement Gear Plan `FALLBACK` status, new-entry selector, separate matching and a last-choice fallback pool after normal tiers 1–3. Keep old status meanings unchanged.
 - [x] Keep class/role priorities, explicit leader exclusions, manual-only items, presence checks, duplicate character deduplication and existing ticket pool revalidation mandatory.
 - [x] Add dedicated Lua 5.1 regression and in-client acceptance checklist; ensure workflow runs test against review branch.
-- [ ] Verify all new CI tests pass on exact draft PR head.
-- [ ] Review draft PR code, complete risk and UI audit, and confirm no unintended SavedVariables or award path modifications.
+- [x] GitHub Lua 5.1 CI passed with new fallback tests and all existing suites on 16 October 2026 ([run 38884455388](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/38884455388)); rerun/verify any newer branch head before accepting.
+- [x] Open [draft PR #8](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/8) with prototype, safety evidence, open design conflict and explicit no-merge gate.
+- [ ] Align the initial `FALLBACK` prototype with the subsequent owner request for a separate `GREED` stage (not Tier 4) before considering acceptance. This is intentionally deferred until the next development stage.
+- [ ] Complete in-game/UI layout and safety review; the owner separately reported Gear Plans overlap and proposed multiple-copy gear needs and bulk import/export. Those are deferred, not fixed by this prototype.
 - [ ] Owner tests backed-up development build in WoW 3.3.5a, checking Gear Plan selector/status, Current Loot, leader review, off-spec preview, botcheck, existing saved data and history without real loot transfers.
 - [ ] Explicit owner approval required separately for merge and eventual next version/release; neither has been authorised.
 

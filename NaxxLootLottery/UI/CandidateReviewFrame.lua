@@ -63,7 +63,8 @@ function UI:RefreshCandidateReview()
                 end)())
             row.state:SetText(excluded and ('Excluded: '..excluded) or
                 (manual and 'Manually added' or
-                (m.interestStatus=='FALLBACK' and 'Fallback / Off-Spec' or
+                (m.interestStatus=='FALLBACK' and
+                (m.inRaid and m.online and 'Fallback / Off-Spec' or 'Fallback (not present)') or
                 (m.inRaid and m.online and 'In raid' or 'Not present'))))
             row.action.label:SetText(excluded and 'Restore' or 'Exclude')
             row.remove:Hide()

@@ -1,0 +1,132 @@
+name: Publish NLL v0.1.0.29-rc.1 (Pre-release)
+
+on:
+  push:
+    branches:
+      - prerelease/v0.1.0.29-rc.1
+    paths:
+      - '.github/workflows/publish-v0.1.0.29-rc.1.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nll-v0.1.0.29-rc.1-publish
+  cancel-in-progress: false
+
+jobs:
+  prerelease:
+    name: Validate precise source and publish one prerelease ZIP
+    if: github.repository == 'CosmicCuddle/N-Loot-Ledger'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full source and tags at this exact release commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify branch identity, parent, no unreviewed release changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='c39034c306168e402480edb1b5d0c4d7a647ea98'
+          test "$GITHUB_REF" = "refs/heads/prerelease/v0.1.0.29-rc.1"
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|docs/PRERELEASE_v0.1.0.29-rc.1.md|.github/workflows/publish-v0.1.0.29-rc.1.yml) ;;
+              *) echo "::error::Unexpected difference from reviewed PR9: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          test -z "$(git status --porcelain)"
+          grep -qx '## Version: 0.1.0.29-rc.1' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'NLL.version = "0.1.0.29-rc.1"' NaxxLootLottery/Core/Core.lua
+          grep -qx '## SavedVariables: NaxxLootLotteryDB' NaxxLootLottery/NaxxLootLottery.toc
+
+      - name: Install Lua 5.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+
+      - name: Syntax check all addon modules and all tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+
+      - name: Run entire Lua regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test_file in tests/test_*.lua; do
+            echo "Running $test_file"
+            lua5.1 "$test_file"
+          done
+
+      - name: Check reproducible ZIP, version, contents and Direct Master Loot default OFF
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/test_release_packaging.py
+
+      - name: Build the release ZIP and checksum (one addon folder only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          ZIP='Naxxramas-Loot-Ledger-v0.1.0.29-rc.1.zip'
+          python3 scripts/build_release_zip.py --output "dist/$ZIP"
+          (cd dist && sha256sum "$ZIP" > SHA256SUMS.txt && sha256sum -c SHA256SUMS.txt)
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          z=Path('dist/Naxxramas-Loot-Ledger-v0.1.0.29-rc.1.zip')
+          with ZipFile(z) as a:
+              assert a.testzip() is None
+              assert len(a.namelist()) == 34
+              assert all(n.startswith('NaxxLootLottery/') for n in a.namelist())
+              t=a.read('NaxxLootLottery/NaxxLootLottery.toc').decode('utf-8')
+              core=a.read('NaxxLootLottery/Core/Core.lua').decode('utf-8')
+              assert '## Version: 0.1.0.29-rc.1' in t
+              assert 'NLL.version = "0.1.0.29-rc.1"' in core
+              assert 'Core\\GearPlanTransfer.lua' in t
+          print('PASS: Installable addon ZIP, no personal data, exact pre-release version')
+          PY
+
+      - name: Save an immutable Actions copy of the validated package
+        uses: actions/upload-artifact@v4
+        with:
+          name: NLL-v0.1.0.29-rc.1-prerelease-validated
+          path: |
+            dist/Naxxramas-Loot-Ledger-v0.1.0.29-rc.1.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish new pre-release only (never overwrite an existing tag/release)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='v0.1.0.29-rc.1'
+          ZIP='Naxxramas-Loot-Ledger-v0.1.0.29-rc.1.zip'
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Pre-release already exists; refusing to mutate it."
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Version tag already exists; refusing to retag."
+            exit 1
+          fi
+          gh release create "$TAG" "dist/$ZIP" dist/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title 'Naxxramas Loot Ledger v0.1.0.29-rc.1 (Pre-release)' \
+            --notes-file docs/PRERELEASE_v0.1.0.29-rc.1.md \
+            --prerelease
+          test "$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isPrerelease --jq '.isPrerelease')" = 'true'
+          echo "Created pre-release from exact commit $GITHUB_SHA"

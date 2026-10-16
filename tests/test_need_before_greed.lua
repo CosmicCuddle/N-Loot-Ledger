@@ -105,6 +105,16 @@ local casterNeed=add("Druzz",100,"NEEDED","RAID_LEADER_MANUAL")
 p=preview(100)
 check(p.ready and p.selectionType=="NEED" and p.chosenTier==2 and #p.current==1 and
     p.current[1].character=="Druzz","Tier 2 Need beats greed")
+-- Tier 2 must also outrank an actual Tier 3 Need, not only Greed.
+rules[100].rolePriority.HEALER=3
+local tierThree=add("Eiga",100,"NEEDED","RAID_LEADER_MANUAL")
+p=preview(100)
+check(p.ready and p.chosenTier==2 and
+    p.current[1].character=="Druzz" and
+    #p.waiting>=1 and p.waiting[1].tier==3,
+    "Tier 2 Need beats eligible Tier 3 Need and all Greed")
+check(G:SetStatus(tierThree.key,"DISABLED"),"Tier 3 fixture disabled")
+rules[100].rolePriority.HEALER="EXCLUDE"
 check(G:SetStatus(casterNeed.key,"DISABLED"),"optional secondary source disabled")
 -- Several greed contenders must share one equal-priority pool.
 local taenir={name="Taenir",classFile="MAGE",online=true,assignedRole="CASTER_DPS"}

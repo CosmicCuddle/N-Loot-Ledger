@@ -29,6 +29,7 @@ The current published NLL source is `v0.1.0.28`. The prior milestones below pres
 - [x] Extend 40-bot Debug Lab with separate `mc40greed` scenario and keep original `mc40` unchanged.
 - [x] Correct the owner's 19-plan pagination/footer overlap by using six rows/page; add offline UI test.
 - [x] Add Lua 5.1 Need Before Greed, 40-bot simulation, Gear Plans layout and history persistence regressions.
+- [x] Add real-Database in-place v0.1.0.28 upgrade/reload test and full server-result-path regression for GREED, including late Need blocker, missing raid member, invalid class and audited cancellation.
 - [ ] Reconfirm complete PR-head GitHub CI after final documentation changes; distinguish offline tests from actual client approval.
 - [ ] Owner verifies on a backed-up test copy in WoW 3.3.5a: UI scaling, six-row footer, Greed status/reload, Need-vs-Greed preview, fake `mc40greed`, no real award.
 - [ ] Review live loot/corpse evidence separately; do not claim Master Loot delivered or verified Playerbot inventory.

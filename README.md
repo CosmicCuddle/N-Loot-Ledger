@@ -2,16 +2,17 @@
 
 **Raid loot planning, wishlists, post-drop ticket lotteries, and award tracking for World of Warcraft 3.3.5a (Wrath of the Lich King) on AzerothCore.**
 
-**Prepared candidate version:** `0.1.0.28` — **NOT YET PUBLISHED**  
-**Latest published version:** `v0.1.0.27` (pre-release)  
-**Status:** Proposed first stable **verified-core** release; Direct Master Loot remains **experimental, unverified and OFF by default**. Live boss loot and bot inventory delivery are not certified.
+**Latest published version:** `v0.1.0.28` (stable-core release, 13 October 2026)  
+**Current development:** Fallback / Off-Spec gear interest on separate review branch `dev/nll-fallback-offspec-loot` — **not published or installed**.  
+**Status:** Direct Master Loot remains **experimental, unverified and OFF by default**. Live boss loot and bot inventory delivery are not certified.
 
-**Review sequence (all still unmerged):** [Dark-only PR #2](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/2) → [Recipes/UI PR #3](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/3) → [release-prep draft PR #6](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/6) (`dev/nll-v0.1.0.28-stable-prep`). Each requires separate approval before merge. No tag/release will be created by the candidate CI.
+**Historical release sequence:** PRs #2, #3 and #6 have been merged into `main`, and v0.1.0.28 was published. The new fallback branch does not alter that release or activate real awarding.
 
 ## Features
 
 - Molten Core item browser and configurable loot priority rules with optional presets.
 - Gear wishlists for players and persistent manual gear plans for Playerbots.
+- **Under development (not in v0.1.0.28):** `FALLBACK` Gear Plan interest (off-spec/would-like). Primary `NEEDED` tiers 1–3 always win; fallback is eligible only after no eligible primary candidates remain and existing restrictions pass.
 - **My Wishlist → Gear / Items** and **Recipes** separate the display of existing reservations. Both groups are still submitted together to the raid leader; profession recipe allocation is **manual-only**.
 - Class/role eligibility checks, candidate review and drop-specific ticket lotteries.
 - Clear, visual winner announcements and winner persistence across multiple drops.
@@ -24,10 +25,10 @@
 ## Installation (WoW 3.3.5a)
 
 1. Before changing anything, **back up** your current `Interface/AddOns/NaxxLootLottery` folder, and the NLL SavedVariables files from `WTF/Account/<account>/SavedVariables/` (and character-level SavedVariables if present).
-2. For this review version, use the **candidate installable ZIP from successful GitHub Actions**, not the older pre-release or the repository source archive. See [candidate install and rollback](docs/INSTALL-v0.1.0.28.md). Extract **only the `NaxxLootLottery` directory** into `World of Warcraft/Interface/AddOns/`.
+2. For the published version, download the `v0.1.0.28` release asset (not the repository source ZIP or the unmerged fallback branch). For safe installation and rollback steps see [v0.1.0.28 install guide](docs/INSTALL-v0.1.0.28.md). Extract **only the `NaxxLootLottery` directory** into `World of Warcraft/Interface/AddOns/`.
 3. The final path must be `Interface/AddOns/NaxxLootLottery/NaxxLootLottery.toc`. Avoid accidentally nesting a second `NaxxLootLottery` folder.
 4. Restart the WoW client or enter `/reload`. If the addon is marked out of date, verify your client build is 3.3.5a (Interface 30300).
-5. Enter `/nll version` and `/nll status` to confirm version **`0.1.0.28`** and **`READY`** in the candidate build. The published v0.1.0.27 download still reports its original version.
+5. Enter `/nll version` and `/nll status` to confirm version **`0.1.0.28`** and **`READY`** in the published build. Development features are not included in that release.
 
 **Compatibility note:** The installed addon directory is still **`NaxxLootLottery`**, the SavedVariables name remains **`NaxxLootLotteryDB`**, and chat commands remain **`/nll`**. These are intentionally unchanged during the public rename to preserve existing installations and preferences.
 

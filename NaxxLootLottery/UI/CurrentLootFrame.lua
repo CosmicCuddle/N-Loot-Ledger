@@ -807,12 +807,12 @@ function UI:RefreshCurrentLootPanel()
     self:RefreshTicketLotteryControls(selected)
     self.currentLootPreviewButton:Enable()
     self.currentLootPreviewStatus:SetText(
-        "Preview: Need tiers first, then optional fallback. No roll or award."
+        "Preview: Need tiers first, then optional greed. No roll or award."
     )
 
     local neededMatches = NLL.NeedMatcher:GetMatchesForItem(selected.itemID)
     local matches = NLL.NeedMatcher:GetMatchesForReview(selected.itemID)
-    local fallbackCount = #matches - #neededMatches
+    local greedCount = #matches - #neededMatches
     if not simulation then
         matches=NLL.CandidateReview:MergeMatches(selected,matches)
     end
@@ -842,7 +842,7 @@ function UI:RefreshCurrentLootPanel()
     end
     local statusText =
         "Need: " .. tostring(#neededMatches) ..
-        " | Fallback: " .. tostring(fallbackCount) ..
+        " | Greed: " .. tostring(greedCount) ..
         " | Present: " .. tostring(eligible) ..
         " (before priority checks) | Rule: " .. priorityLabel
 
@@ -937,10 +937,10 @@ function UI:RefreshCurrentLootPanel()
                 row.priorityText:SetText(simLabel or "Unconfigured")
             elseif NLL.CandidateReview:IsExcluded(selected,match.character) then
                 row.priorityText:SetText('Excluded')
-            elseif match.interestStatus == 'FALLBACK' then
-                local fallbackEligible = priorityLabel == "Tier 1" or
+            elseif match.interestStatus == 'GREED' then
+                local greedEligible = priorityLabel == "Tier 1" or
                     priorityLabel == "Tier 2" or priorityLabel == "Tier 3"
-                row.priorityText:SetText(fallbackEligible and "Fallback" or
+                row.priorityText:SetText(greedEligible and "Greed" or
                     ("FB: " .. tostring(priorityLabel or "Unresolved")))
             else
                 row.priorityText:SetText(priorityLabel or '')

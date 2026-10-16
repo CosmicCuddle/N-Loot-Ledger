@@ -100,7 +100,32 @@ p=preview(100)
 check(p.ready and p.chosenTier==4 and #p.current==1 and
     p.current[1].character=="Druzz","fallback only if no primary available")
 check(#p.excluded==2,"offline and guild-excluded interests never enter pool")
+-- A legitimate Tier 2 need outranks optional/off-spec interest.
+local casterNeed=add("Druzz",100,"NEEDED","RAID_LEADER_MANUAL")
+p=preview(100)
+check(p.ready and p.chosenTier==2 and #p.current==1 and
+    p.current[1].character=="Druzz","Tier 2 Need beats fallback")
+check(G:SetStatus(casterNeed.key,"DISABLED"),"optional secondary source disabled")
+-- Several fallback contenders must share one equal-priority pool.
+local taenir={name="Taenir",classFile="MAGE",online=true,assignedRole="CASTER_DPS"}
+table.insert(roster,taenir)
+names.Taenir=taenir
+local other=add("Taenir",100,"FALLBACK")
+p=preview(100)
+check(p.ready and p.chosenTier==4 and #p.current==2 and
+    p.current[1].character=="Druzz" and
+    p.current[2].character=="Taenir","equal fallback contenders share one pool")
+-- A missing fallback role blocks fallback but cannot obstruct a valid Need.
+other.role=nil
+taenir.assignedRole=nil
+p=preview(100)
+check(not p.ready and p.message:find("FALLBACK"),"unknown fallback role fails closed")
 check(G:SetStatus(main.key,"NEEDED"),"primary restored")
+p=preview(100)
+check(p.ready and p.chosenTier==1,"unresolved fallback does not block valid Need")
+taenir.assignedRole="CASTER_DPS"
+other.role="CASTER_DPS"
+check(G:SetStatus(other.key,"DISABLED"),"additional fallback disabled for later tests")
 rules[100].rolePriority.MAIN_TANK=3
 p=preview(100)
 check(p.ready and p.chosenTier==3,"even Tier 3 need beats fallback")

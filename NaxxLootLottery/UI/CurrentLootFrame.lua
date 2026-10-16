@@ -941,7 +941,7 @@ function UI:RefreshCurrentLootPanel()
                 local greedEligible = priorityLabel == "Tier 1" or
                     priorityLabel == "Tier 2" or priorityLabel == "Tier 3"
                 row.priorityText:SetText(greedEligible and "Greed" or
-                    ("FB: " .. tostring(priorityLabel or "Unresolved")))
+                    ("GREED: " .. tostring(priorityLabel or "Unresolved")))
             else
                 row.priorityText:SetText(priorityLabel or '')
             end
@@ -961,11 +961,13 @@ function UI:RefreshTicketLotteryControls(selected)
         local a=S.active
         if a.result then
             self.currentLootLotteryNote:SetText(
-              "|cff66ff99SIM WINNER: "..a.result.winner.." (#"..a.result.number..")|r" ..
+              "|cff66ff99SIM "..tostring(a.result.selectionType or "NEED")..
+              " WINNER: "..a.result.winner.." (#"..a.result.number..")|r" ..
               (a.result.awardStatus and ' [FAKE AWARDED]' or ' [PENDING AWARD]'))
         elseif a.prepared then
             self.currentLootLotteryNote:SetText(
-              "[SIMULATION] "..#a.prepared.tickets.." tickets ready")
+              "[SIMULATION] "..tostring(a.prepared.selectionType or "NEED")..
+              " - "..#a.prepared.tickets.." tickets ready")
         else
             self.currentLootLotteryNote:SetText(
               "[SIMULATION] Prepare tickets to test a fake roll.")
@@ -991,7 +993,8 @@ function UI:RefreshTicketLotteryControls(selected)
         elseif a.awardStatus == 'AWARD_OUTCOME_UNKNOWN' then awardTag='[UNKNOWN]' end
         self.currentLootLotteryNote:SetText(
           (a.test and "|cff66ff99TEST WINNER: " or "|cff66ff99WINNER: ") ..
-          a.winner .. " (#" .. tostring(a.winningTicket) .. ")|r " .. awardTag)
+          tostring(a.selectionType or "NEED").." "..a.winner ..
+          " (#" .. tostring(a.winningTicket) .. ")|r " .. awardTag)
     else
         self.currentLootLotteryNote:SetText(L:GetStatus(selected))
     end

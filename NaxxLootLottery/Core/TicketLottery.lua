@@ -123,7 +123,8 @@ function L:Prepare(entry, matches)
         status='PREPARED', test=isTest, createdAt=Now(), method=nil
     }
     NLL:Print((isTest and '[TEST] ' or '') .. 'Prepared ' .. #tickets ..
-        ' tickets for ' .. entry.itemName .. ' (priority tier ' .. preview.chosenTier .. ').')
+        ' tickets for ' .. entry.itemName .. ' (' .. (preview.chosenTier == 4 and 'Fallback / Off-Spec' or
+        ('priority tier ' .. preview.chosenTier)) .. ').')
     for _,t in ipairs(tickets) do
         NLL:Print('Ticket ' .. t.number .. ' - ' .. t.character)
     end

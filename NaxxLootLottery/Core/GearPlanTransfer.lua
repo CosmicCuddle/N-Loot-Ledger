@@ -236,7 +236,7 @@ function T:Parse(text)
         -- Show a bounded printable prefix and raw leading bytes so the owner
         -- can report what GetText ACTUALLY returned, without exposing plans.
         local first=lines[1] or ""
-        local prefix=first:sub(1,24):gsub("[^%g ]","?")
+        local prefix=first:sub(1,24):gsub("[%z\1-\31\127-\255]","?")
         local hex={}
         for i=1,math.min(8,#text) do
             hex[#hex+1]=string.format("%02X",text:byte(i))

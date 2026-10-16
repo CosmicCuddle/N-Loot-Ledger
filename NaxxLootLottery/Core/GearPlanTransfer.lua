@@ -11,9 +11,38 @@ T.MAX_BYTES=48000
 local function Trim(s)
     return (tostring(s or ""):match("^%s*(.-)%s*$") or "")
 end
+-- WoW 3.3.5a uses Lua 5.1, where %a is byte/locale based rather
+-- than Unicode-aware. Validate UTF-8 bytes explicitly so characters such
+-- as TangØ (C3 98) survive *unchanged* instead of being renamed to TangO.
+-- Limit this first importer to ASCII/Latin-1 letters and interior hyphens.
+-- Other scripts fail closed rather than accepting arbitrary invalid UTF-8.
 local function SafeName(s)
-    return type(s)=="string" and #s>=2 and #s<=40 and
-        s:match("^[%a][%a%-]*$")~=nil
+    if type(s)~="string" or #s<2 or #s>80 then return false end
+    local i,count=1,0
+    while i<=#s do
+        local b=s:byte(i)
+        local letter=(b>=65 and b<=90) or (b>=97 and b<=122)
+        if letter then
+            i=i+1
+        elseif b==45 and count>0 and i<#s then
+            -- Hyphen allowed only inside a character name.
+            i=i+1
+        elseif b==195 then
+            local nextByte=s:byte(i+1)
+            if not nextByte or not
+                ((nextByte>=128 and nextByte<=150) or
+                 (nextByte>=152 and nextByte<=182) or
+                 (nextByte>=184 and nextByte<=191)) then
+                return false
+            end
+            i=i+2
+        else
+            return false
+        end
+        count=count+1
+        if count>40 then return false end
+    end
+    return count>=2
 end
 local function Fields(line)
     local cells={}

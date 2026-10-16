@@ -164,16 +164,16 @@ function Matcher:GetMatchesForItem(itemID, status)
     return output
 end
 
--- A review may show fallback interest, but never count the same character
+-- A review may show greed interest, but never count the same character
 -- twice when another source also declares that item NEEDED.
 function Matcher:GetMatchesForReview(itemID)
     local primary = self:GetMatchesForItem(itemID)
-    local fallback = self:GetMatchesForItem(itemID, "FALLBACK")
+    local greed = self:GetMatchesForItem(itemID, "GREED")
     local seen = {}
     for _, match in ipairs(primary) do
         seen[NormalizeName(match.character)] = true
     end
-    for _, match in ipairs(fallback) do
+    for _, match in ipairs(greed) do
         local key = NormalizeName(match.character)
         if not seen[key] then
             seen[key] = true

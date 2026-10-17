@@ -95,9 +95,9 @@ jobs:
       - name: Upload TEST-ONLY install ZIP (no tag or release)
         uses: actions/upload-artifact@v4
         with:
-          name: NLL-New-Drop-Hotfix-TEST-ONLY
+          name: NLL-New-Drop-Hotfix-HF2-TEST-ONLY
           path: |
-            dist/NLL-New-Drop-Hotfix-TEST-ONLY.zip
+            dist/NLL-New-Drop-Hotfix-HF2-TEST-ONLY.zip
             dist/SHA256SUMS.txt
             dist/README-NEW-DROP-TEST-ONLY.txt
           if-no-files-found: error

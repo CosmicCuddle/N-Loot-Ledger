@@ -4,6 +4,11 @@ local NLL = NaxxLootLottery
 local UI = NLL.UI
 local PAGE_ROWS = 6
 local function Label(row)
+    local receipt=NLL.LootReceiptTracker and
+        NLL.LootReceiptTracker:Get(row.dropUID)
+    if receipt and receipt.status=="OBTAINED" then
+        return "OBTAINED"
+    end
     local s = row.status or 'UNKNOWN'
     if s == 'LOOT_SLOT_CLEARED' then return 'Slot cleared' end
     if s == 'LEADER_REPORTED' then return 'Leader reported' end
@@ -66,6 +71,12 @@ function UI:CreateAwardHistoryContent(parent)
                         ('NEED'..(line.record.priorityTier and
                          (' Tier '..tostring(line.record.priorityTier)) or '')))..
                     ' | '..Label(line.record)..' | '..tostring(line.record.note or 'No note'))
+                local pending=NLL.LootReceiptTracker and
+                    NLL.LootReceiptTracker:Get(line.record.dropUID)
+                if pending and pending.status=="WON_AWAITING_ITEM" and
+                    UI.OpenReceiptReview then
+                    UI:OpenReceiptReview(pending.dropUID)
+                end
             end
         end)
         self.awardHistoryRows[i]={panel=line,item=item,winner=winner,state=state,
@@ -92,7 +103,7 @@ function UI:CreateAwardHistoryContent(parent)
     detail:SetPoint('TOPLEFT',prev,'BOTTOMLEFT',0,-18)
     detail:SetWidth(680)
     detail:SetJustifyH('LEFT')
-    detail:SetText('Select Info for details. No award receipt is independently verified.')
+    detail:SetText('Info opens a pending receipt check. OBTAINED = leader verified inventory; WoW transfer alone is not proof.')
     self.awardHistoryDetail=detail
     self.awardHistoryPage=1
     self.awardHistoryContent=panel

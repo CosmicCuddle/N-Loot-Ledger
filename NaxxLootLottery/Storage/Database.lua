@@ -337,6 +337,10 @@ function Database:SetLocalReservation(characterName, raidKey, itemID, wanted)
             NLL.db.localWishlistGreed[characterName]
         local raid=type(character)=="table" and character[raidKey]
         if type(raid)=="table" then raid[itemID]=nil end
+        local obtained=NLL.db.localWishlistObtained and
+            NLL.db.localWishlistObtained[characterName]
+        local complete=type(obtained)=="table" and obtained[raidKey]
+        if type(complete)=="table" then complete[itemID]=nil end
     end
     return true
 end

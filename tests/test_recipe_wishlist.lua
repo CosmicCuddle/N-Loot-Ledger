@@ -15,6 +15,7 @@ local savedWishlist = {
 }
 local untouchedReference = savedWishlist
 local saves = { Admina = { MOLTEN_CORE = savedWishlist } }
+local personalInterests = {}
 
 UnitName = function() return "Admina" end
 -- Communication registers a frame at module load time in WoW.
@@ -33,6 +34,17 @@ NaxxLootLottery = {
         end,
         SetLocalReservation = function(_, character, raid, itemID, wanted)
             saves[character][raid][itemID] = wanted and true or nil
+            if not wanted then personalInterests[itemID]=nil end
+        end,
+        GetLocalInterest = function(_, character, raid, itemID)
+            if not saves[character][raid][itemID] then return nil end
+            return personalInterests[itemID] or "NEEDED"
+        end,
+        SetLocalInterest = function(_, character, raid, itemID, status)
+            if not saves[character][raid][itemID] or
+               (status~="NEEDED" and status~="GREED") then return false end
+            personalInterests[itemID]=status=="GREED" and status or nil
+            return true
         end
     }
 }
@@ -101,7 +113,8 @@ CreateFrame = function() return frame() end
 local UI = NLL.UI
 function UI:CreateTextButton(_, label, width)
     local b = frame()
-    b.label = label
+    b.label = frame()
+    b.label:SetText(label)
     b.width = width
     return b
 end
@@ -110,6 +123,9 @@ function UI:SetButtonState(button, state) button.state = state end
 function NLL.Communication:GetOutgoingStatusText() return "No submission currently pending." end
 assert(loadfile("NaxxLootLottery/UI/WishlistFrame.lua"))()
 UI:CreateLocalWishlistContent(frame())
+-- The unit fixture creates only the local page, not full parent Wishlist.
+-- Re-route panel refresh to the real local refresh for click assertions.
+UI.RefreshWishlistPanel=function(self) self:RefreshLocalWishlist() end
 UI:RefreshLocalWishlist()
 check(UI.localWishlistCategory == "items", "items are selected by default")
 check(UI.localWishlistItemsButton.state == "active"
@@ -119,6 +135,18 @@ check(UI.localWishlistRows[1].shown and UI.localWishlistRows[1].itemText.text ==
     "first original gear item displayed")
 check(UI.localWishlistStatus.text:find("5") ~= nil,
     "header shows combined reservation count")
+check(UI.localWishlistRows[1].interest.label.text=="NEED",
+    "old personal gear reservations display Need by default")
+UI.localWishlistRows[1].interest.scripts.OnClick(UI.localWishlistRows[1].interest)
+check(personalInterests[16802]=="GREED" and
+    UI.localWishlistRows[1].interest.label.text=="GREED",
+    "clicking interest changes only this item's preference and label")
+check(savedWishlist[16802] and savedWishlist[16800],
+    "changing Need to Greed does not remove reservations")
+UI.localWishlistRows[1].interest.scripts.OnClick(UI.localWishlistRows[1].interest)
+check(personalInterests[16802]==nil and
+    UI.localWishlistRows[1].interest.label.text=="NEED",
+    "clicking Greed returns to Need without a migration")
 
 UI.localWishlistRecipesButton.scripts.OnClick()
 check(UI.localWishlistCategory == "recipes"
@@ -127,6 +155,8 @@ check(UI.localWishlistRecipesButton.state == "active"
     and UI.localWishlistItemsButton.state == "normal", "recipes selected visually")
 check(UI.localWishlistRows[1].itemText.text ==
     "Formula: Enchant Weapon - Spell Power", "recipe displayed under Recipes")
+check(UI.localWishlistRows[1].interest.enabled==false,
+    "guild/manual recipes cannot be toggled into lottery Greed")
 check(UI.localWishlistRows[3].shown == false, "only two reserved recipes listed")
 UI.localWishlistItemsButton.scripts.OnClick()
 check(UI.localWishlistRows[1].itemText.text == "Arcanist Belt",

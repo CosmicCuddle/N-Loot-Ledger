@@ -29,6 +29,13 @@ function Database:Initialize()
     -- Direct real loot transfer must be opted into EACH LOGIN/reload.
     -- Do not persist a previous enabled flag across client restarts.
     db.settings.directMasterLootEnabled = false
+    -- Raid announcements/countdown are separate, non-awarding opt-ins.
+    if type(db.settings.raidAnnouncementsEnabled)~="boolean" then
+        db.settings.raidAnnouncementsEnabled=false
+    end
+    if type(db.settings.raidCountdownEnabled)~="boolean" then
+        db.settings.raidCountdownEnabled=false
+    end
 
     -- One-click, reversible preset library. Never bulk-overwrites guild rules.
     -- Disabled for all preexisting users until they opt in on Priority Setup.
@@ -86,6 +93,11 @@ function Database:Initialize()
     -- and Recipes views share this existing table; no migration needed.
     if type(db.localWishlists) ~= "table" then
         db.localWishlists = {}
+    end
+    -- Optional per-item interest only for GREED. The original boolean
+    -- wishlist is kept untouched so existing reservations remain NEED.
+    if type(db.localWishlistGreed) ~= "table" then
+        db.localWishlistGreed = {}
     end
 
     if type(db.submissionInbox) ~= "table" then
@@ -253,18 +265,46 @@ function Database:IsLocallyReserved(characterName, raidKey, itemID)
     return wishlist and wishlist[itemID] == true
 end
 
-function Database:SetLocalReservation(characterName, raidKey, itemID, wanted)
-    local wishlist = self:GetLocalWishlist(characterName, raidKey)
-    if not wishlist then
+function Database:GetLocalInterest(characterName, raidKey, itemID)
+    local wishlist=self:GetLocalWishlist(characterName,raidKey)
+    if not wishlist or wishlist[itemID]~=true then return nil end
+    local character=NLL.db.localWishlistGreed and
+        NLL.db.localWishlistGreed[characterName]
+    local raid=type(character)=="table" and character[raidKey]
+    if type(raid)=="table" and raid[itemID]==true then
+        return "GREED"
+    end
+    return "NEEDED"
+end
+
+function Database:SetLocalInterest(characterName, raidKey, itemID, status)
+    if status~="NEEDED" and status~="GREED" then return false end
+    if not self:IsLocallyReserved(characterName,raidKey,itemID) then
         return false
     end
+    local all=NLL.db.localWishlistGreed
+    if type(all[characterName])~="table" then
+        all[characterName]={}
+    end
+    if type(all[characterName][raidKey])~="table" then
+        all[characterName][raidKey]={}
+    end
+    all[characterName][raidKey][itemID]=(status=="GREED" and true or nil)
+    return true
+end
 
+function Database:SetLocalReservation(characterName, raidKey, itemID, wanted)
+    local wishlist = self:GetLocalWishlist(characterName, raidKey)
+    if not wishlist then return false end
     if wanted then
         wishlist[itemID] = true
     else
         wishlist[itemID] = nil
+        local character=NLL.db.localWishlistGreed and
+            NLL.db.localWishlistGreed[characterName]
+        local raid=type(character)=="table" and character[raidKey]
+        if type(raid)=="table" then raid[itemID]=nil end
     end
-
     return true
 end
 

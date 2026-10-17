@@ -170,7 +170,8 @@ function UI:CreateLocalWishlistContent(parent)
     end
 
     HeaderText("Item", 10, 360)
-    HeaderText("Boss / Source", 375, 290)
+    HeaderText("Boss / Source", 375, 215)
+    HeaderText("Interest", 648, 76)
 
     self.localWishlistRows = {}
 
@@ -209,8 +210,21 @@ function UI:CreateLocalWishlistContent(parent)
             "GameFontHighlightSmall"
         )
         bossText:SetPoint("LEFT", row, "LEFT", 375, 0)
-        bossText:SetWidth(280)
+        bossText:SetWidth(255)
         bossText:SetJustifyH("LEFT")
+
+        local interest=self:CreateTextButton(row,"NEED",77)
+        interest:SetPoint("RIGHT",row,"RIGHT",-84,0)
+        interest:SetScript("OnClick",function(self)
+            if not self.itemID then return end
+            local player=NLL.ItemSearch:GetPlayerName()
+            local current=NLL.Database:GetLocalInterest(player,"MOLTEN_CORE",self.itemID)
+            if current~="NEEDED" and current~="GREED" then return end
+            local nextStatus=current=="GREED" and "NEEDED" or "GREED"
+            if NLL.Database:SetLocalInterest(player,"MOLTEN_CORE",self.itemID,nextStatus) then
+                UI:RefreshWishlistPanel()
+            end
+        end)
 
         local remove =
             self:CreateTextButton(row, "Remove", 72)
@@ -227,6 +241,7 @@ function UI:CreateLocalWishlistContent(parent)
 
         row.itemText = itemText
         row.bossText = bossText
+        row.interest = interest
         row.remove = remove
 
         self.localWishlistRows[rowIndex] = row
@@ -388,6 +403,16 @@ function UI:RefreshLocalWishlist()
                 NLL.Data.MoltenCore:GetBossText(item)
             )
             row.remove.itemID = item.itemID
+            row.interest.itemID = item.itemID
+            local choice=NLL.Database.GetLocalInterest and
+                NLL.Database:GetLocalInterest(
+                    NLL.ItemSearch:GetPlayerName(),"MOLTEN_CORE",item.itemID)
+                or "NEEDED"
+            row.interest.label:SetText(choice=="GREED" and "GREED" or "NEED")
+            -- Recipes always remain explicit guild/manual distribution:
+            -- interest stays NEED; never imply they can join a normal roll.
+            if category=="recipes" then row.interest:Disable()
+            else row.interest:Enable() end
             row:Show()
         else
             row:Hide()
@@ -1833,6 +1858,8 @@ function UI:RefreshInbox()
                 item
                 and item.name
                 or tostring(itemID)
+            local interest=(selected.interests or {})[itemID] or "NEEDED"
+            text=text.." ["..(interest=="GREED" and "GREED" or "NEED").."]"
 
             if conflict then
                 text =

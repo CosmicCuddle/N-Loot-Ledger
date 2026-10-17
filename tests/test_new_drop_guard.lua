@@ -26,6 +26,7 @@ end
 local messages={}
 local refreshed=0
 NaxxLootLottery={
+    initialized=true, -- LOOT_CLOSED events only process after addon initialization
     db={raidSession={currentLoot={},lootGeneration=0},settings={debug=false},
         lootIdentityAudit={},lotteryHistory={},lootAwardHistory={}},
     Print=function(_,msg) messages[#messages+1]=msg end,

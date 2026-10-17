@@ -35,7 +35,8 @@ NaxxLootLottery={
 }
 local N=NaxxLootLottery
 local refreshes=0
-N.UI={RefreshGearPlans=function()refreshes=refreshes+1 end,
+N.UI={gearPlansContent=true,
+    RefreshGearPlans=function()refreshes=refreshes+1 end,
     RefreshWishlistPanel=function()end,RefreshCurrentLootPanel=function()end}
 local ownStatus={}
 N.Database={

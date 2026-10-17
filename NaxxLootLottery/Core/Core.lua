@@ -361,6 +361,23 @@ function NLL:HandleSlashCommand(message)
         self.UI:OpenGuildLootReview()
         return
     end
+    if command=="receiptinbox" then
+        self.UI:ShowMainFrame("wishlist")
+        self.UI:OpenReceiptSyncReview()
+        return
+    end
+    if command=="receiptsync" then
+        local uid=(arguments or ""):match("^%s*(.-)%s*$")
+        if uid=="" then
+            self:Print("Usage: /nll receiptsync L<group>:<slot>:<itemID>")
+            self:Print("Resends ONLY a previously verified human receipt "..
+                "while that player is in this raid.")
+        else
+            local ok,msg=self.ReceiptSync:RetryFor(uid)
+            self:Print(tostring(msg))
+        end
+        return
+    end
     if command == "awardreview" then
         self.UI:ShowMainFrame('currentloot')
         self.UI:OpenAwardReview()
@@ -632,6 +649,8 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll candidateaudit - Show recent leader candidate changes.")
         self:Print("/nll lotteryhistory - Show last 5 lottery records.")
         self:Print("/nll awardreview - Review the selected winner and manual award.")
+        self:Print("/nll receiptinbox - Review my pending award confirmations.")
+        self:Print("/nll receiptsync <dropUID> - Resend a previously verified human receipt.")
         self:Print("/nll guildloot - Read-only review of ALL visible item slots, including materials.")
         self:Print("/nll guildgive on|off - Separate login-only consent for manual guild transfers.")
         self:Print("/nll awardhistory - Show manual, requested and observed awards.")

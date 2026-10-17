@@ -2118,6 +2118,20 @@ function UI:CreateGearPlanTransfer()
     edit:SetScript("OnEscapePressed",function(box)box:ClearFocus()end)
     scroll:SetScrollChild(edit)
 
+    -- Every export page contains a complete NLL-GEARPLANS-1 header.
+    -- Controls sit below the paste well, not in the six-row Gear Plans list.
+    local exportPrev=self:CreateTextButton(panel,"Previous Export",120)
+    exportPrev:SetPoint("BOTTOMLEFT",panel,"BOTTOMLEFT",16,52)
+    local exportNext=self:CreateTextButton(panel,"Next Export",110)
+    exportNext:SetPoint("LEFT",exportPrev,"RIGHT",10,0)
+    local exportPageLabel=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    exportPageLabel:SetPoint("LEFT",exportNext,"RIGHT",16,0)
+    exportPageLabel:SetWidth(350)
+    exportPageLabel:SetJustifyH("LEFT")
+    exportPageLabel:SetText("Export pages: not loaded")
+    exportPrev:Disable()
+    exportNext:Disable()
+
     local status=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
     status:SetPoint("BOTTOMLEFT",panel,"BOTTOMLEFT",18,18)
     status:SetWidth(705)
@@ -2126,6 +2140,9 @@ function UI:CreateGearPlanTransfer()
 
     local preview=nil
     local mode="EXPORT"
+    local exportSnapshot=nil
+    local exportPage=1
+    local exportPages=1
     confirmButton:Disable()
     previewButton:Disable()
 
@@ -2139,12 +2156,55 @@ function UI:CreateGearPlanTransfer()
     local function SetMode(nextMode)
         mode=nextMode
         ClearPreview()
+        exportPrev:Disable()
+        exportNext:Disable()
         if mode=="EXPORT" then
             previewButton:Disable()
         else
+            exportSnapshot=nil
+            exportPage=1
+            exportPages=1
+            exportPageLabel:SetText("Export pages: switch to Export Bot Plans")
             previewButton:Enable()
         end
     end
+
+    local function ShowExportPage(page)
+        if mode~="EXPORT" then return end
+        local data,count,pages,total,snapshot=
+            NLL.GearPlanTransfer:Export(page,exportSnapshot)
+        if not data then
+            exportPrev:Disable()
+            exportNext:Disable()
+            edit:SetText("")
+            exportPageLabel:SetText("Export blocked; restart at page 1")
+            SetStatus("EXPORT BLOCKED: "..tostring(count)..
+                " Click Export Bot Plans to restart safely.")
+            return
+        end
+        exportSnapshot=snapshot
+        exportPage=page
+        exportPages=pages
+        exportPageLabel:SetText("Page "..page.."/"..pages.." - "..total.." bot plans total")
+        if page>1 then exportPrev:Enable() else exportPrev:Disable() end
+        if page<pages then exportNext:Enable() else exportNext:Disable() end
+        edit:SetText(data)
+        edit:SetFocus()
+        edit:HighlightText()
+        SetStatus("EXPORT ONLY: page "..page.."/"..pages.." ("..count..
+            " records). Ctrl+C and save as a SEPARATE .txt file; then Next Export. No data changed.")
+    end
+
+    exportPrev:SetScript("OnClick",function()
+        if mode=="EXPORT" and exportSnapshot and exportPage>1 then
+            ShowExportPage(exportPage-1)
+        end
+    end)
+    exportNext:SetScript("OnClick",function()
+        if mode=="EXPORT" and exportSnapshot and exportPage<exportPages then
+            ShowExportPage(exportPage+1)
+        end
+    end)
 
     edit:SetScript("OnTextChanged",function(box)
         -- Invalidate confirmation if the user changes even one byte.
@@ -2159,15 +2219,10 @@ function UI:CreateGearPlanTransfer()
 
     exportButton:SetScript("OnClick",function()
         SetMode("EXPORT")
-        local data,number=NLL.GearPlanTransfer:Export()
-        if not data then
-            SetStatus("EXPORT BLOCKED: "..tostring(number))
-            return
-        end
-        edit:SetText(data)
-        edit:SetFocus()
-        edit:HighlightText()
-        SetStatus("Read-only export of "..number.." bot plan(s). Press Ctrl+C. Nothing was saved or changed.")
+        exportSnapshot=nil
+        exportPage=1
+        exportPages=1
+        ShowExportPage(1)
     end)
 
     importButton:SetScript("OnClick",function()
@@ -2234,6 +2289,9 @@ function UI:CreateGearPlanTransfer()
     self.gearTransferStatus=status
     self.gearTransferExport=exportButton
     self.gearTransferImport=importButton
+    self.gearTransferExportPrev=exportPrev
+    self.gearTransferExportNext=exportNext
+    self.gearTransferExportPageLabel=exportPageLabel
     panel:Hide()
 end
 

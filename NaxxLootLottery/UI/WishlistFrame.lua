@@ -408,7 +408,9 @@ function UI:RefreshLocalWishlist()
                 NLL.Database:GetLocalInterest(
                     NLL.ItemSearch:GetPlayerName(),"MOLTEN_CORE",item.itemID)
                 or "NEEDED"
-            row.interest.label:SetText(choice=="GREED" and "GREED" or "NEED")
+            row.interest.label:SetText(
+                choice=="OBTAINED" and "OBTAINED" or
+                (choice=="GREED" and "GREED" or "NEED"))
             -- Recipes always remain explicit guild/manual distribution:
             -- interest stays NEED; never imply they can join a normal roll.
             if category=="recipes" then row.interest:Disable()

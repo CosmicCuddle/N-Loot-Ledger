@@ -150,6 +150,11 @@ function R:ConfirmReceipt(dropUID)
     row.confirmedBy=UnitName and UnitName("player") or "Unknown"
     row.evidence="LEADER_CONFIRMED_RECIPIENT_INVENTORY"
     row.confirmedNeedCount=changed
+    -- Offer a notification ONLY to a human recipient after leader's
+    -- explicit confirmed receipt. Another client's wishlist is never edited.
+    if NLL.ReceiptSync and NLL.ReceiptSync.OnLeaderConfirmed then
+        NLL.ReceiptSync:OnLeaderConfirmed(row)
+    end
     if NLL.UI then
         if NLL.UI.RefreshGearPlans and NLL.UI.gearPlansContent then
             NLL.UI:RefreshGearPlans()

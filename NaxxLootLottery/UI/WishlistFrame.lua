@@ -113,7 +113,7 @@ function UI:CreateLocalWishlistContent(parent)
         "GameFontHighlightSmall"
     )
     status:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -2)
-    status:SetWidth(450)
+    status:SetWidth(382)
     status:SetJustifyH("LEFT")
     self.localWishlistStatus = status
 
@@ -143,6 +143,15 @@ function UI:CreateLocalWishlistContent(parent)
         UI.localWishlistPage = 1
         UI:RefreshLocalWishlist()
     end)
+
+    -- Access pending human-to-human receipt confirmations from My Wishlist.
+    -- A remote leader's whisper never changes this player's wishlist.
+    local receiptButton=self:CreateTextButton(content,"Receipt Inbox",112)
+    receiptButton:SetPoint("RIGHT",itemsButton,"LEFT",-8,0)
+    receiptButton:SetScript("OnClick",function()
+        UI:OpenReceiptSyncReview()
+    end)
+    self.localReceiptInboxButton=receiptButton
 
     self.localWishlistItemsButton = itemsButton
     self.localWishlistRecipesButton = recipesButton
@@ -346,6 +355,11 @@ function UI:RefreshLocalWishlist()
         and "recipes" or "items"
     self.localWishlistCategory = category
 
+    if self.localReceiptInboxButton and NLL.ReceiptSync then
+        local pending=NLL.ReceiptSync:GetPendingForLocal()
+        self.localReceiptInboxButton.label:SetText(
+            "Receipts ("..#pending..")")
+    end
     local gearItems = NLL.ItemSearch:GetLocalWishlistItems("items")
     local recipes = NLL.ItemSearch:GetLocalWishlistItems("recipes")
     local items = category == "recipes" and recipes or gearItems

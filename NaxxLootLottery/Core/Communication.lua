@@ -641,6 +641,12 @@ function Comm:HandleAddonMessage(
     local fields = Split(message, "|")
 
     local protocol=fields[1]
+    if protocol=="R1" then
+        if NLL.ReceiptSync and NLL.ReceiptSync.HandleMessage then
+            NLL.ReceiptSync:HandleMessage(sender,fields,channel)
+        end
+        return
+    end
     if protocol~=self.protocol and protocol~=self.interestProtocol then
         return
     end

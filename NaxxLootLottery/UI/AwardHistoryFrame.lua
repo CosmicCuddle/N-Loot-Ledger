@@ -7,6 +7,13 @@ local function Label(row)
     local receipt=NLL.LootReceiptTracker and
         NLL.LootReceiptTracker:Get(row.dropUID)
     if receipt and receipt.status=="OBTAINED" then
+        if receipt.remoteSyncStatus=="ACKNOWLEDGED" then
+            return "Obtained + player ACK"
+        end
+        if receipt.remoteSyncStatus=="AWAITING_PLAYER" or
+           receipt.remoteSyncStatus=="WAITING_FOR_PLAYER" then
+            return "Obtained (ACK pending)"
+        end
         return "OBTAINED"
     end
     local s = row.status or 'UNKNOWN'
@@ -73,6 +80,11 @@ function UI:CreateAwardHistoryContent(parent)
                     ' | '..Label(line.record)..' | '..tostring(line.record.note or 'No note'))
                 local pending=NLL.LootReceiptTracker and
                     NLL.LootReceiptTracker:Get(line.record.dropUID)
+                if pending and pending.remoteSyncStatus then
+                    UI.awardHistoryDetail:SetText(
+                        UI.awardHistoryDetail:GetText()..
+                        ' | Player-side receipt: '..pending.remoteSyncStatus)
+                end
                 if pending and pending.status=="WON_AWAITING_ITEM" and
                     UI.OpenReceiptReview then
                     UI:OpenReceiptReview(pending.dropUID)

@@ -764,6 +764,10 @@ function NLL:Initialize()
         "Core/ReceiptSync.lua",
         self.ReceiptSync
     )
+    RequireModule(
+        "Core/GuildLootReconcile.lua",
+        self.GuildLootReconcile
+    )
 
     RequireModule(
         "Core/TicketPlanner.lua",

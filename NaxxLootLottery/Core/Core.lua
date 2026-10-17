@@ -790,6 +790,10 @@ function NLL:Initialize()
         self.UI and self.UI.OpenReceiptSyncReview
     )
     RequireModule(
+        "UI/GuildReconciliationFrame.lua",
+        self.UI and self.UI.OpenGuildReconciliation
+    )
+    RequireModule(
         "Core/PrioritySuggestions.lua",
         self.PrioritySuggestions
     )

@@ -35,6 +35,7 @@ UI\MainFrame.lua
 UI\AwardReviewFrame.lua
 UI\ReceiptSyncFrame.lua
 UI\GuildReconciliationFrame.lua
+UI\GuildAutoPreviewFrame.lua
 UI\WinnerAnnouncement.lua
 UI\RolesFrame.lua
 UI\SearchFrame.lua

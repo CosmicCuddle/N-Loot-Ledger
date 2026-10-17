@@ -31,6 +31,7 @@ Core\ReceiptSync.lua
 UI\SkinManager.lua
 UI\MainFrame.lua
 UI\AwardReviewFrame.lua
+UI\ReceiptSyncFrame.lua
 UI\WinnerAnnouncement.lua
 UI\RolesFrame.lua
 UI\SearchFrame.lua

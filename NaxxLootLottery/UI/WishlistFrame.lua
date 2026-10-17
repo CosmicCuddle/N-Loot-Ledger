@@ -355,6 +355,11 @@ function UI:RefreshLocalWishlist()
         and "recipes" or "items"
     self.localWishlistCategory = category
 
+    if self.localReceiptInboxButton and NLL.ReceiptSync then
+        local pending=NLL.ReceiptSync:GetPendingForLocal()
+        self.localReceiptInboxButton.label:SetText(
+            "Receipts ("..#pending..")")
+    end
     local gearItems = NLL.ItemSearch:GetLocalWishlistItems("items")
     local recipes = NLL.ItemSearch:GetLocalWishlistItems("recipes")
     local items = category == "recipes" and recipes or gearItems

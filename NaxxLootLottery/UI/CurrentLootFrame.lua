@@ -1068,16 +1068,16 @@ function UI:RefreshTicketLotteryControls(selected)
     end
     if self.currentLootNewDropPending then
         self.currentLootLotteryNote:SetText(
-            "|cffffcc33DIFFERENT CORPSE? Click Confirm Drop within 20 seconds.|r")
+            "|cffffcc33NEW CORPSE? Click Confirm Drop (20s).|r")
     elseif not live then
         self.currentLootLotteryNote:SetText(
-            "|cffff9933NO LIVE LOOT. Reopen corpse; saved items cannot roll.|r")
+            "|cffff9933CORPSE CLOSED: reopen to roll.|r")
     elseif selected and selected.identityUncertain then
         self.currentLootLotteryNote:SetText(
-            "|cffff9933Repeated loot uncertain. Use New Drop only for a different corpse.|r")
+            "|cffff9933Repeated loot? Use New Drop ONLY for new corpse.|r")
     elseif a and a.status=='COMPLETE' then
         self.currentLootLotteryNote:SetText(
-            "|cffffcc33Previous winner is locked. New Drop requires a different corpse.|r")
+            "|cffffcc33Old winner locked. New Drop = new corpse only.|r")
     end
     local allowed=selected and selected.dropUID and not selected.identityUncertain and
         live and L:AuthorityAllowed(selected.slotIndex==0)

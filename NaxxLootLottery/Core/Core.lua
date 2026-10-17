@@ -704,6 +704,10 @@ function NLL:Initialize()
         "Core/LootDetection.lua",
         self.LootDetection
     )
+    RequireModule(
+        "Core/GuildLootReview.lua",
+        self.GuildLootReview
+    )
 
     RequireModule(
         "Core/TicketPlanner.lua",

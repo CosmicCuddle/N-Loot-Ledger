@@ -87,6 +87,9 @@ function Database:Initialize()
     if type(db.lootAwardHistory) ~= "table" then
         db.lootAwardHistory = {}
     end
+    if type(db.lootReceiptTracker) ~= "table" then
+        db.lootReceiptTracker = {}
+    end
     if type(db.candidateAudit) ~= 'table' then
         db.candidateAudit = {}
     end

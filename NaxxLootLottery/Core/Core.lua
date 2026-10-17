@@ -741,6 +741,10 @@ function NLL:Initialize()
         "Core/LootReceiptTracker.lua",
         self.LootReceiptTracker
     )
+    RequireModule(
+        "Core/ReceiptSync.lua",
+        self.ReceiptSync
+    )
 
     RequireModule(
         "Core/TicketPlanner.lua",

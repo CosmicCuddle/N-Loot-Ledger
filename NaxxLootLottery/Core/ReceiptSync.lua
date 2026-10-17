@@ -104,6 +104,20 @@ function S:HandleReceipt(sender,fields)
        not ValidDrop(uid,itemID) or
        Key(recipient)~=Key(LocalName()) then return false end
     local person=LocalName()
+    local key=ReceiptID(sender,uid)
+    local already=Acks()[key]
+    if already then
+        -- An ACK whisper may be lost while the leader still has the
+        -- original receipt pending. An identical replay can re-send only
+        -- the ACK, never mark a second item OBTAINED.
+        if already.itemID==itemID and
+           Key(already.leader)==Key(sender) and
+           NLL.Communication and NLL.Communication.SendWhisper then
+            return NLL.Communication:SendWhisper(sender,
+                "R1|ACK|"..uid.."|"..itemID.."|"..raidKey)
+        end
+        return false
+    end
     if not NLL.Database or not NLL.Database.GetLocalInterest then return false end
     local current=NLL.Database:GetLocalInterest(person,raidKey,itemID)
     if current=="OBTAINED" then return false end
@@ -111,8 +125,6 @@ function S:HandleReceipt(sender,fields)
         -- No unsolicited wishlist entries, even from a valid raid leader.
         return false
     end
-    local key=ReceiptID(sender,uid)
-    if Acks()[key] then return false end
     local previous=Book()[key]
     if previous then
         return previous.itemID==itemID and

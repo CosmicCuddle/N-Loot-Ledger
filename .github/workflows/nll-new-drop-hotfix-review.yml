@@ -1,0 +1,104 @@
+name: Urgent New Drop hotfix test ZIP (NOT A RELEASE)
+
+on:
+  push:
+    branches:
+      - fix/nll-new-drop-live-loot-guard
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nll-newdrop-hf1-review-zip
+  cancel-in-progress: true
+
+jobs:
+  hotfix-review:
+    name: Full Lua 5.1 regression and raid hotfix test ZIP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact hotfix source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Confirm source is only the reviewed raid hotfix
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='5a92cef8ce0caaaf8847a801a71af519a82fd011'
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          while IFS= read -r f; do
+            case "$f" in
+              NaxxLootLottery/Core/LootDetection.lua|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_new_drop_guard.lua|docs/TESTING_NEW_DROP_RAID_HOTFIX.md|.github/workflows/nll-new-drop-hotfix-review.yml) ;;
+              *) echo "::error::Unexpected modification in raid hotfix: $f"; exit 1;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          grep -qx '## Version: 0.1.0.29-rc.1-hf1' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'NLL.version = "0.1.0.29-rc.1-hf1"' NaxxLootLottery/Core/Core.lua
+
+      - name: Install Lua 5.1
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+
+      - name: Syntax check every addon module and test
+        shell: bash
+        run: |
+          set -euo pipefail
+          find NaxxLootLottery tests -name '*.lua' -type f -print0 | xargs -0 -n1 luac5.1 -p
+
+      - name: Run all regression suites including genuine new drop guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test_file in tests/test_*.lua; do
+            echo "Running $test_file"
+            lua5.1 "$test_file"
+          done
+
+      - name: Reproducible packaging and Direct Master Loot OFF checks
+        run: python3 tests/test_release_packaging.py
+
+      - name: Create separated test-only addon ZIP and checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          ZIP='NLL-New-Drop-Hotfix-TEST-ONLY.zip'
+          python3 scripts/build_release_zip.py --output "dist/$ZIP"
+          (cd dist && sha256sum "$ZIP" > SHA256SUMS.txt && sha256sum -c SHA256SUMS.txt)
+          cat > dist/README-NEW-DROP-TEST-ONLY.txt <<'NOTE'
+          NAXXRAMAS LOOT LEDGER - URGENT NEW DROP / CORPSE CLOSED TEST BUILD
+          VERSION 0.1.0.29-rc.1-hf1 - NOT A PUBLISHED RELEASE
+
+          This version requires a real, still-open corpse loot window for New
+          Drop / Confirm Drop and Prepare Tickets. It never revives an
+          already-despawned corpse, awards loot or disables the duplicate-roll lock.
+          Use only for a genuinely different physical corpse.
+
+          IMPORTANT: before replacing the current game folder, CLOSE WoW and
+          BACK UP BOTH Interface/AddOns/NaxxLootLottery AND
+          WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua (+ .lua.bak).
+          These SavedVariables contain the owner's 604 imported Playerbot plans.
+          Do NOT replace/clear them with public addon files.
+
+          In-game verify /nll version, /nll status and /nll directaward OFF.
+          If any regression occurs restore addon AND paired saved-data backup.
+          CI is not proof of live master loot or in-game UI validation.
+          Full guide: docs/TESTING_NEW_DROP_RAID_HOTFIX.md in GitHub source.
+          NOTE
+          echo "Source commit: $GITHUB_SHA" >> dist/README-NEW-DROP-TEST-ONLY.txt
+
+      - name: Upload TEST-ONLY install ZIP (no tag or release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NLL-New-Drop-Hotfix-TEST-ONLY
+          path: |
+            dist/NLL-New-Drop-Hotfix-TEST-ONLY.zip
+            dist/SHA256SUMS.txt
+            dist/README-NEW-DROP-TEST-ONLY.txt
+          if-no-files-found: error
+          retention-days: 14

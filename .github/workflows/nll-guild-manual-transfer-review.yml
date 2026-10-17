@@ -30,7 +30,7 @@ jobs:
           git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
           while IFS= read -r f; do
             case "$f" in
-              NaxxLootLottery/Core/GuildLootTransfer.lua|NaxxLootLottery/Storage/Database.lua|NaxxLootLottery/NaxxLootLottery.toc|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/Core/LootDetection.lua|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/UI/AwardSettingsFrame.lua|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_guild_loot_transfer.lua|tests/test_guild_loot_transfer_ui.lua|docs/TESTING_GUILD_LOOT_TRANSFER_DRAFT.md|.github/workflows/nll-guild-manual-transfer-review.yml) ;;
+              NaxxLootLottery/Core/GuildLootTransfer.lua|NaxxLootLottery/Storage/Database.lua|NaxxLootLottery/NaxxLootLottery.toc|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/Core/LootDetection.lua|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/UI/AwardSettingsFrame.lua|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_guild_loot_transfer.lua|tests/test_guild_loot_transfer_ui.lua|tests/test_guild_transfer_settings_ui.lua|docs/TESTING_GUILD_LOOT_TRANSFER_DRAFT.md|.github/workflows/nll-guild-manual-transfer-review.yml) ;;
               *) echo "::error::Unexpected file in manual guild award draft: $f"; exit 1;;
             esac
           done < <(git diff --name-only "$BASE" "$GITHUB_SHA")

@@ -1,0 +1,90 @@
+name: Personal Need Greed + Raid Countdown test ZIP (NOT RELEASED)
+
+on:
+  push:
+    branches:
+      - dev/nll-personal-need-greed-chat-roll
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nll-needgreed-countdown-draft-zip
+  cancel-in-progress: true
+
+jobs:
+  test-package:
+    name: Complete Lua 5.1 suite + independent DEV1 addon ZIP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact development commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify diff limited to approved non-awarding files
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='2cf6343b393cda66ac574a67b603ce1d243cb846'
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          while IFS= read -r f; do
+            case "$f" in
+              NaxxLootLottery/Core/Core.lua|NaxxLootLottery/Core/GearNeeds.lua|NaxxLootLottery/Core/Communication.lua|NaxxLootLottery/Core/TicketLottery.lua|NaxxLootLottery/Storage/Database.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_recipe_wishlist.lua|tests/test_personal_need_greed.lua|tests/test_raid_countdown.lua|docs/TESTING_PERSONAL_NEED_GREED_RAID_CHAT.md|.github/workflows/nll-personal-need-greed-review.yml) ;;
+              *) echo "::error::Unexpected modified path in this non-awarding draft: $f"; exit 1;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          grep -qx '## Version: 0.1.0.29-rc.1-dev1' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'NLL.version = "0.1.0.29-rc.1-dev1"' NaxxLootLottery/Core/Core.lua
+          if git diff --name-only "$BASE" "$GITHUB_SHA" | grep -E '^NaxxLootLottery/Core/AwardWorkflow.lua$'; then
+             echo "::error::Unexpected change to real award logic"; exit 1
+          fi
+      - name: Install Lua 5.1
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Syntax check all addon/test Lua
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Execute EVERY Lua regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in tests/test_*.lua; do
+            echo "Running $file"
+            lua5.1 "$file"
+          done
+      - name: Verify reproducible packaging and Direct Master Loot OFF default
+        run: python3 tests/test_release_packaging.py
+      - name: Build and check independent test-only addon ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          python3 scripts/build_release_zip.py --output dist/NLL-Need-Greed-Countdown-DEV1-TEST-ONLY.zip
+          (cd dist && sha256sum NLL-Need-Greed-Countdown-DEV1-TEST-ONLY.zip > SHA256SUMS.txt && sha256sum -c SHA256SUMS.txt)
+          cat > dist/README-DEV1-TEST-ONLY.txt <<'NOTE'
+          NAXXRAMAS LOOT LEDGER - PERSONAL NEED/GREED & OPTIONAL RAID COUNTDOWN
+          DEVELOPMENT v0.1.0.29-rc.1-dev1, NOT A PUBLISHED RELEASE
+          Do not deploy during live raid looting; unverified in-client.
+          Before replacing the addon, fully EXIT WoW and back up BOTH:
+           Interface/AddOns/NaxxLootLottery
+           WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua and .bak
+          NEVER overwrite SavedVariables; owner's 604 Playerbot plans are there.
+          Need/Greed mixed submissions require BOTH players and leader to
+          use compatible development builds. Legacy leaders cannot accept V2.
+          Raid chat and five-second countdown default OFF. Direct Award OFF.
+          No automatic items or materials given to anyone by this draft.
+          Guide: docs/TESTING_PERSONAL_NEED_GREED_RAID_CHAT.md (source).
+          NOTE
+          echo "Exact source commit: $GITHUB_SHA" >> dist/README-DEV1-TEST-ONLY.txt
+      - name: Upload separately labeled test ZIP, no release/tag/merge
+        uses: actions/upload-artifact@v4
+        with:
+          name: NLL-Need-Greed-Countdown-DEV1-TEST-ONLY
+          path: |
+            dist/NLL-Need-Greed-Countdown-DEV1-TEST-ONLY.zip
+            dist/SHA256SUMS.txt
+            dist/README-DEV1-TEST-ONLY.txt
+          retention-days: 14
+          if-no-files-found: error

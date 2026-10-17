@@ -1,0 +1,64 @@
+name: Manual Guild Master Loot draft safety (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-guild-loot-manual-transfer
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nll-manual-guild-master-loot-draft
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Full Lua 5.1 / guarded direct-transfer regression
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Guard change set and real award paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=2d9af33f317334f6fd6d4bef8644d372bc2e421f
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          while IFS= read -r f; do
+            case "$f" in
+              NaxxLootLottery/Core/GuildLootTransfer.lua|NaxxLootLottery/Storage/Database.lua|NaxxLootLottery/NaxxLootLottery.toc|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/Core/LootDetection.lua|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/UI/AwardSettingsFrame.lua|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_guild_loot_transfer.lua|tests/test_guild_loot_transfer_ui.lua|docs/TESTING_GUILD_LOOT_TRANSFER_DRAFT.md|.github/workflows/nll-guild-manual-transfer-review.yml) ;;
+              *) echo "::error::Unexpected file in manual guild award draft: $f"; exit 1;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          if git diff --name-only "$BASE" "$GITHUB_SHA" | grep -qx 'NaxxLootLottery/Core/AwardWorkflow.lua'; then
+            echo "::error::Existing winner-award engine was modified"; exit 1
+          fi
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          test "$(grep -c 'pcall(GiveMasterLoot' NaxxLootLottery/Core/GuildLootTransfer.lua)" -eq 1
+          grep -Fq 'function T:Commit()' NaxxLootLottery/Core/GuildLootTransfer.lua
+          echo 'Both opt-ins OFF; one guarded explicit click transfer path'
+      - name: Install Lua 5.1
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse all addon and test Lua
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Run every Lua 5.1 test
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in tests/test_*.lua; do
+            echo "Running $f"
+            lua5.1 "$f"
+          done
+      - name: Validate deterministic addon packaging, no award default
+        run: python3 tests/test_release_packaging.py
+      - name: Keep untested manual transfer experimental
+        run: |
+          echo 'Draft validation only. No install ZIP, release, tag or merge.'

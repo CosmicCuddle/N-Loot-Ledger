@@ -46,6 +46,9 @@ load("Core/LootIdentity.lua")
 load("Core/TicketLottery.lua")
 load("Core/LootDetection.lua")
 load("UI/CurrentLootFrame.lua")
+-- The unit test has no actual Blizzard UI frame. Preserve the real
+-- New Drop action but count refresh attempts through a harmless stub.
+n.UI.RefreshCurrentLootPanel=function() refreshed=refreshed+1 end
 n.LootIdentity:Initialize()
 ok(n.LootDetection:ScanLootWindow(),"a live supported item can be observed")
 local first=n.LootDetection:GetCurrentLoot()[1]

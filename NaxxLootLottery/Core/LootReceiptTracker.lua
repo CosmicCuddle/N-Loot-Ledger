@@ -151,7 +151,9 @@ function R:ConfirmReceipt(dropUID)
     row.evidence="LEADER_CONFIRMED_RECIPIENT_INVENTORY"
     row.confirmedNeedCount=changed
     if NLL.UI then
-        if NLL.UI.RefreshGearPlans then NLL.UI:RefreshGearPlans() end
+        if NLL.UI.RefreshGearPlans and NLL.UI.gearPlansContent then
+            NLL.UI:RefreshGearPlans()
+        end
         if NLL.UI.RefreshWishlistPanel then NLL.UI:RefreshWishlistPanel() end
         if NLL.UI.RefreshCurrentLootPanel then
             NLL.UI:RefreshCurrentLootPanel()

@@ -29,6 +29,7 @@ Core\GuildLootTransfer.lua
 Core\LootReceiptTracker.lua
 Core\ReceiptSync.lua
 Core\GuildLootReconcile.lua
+Core\GuildAutoPreview.lua
 UI\SkinManager.lua
 UI\MainFrame.lua
 UI\AwardReviewFrame.lua

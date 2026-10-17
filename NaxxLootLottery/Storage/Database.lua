@@ -313,6 +313,19 @@ function Database:SetLocalInterest(characterName, raidKey, itemID, status)
     return true
 end
 
+function Database:MarkLocalObtained(characterName,raidKey,itemID)
+    if not self:IsLocallyReserved(characterName,raidKey,itemID) then
+        return false
+    end
+    local all=NLL.db.localWishlistObtained
+    if type(all[characterName])~="table" then all[characterName]={} end
+    if type(all[characterName][raidKey])~="table" then
+        all[characterName][raidKey]={}
+    end
+    all[characterName][raidKey][itemID]=true
+    return true
+end
+
 function Database:SetLocalReservation(characterName, raidKey, itemID, wanted)
     local wishlist = self:GetLocalWishlist(characterName, raidKey)
     if not wishlist then return false end

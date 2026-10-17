@@ -35,6 +35,26 @@ local function GetItemTexture(itemID)
         "Interface\\Icons\\INV_Misc_QuestionMark"
 end
 
+-- This is intentionally the same guarded two-step path as /nll newloot.
+-- Never reset a winner directly, award loot or manufacture live loot.
+-- Public function permits offline Lua 5.1 regression tests without WoW frames.
+function UI:RequestNewDrop()
+    local identity=NLL.LootIdentity
+    local ok,message
+    if self.currentLootNewDropPending then
+        self.currentLootNewDropPending=false
+        ok,message=identity:ConfirmReset()
+    else
+        ok,message=identity:PrepareReset()
+        self.currentLootNewDropPending=ok==true
+    end
+    NLL:Print(message)
+    if self.RefreshCurrentLootPanel then
+        self:RefreshCurrentLootPanel()
+    end
+    return ok,message
+end
+
 function UI:CreateCurrentLootPanel(parent)
     local panel =
         CreateFrame(
@@ -149,6 +169,15 @@ function UI:CreateCurrentLootPanel(parent)
         if not ok then NLL:Print(notice) end
         UI:RefreshCurrentLootPanel()
     end)
+    -- Clear and Cancel Tickets do not start a new physical loot opportunity.
+    -- Two explicit clicks use the existing /nll newloot safety gates.
+    local newDrop=self:CreateTextButton(panel,'New Drop',106)
+    newDrop:SetPoint('LEFT',draw,'RIGHT',8,0)
+    newDrop:SetScript('OnClick',function()
+        UI:RequestNewDrop()
+    end)
+    self.currentLootNewDropButton=newDrop
+
     local cancel=self:CreateTextButton(panel,'Cancel Tickets',132)
     cancel:SetPoint('BOTTOMLEFT',panel,'BOTTOMLEFT',8,8)
     cancel:SetScript('OnClick',function()
@@ -707,11 +736,12 @@ function UI:RefreshCurrentLootPanel()
         or {}
 
     local simulation=NLL.DebugSimulator and NLL.DebugSimulator:IsActive()
+    local fresh=NLL.LootDetection and NLL.LootDetection.lootOpen and
+        NLL.TicketLottery and NLL.TicketLottery.liveLootObserved
     self.currentLootStatus:SetText(
-        (simulation and "|cffffcc33[SIMULATION] |r" or "") ..
-        tostring(#loot) ..
-        (simulation and " fake boss drop(s)." or
-         " supported item(s). Previous winners restored for reopened loot.")
+        (simulation and ("|cffffcc33[SIMULATION]|r "..#loot.." fake boss drop(s).") or
+        (fresh and (#loot.." supported item(s). LIVE CORPSE LOOT.") or
+        ("|cffff9933"..#loot.." saved item(s). CORPSE CLOSED - no live rolls.|r")))
     )
 
     self.currentLootSelected =
@@ -983,6 +1013,9 @@ function UI:RefreshTicketLotteryControls(selected)
     if not self.currentLootPrepareButton then return end
     local S=NLL.DebugSimulator
     if S and S:IsActive() then
+        self.currentLootNewDropButton:Disable()
+        self.currentLootNewDropButton.label:SetText('New Drop')
+        self.currentLootNewDropPending=false
         local a=S.active
         if a.result then
             self.currentLootLotteryNote:SetText(
@@ -1008,6 +1041,16 @@ function UI:RefreshTicketLotteryControls(selected)
         return
     end
     local L=NLL.TicketLottery
+    local live=NLL.LootDetection and NLL.LootDetection.lootOpen and
+        L.liveLootObserved
+    local pending=L.active and (L.active.status=='WAITING_FOR_ROLL' or
+        L.active.status=='ROLL_UNCONFIRMED')
+    local canNew=live and selected and selected.slotIndex and
+        selected.slotIndex>0 and L:AuthorityAllowed(false) and not pending
+    if canNew then self.currentLootNewDropButton:Enable()
+    else self.currentLootNewDropButton:Disable() end
+    self.currentLootNewDropButton.label:SetText(
+        self.currentLootNewDropPending and 'Confirm Drop' or 'New Drop')
     local a=L:GetActiveFor(selected)
     self.currentLootReviewButton.label:SetText(a and a.status=='COMPLETE' and 'Review Award' or 'Review Pool')
     if a and a.status == "COMPLETE" and a.winner then
@@ -1023,8 +1066,21 @@ function UI:RefreshTicketLotteryControls(selected)
     else
         self.currentLootLotteryNote:SetText(L:GetStatus(selected))
     end
+    if self.currentLootNewDropPending then
+        self.currentLootLotteryNote:SetText(
+            "|cffffcc33DIFFERENT CORPSE? Click Confirm Drop within 20 seconds.|r")
+    elseif not live then
+        self.currentLootLotteryNote:SetText(
+            "|cffff9933NO LIVE LOOT. Reopen corpse; saved items cannot roll.|r")
+    elseif selected and selected.identityUncertain then
+        self.currentLootLotteryNote:SetText(
+            "|cffff9933Repeated loot uncertain. Use New Drop only for a different corpse.|r")
+    elseif a and a.status=='COMPLETE' then
+        self.currentLootLotteryNote:SetText(
+            "|cffffcc33Previous winner is locked. New Drop requires a different corpse.|r")
+    end
     local allowed=selected and selected.dropUID and not selected.identityUncertain and
-        L.liveLootObserved and L:AuthorityAllowed(selected.slotIndex==0)
+        live and L:AuthorityAllowed(selected.slotIndex==0)
     if allowed and (not a or a.status=='PREPARED') then
         self.currentLootPrepareButton:Enable()
     else self.currentLootPrepareButton:Disable() end

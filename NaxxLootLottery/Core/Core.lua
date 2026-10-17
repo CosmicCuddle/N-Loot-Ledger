@@ -763,6 +763,10 @@ function NLL:Initialize()
         self.UI and self.UI.OpenAwardReview
     )
     RequireModule(
+        "UI/ReceiptSyncFrame.lua",
+        self.UI and self.UI.OpenReceiptSyncReview
+    )
+    RequireModule(
         "Core/PrioritySuggestions.lua",
         self.PrioritySuggestions
     )

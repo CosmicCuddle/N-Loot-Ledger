@@ -123,6 +123,9 @@ function UI:SetButtonState(button, state) button.state = state end
 function NLL.Communication:GetOutgoingStatusText() return "No submission currently pending." end
 assert(loadfile("NaxxLootLottery/UI/WishlistFrame.lua"))()
 UI:CreateLocalWishlistContent(frame())
+-- The unit fixture creates only the local page, not full parent Wishlist.
+-- Re-route panel refresh to the real local refresh for click assertions.
+UI.RefreshWishlistPanel=function(self) self:RefreshLocalWishlist() end
 UI:RefreshLocalWishlist()
 check(UI.localWishlistCategory == "items", "items are selected by default")
 check(UI.localWishlistItemsButton.state == "active"

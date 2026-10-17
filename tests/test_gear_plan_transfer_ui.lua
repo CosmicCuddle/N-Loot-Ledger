@@ -169,6 +169,7 @@ ok(UI.gearTransferDialog.visible and
     "reopened export shows newly imported bot plan")
 ok(not UI.gearTransferConfirm.enabled,
     "reopen always clears any prior confirmation")
+local G=N.GearNeeds
 -- Paged backup UI after a real-sized 604-plan import. All of these
 -- changes are limited to the synthetic test database; no live WoW data.
 N.Data.MoltenCore.GetItem=function(_,id)

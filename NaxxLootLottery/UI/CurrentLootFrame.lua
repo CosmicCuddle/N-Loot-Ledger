@@ -848,10 +848,12 @@ function UI:RefreshGuildLootDialog()
     local T=NLL.GuildLootTransfer
     local transferState=T and T:IsEnabled() and
         "OPTIONAL TRANSFER ON (double confirm)" or "TRANSFER OFF"
-    self.guildLootStatus:SetText(
-        tostring(self.guildLootLastMessage or
-            ("Eligible for guild REVIEW: "..candidates..". "..transferState..
-             ". NO AUTO-ROUTING.")))
+    -- Live-corpse status has priority over any older arm/review message.
+    -- Otherwise the stale old message can hide a despawned corpse.
+    local label=(#rows==0 and tostring(message)) or self.guildLootLastMessage or
+        ("Eligible for guild REVIEW: "..candidates..". "..transferState..
+         ". NO AUTO-ROUTING.")
+    self.guildLootStatus:SetText(tostring(label))
     if self.guildLootArm and self.guildLootConfirm then
         local review=T and T.review
         if review and review.armedAt then

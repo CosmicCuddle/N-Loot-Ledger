@@ -719,6 +719,12 @@ function UI:CreateCurrentLootPanel(parent)
     guild:SetPoint("BOTTOMLEFT",panel,"BOTTOMLEFT",342,98)
     guild:SetScript("OnClick",function() UI:OpenGuildLootReview() end)
     self.currentLootGuildReviewButton=guild
+    local planned=self:CreateTextButton(panel,"Auto Preview",120)
+    planned:SetPoint("LEFT",guild,"RIGHT",8,0)
+    planned:SetScript("OnClick",function()
+        UI:OpenGuildAutoPreview()
+    end)
+    self.currentLootGuildAutoPreviewButton=planned
 
     self.currentLootMatchPrev=back
     self.currentLootMatchNext=forward

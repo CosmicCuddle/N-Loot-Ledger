@@ -71,11 +71,20 @@ function G:GetReservationSummary(itemID)
     end)
     -- An unsubmitted local wishlist is not proof of a reservation
     -- accepted by the raid leader, but MUST block automatic routing.
-    for _,raids in pairs(db.localWishlists) do
+    for character,raids in pairs(db.localWishlists) do
         if type(raids)=="table" then
             local mc=raids.MOLTEN_CORE
             if type(mc)=="table" and mc[itemID]==true then
-                summary.localCount=summary.localCount+1
+                -- Confirmed local OBTAINED retains a historical boolean
+                -- wishlist entry. It is NOT a still-active reservation.
+                -- On missing status data, err toward holding the loot.
+                local interest=NLL.Database and
+                    NLL.Database.GetLocalInterest and
+                    NLL.Database:GetLocalInterest(
+                        character,"MOLTEN_CORE",itemID)
+                if interest~="OBTAINED" then
+                    summary.localCount=summary.localCount+1
+                end
             end
         end
     end

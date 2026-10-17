@@ -9,7 +9,7 @@ local NLL = NaxxLootLottery
 
 NLL.name = "Naxxramas Loot Ledger"
 NLL.shortName = "NLL"
-NLL.version = "0.1.0.29-rc.1-dev4"
+NLL.version = "0.1.0.29-rc.1-dev5"
 NLL.databaseVersion = 1
 NLL.initialized = false
 NLL.initializeAttempted = false
@@ -356,6 +356,11 @@ function NLL:HandleSlashCommand(message)
         end
         return
     end
+    if command=="guildpreview" then
+        self.UI:ShowMainFrame("currentloot")
+        self.UI:OpenGuildAutoPreview()
+        return
+    end
     if command=="guildaudit" then
         self.UI:ShowMainFrame("currentloot")
         self.UI:OpenGuildReconciliation()
@@ -658,6 +663,7 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll receiptsync <dropUID> - Resend a previously verified human receipt.")
         self:Print("/nll guildloot - Read-only review of ALL visible item slots, including materials.")
         self:Print("/nll guildaudit - Inspect old material/gear transfer attempts and verify receipts.")
+        self:Print("/nll guildpreview - Zero-award proposed leader routing for all live item slots.")
         self:Print("/nll guildgive on|off - Separate login-only consent for manual guild transfers.")
         self:Print("/nll awardhistory - Show manual, requested and observed awards.")
         self:Print("/nll directaward off - Immediately disable live direct awarding.")
@@ -774,6 +780,10 @@ function NLL:Initialize()
         "Core/GuildLootReconcile.lua",
         self.GuildLootReconcile
     )
+    RequireModule(
+        "Core/GuildAutoPreview.lua",
+        self.GuildAutoPreview
+    )
 
     RequireModule(
         "Core/TicketPlanner.lua",
@@ -798,6 +808,10 @@ function NLL:Initialize()
     RequireModule(
         "UI/GuildReconciliationFrame.lua",
         self.UI and self.UI.OpenGuildReconciliation
+    )
+    RequireModule(
+        "UI/GuildAutoPreviewFrame.lua",
+        self.UI and self.UI.OpenGuildAutoPreview
     )
     RequireModule(
         "Core/PrioritySuggestions.lua",

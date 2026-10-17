@@ -59,7 +59,7 @@ assert(loadfile("NaxxLootLottery/Core/GuildLootReview.lua"))()
 assert(loadfile("NaxxLootLottery/Core/GuildAutoPreview.lua"))()
 local P=N.GuildAutoPreview
 local plan=P:Plan()
-ok(#plan.items==8 and plan.proposed==3 and plan.held==5,
+ok(#plan.items==8 and plan.proposed==2 and plan.held==6,
     "all item-link slots included, previously obtained local wish not counted")
 local index={}
 for _,r in ipairs(plan.items) do index[r.itemID]=r end

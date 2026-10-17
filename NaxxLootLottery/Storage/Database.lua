@@ -110,6 +110,13 @@ function Database:Initialize()
     if type(db.localWishlistObtained) ~= "table" then
         db.localWishlistObtained = {}
     end
+    -- Only the CURRENT player can confirm their own pending receipt.
+    if type(db.localReceiptSyncPending)~="table" then
+        db.localReceiptSyncPending={}
+    end
+    if type(db.localReceiptSyncDone)~="table" then
+        db.localReceiptSyncDone={}
+    end
 
     if type(db.submissionInbox) ~= "table" then
         db.submissionInbox = {}

@@ -38,6 +38,8 @@ function UI:CreateAwardReview()
 
     -- The first step never calls GiveMasterLoot. WoW Master Loot must be
     -- open on THIS exact slot, then Check Master Loot validates the winner.
+    -- Lua 5.1 forward locals: the recheck callback refers to both controls.
+    local manual,direct
     local check=self:CreateTextButton(frame,'Check Master Loot',169)
     check:SetPoint('BOTTOM',frame,'BOTTOM',0,120)
     check:SetScript('OnClick',function()
@@ -62,7 +64,7 @@ function UI:CreateAwardReview()
     end)
 
     -- The original manual confirmation remains available.
-    local manual=self:CreateTextButton(frame,'I Awarded It in WoW',173)
+    manual=self:CreateTextButton(frame,'I Awarded It in WoW',173)
     manual:SetPoint('BOTTOMLEFT',frame,'BOTTOMLEFT',22,25)
     manual:SetScript('OnClick',function()
         local ok,msg=NLL.AwardWorkflow:Confirm()
@@ -74,7 +76,7 @@ function UI:CreateAwardReview()
 
     -- The first click ARMS; the second click immediately re-verifies live
     -- Master Loot state and sends the real request. Never used by simulation.
-    local direct=self:CreateTextButton(frame,'Arm Direct Award',192)
+    direct=self:CreateTextButton(frame,'Arm Direct Award',192)
     direct:SetPoint('LEFT',manual,'RIGHT',12,0)
     direct:SetScript('OnClick',function()
         local entry=NLL.AwardWorkflow:GetReviewedDrop()

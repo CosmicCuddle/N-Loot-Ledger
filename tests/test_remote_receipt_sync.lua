@@ -131,6 +131,12 @@ ok(#S:GetPendingForLocal()==0 and
     #whispers==2 and whispers[2].message=="R1|ACK|L1:1:18821|18821|MOLTEN_CORE",
     "player sends exact audit acknowledgement and consumes pending offer")
 ok(not S:Accept(pending.key),"duplicate receipt acceptance cannot re-mark item")
+local originalAck=whispers[2]
+receive("Leader",raw.message)
+ok(#whispers==3 and
+    whispers[3].message==originalAck.message and
+    N.Database:GetLocalInterest("Pikeotter","MOLTEN_CORE",18821)=="OBTAINED",
+    "lost ACK recovered by re-sending identical ACK, never another wishlist edit")
 N.db=nil
 N.Database:Initialize()
 ok(N.db==playerDB and

@@ -279,6 +279,12 @@ end
 function Database:GetLocalInterest(characterName, raidKey, itemID)
     local wishlist=self:GetLocalWishlist(characterName,raidKey)
     if not wishlist or wishlist[itemID]~=true then return nil end
+    local obtained=NLL.db.localWishlistObtained and
+        NLL.db.localWishlistObtained[characterName]
+    local complete=type(obtained)=="table" and obtained[raidKey]
+    if type(complete)=="table" and complete[itemID]==true then
+        return "OBTAINED"
+    end
     local character=NLL.db.localWishlistGreed and
         NLL.db.localWishlistGreed[characterName]
     local raid=type(character)=="table" and character[raidKey]

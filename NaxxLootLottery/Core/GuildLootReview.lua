@@ -102,9 +102,13 @@ function G:Classify(itemID, quality, itemType)
     if item and mc.IsRecipeItem and mc:IsRecipeItem(item) then
         classification="Recipe"
     end
-    if item and (item.legendary or item.manualOnly) or
+    local questType=itemType=="Quest" or
+        (type(ITEM_CLASS_QUESTITEM)=="string" and
+         itemType==ITEM_CLASS_QUESTITEM)
+    if (item and (item.legendary or item.manualOnly)) or questType or
        (type(quality)=="number" and quality>=5) then
-        return "SPECIAL_HOLD",classification,"Legendary/manual/special: leader review only"
+        return "SPECIAL_HOLD",classification,
+            "Legendary/quest/manual/special: leader review only"
     end
     if type(quality)~="number" or not itemType then
         return "INFORMATION_MISSING",classification,"Item type/quality unknown; manual review"

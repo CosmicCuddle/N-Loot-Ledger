@@ -4,7 +4,7 @@ local checks=0
 local function ok(v,msg)assert(v,msg);checks=checks+1 end
 local transfers=0
 GiveMasterLoot=function()transfers=transfers+1;error("never award")end
-local itemIDs={16800,18821,17010,18259,17204,17011,17012,17013,17014,0}
+local itemIDs={16800,18821,17010,18259,17204,17011,17012,17013,17014,17015,0}
 local locked=false
 GetNumLootItems=function()return #itemIDs end
 GetLootSlotLink=function(i)
@@ -16,7 +16,7 @@ local unknownCache=false
 GetItemInfo=function(id)
     if id==17013 then return nil end
     return "Material "..id,nil,(id==17204 and 5 or 2),nil,nil,
-        ((id==16800 or id==18821) and "Armor" or "Trade Goods")
+        ((id==17015 and "Quest") or ((id==16800 or id==18821) and "Armor" or "Trade Goods"))
 end
 GetNumRaidMembers=function()return 3 end
 local duplicate=false
@@ -54,7 +54,7 @@ local n=NaxxLootLottery
 assert(loadfile("NaxxLootLottery/Core/GuildLootReview.lua"))()
 local g=n.GuildLootReview
 local rows,msg=g:Scan()
-ok(#rows==9 and msg:find("non%-item slot"),"nine item slots incl. unlisted mats")
+ok(#rows==10 and msg:find("non%-item slot"),"ten item slots incl. unlisted mats")
 local byId={}
 for _,x in ipairs(rows) do byId[x.itemID]=x end
 ok(byId[16800].status=="RESERVED" and byId[16800].need==1,
@@ -76,6 +76,8 @@ ok(byId[17013].status=="UNRESOLVED",
     "uncached unknown item does not become proven unreserved")
 ok(byId[17014].status=="LOCKED",
     "locked slot excluded from guild candidate consideration")
+ok(byId[17015].status=="SPECIAL_HOLD",
+    "quest-class items must receive manual/special review")
 ok(byId[17011].leader=="Leader1" and
     not byId[17011].recipientVerified and
     not byId[17011].transferAuthorized,

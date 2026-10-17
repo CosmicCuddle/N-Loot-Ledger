@@ -31,12 +31,12 @@ jobs:
           git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
           while IFS= read -r f; do
             case "$f" in
-              NaxxLootLottery/Core/LootDetection.lua|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_new_drop_guard.lua|docs/TESTING_NEW_DROP_RAID_HOTFIX.md|.github/workflows/nll-new-drop-hotfix-review.yml) ;;
+              NaxxLootLottery/Core/LootDetection.lua|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_new_drop_guard.lua|tests/test_new_drop_layout.lua|docs/TESTING_NEW_DROP_RAID_HOTFIX.md|.github/workflows/nll-new-drop-hotfix-review.yml) ;;
               *) echo "::error::Unexpected modification in raid hotfix: $f"; exit 1;;
             esac
           done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
-          grep -qx '## Version: 0.1.0.29-rc.1-hf1' NaxxLootLottery/NaxxLootLottery.toc
-          grep -Fq 'NLL.version = "0.1.0.29-rc.1-hf1"' NaxxLootLottery/Core/Core.lua
+          grep -qx '## Version: 0.1.0.29-rc.1-hf2' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'NLL.version = "0.1.0.29-rc.1-hf2"' NaxxLootLottery/Core/Core.lua
 
       - name: Install Lua 5.1
         shell: bash
@@ -67,12 +67,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          ZIP='NLL-New-Drop-Hotfix-TEST-ONLY.zip'
+          ZIP='NLL-New-Drop-Hotfix-HF2-TEST-ONLY.zip'
           python3 scripts/build_release_zip.py --output "dist/$ZIP"
           (cd dist && sha256sum "$ZIP" > SHA256SUMS.txt && sha256sum -c SHA256SUMS.txt)
           cat > dist/README-NEW-DROP-TEST-ONLY.txt <<'NOTE'
           NAXXRAMAS LOOT LEDGER - URGENT NEW DROP / CORPSE CLOSED TEST BUILD
-          VERSION 0.1.0.29-rc.1-hf1 - NOT A PUBLISHED RELEASE
+          VERSION 0.1.0.29-rc.1-hf2 - NOT A PUBLISHED RELEASE
 
           This version requires a real, still-open corpse loot window for New
           Drop / Confirm Drop and Prepare Tickets. It never revives an

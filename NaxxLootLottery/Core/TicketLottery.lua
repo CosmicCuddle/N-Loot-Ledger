@@ -201,6 +201,12 @@ function L:Finish(roll,method)
         NLL.LootIdentity:MarkCompleted(a.dropUID,a.winner,roll,method,
             a.selectionType or 'NEED',a.tier)
     end
+    if not a.test and NLL.LootReceiptTracker then
+        local tracked,reason=NLL.LootReceiptTracker:ObserveWinner(a)
+        if not tracked then
+            NLL:Print('Receipt tracking warning: '..tostring(reason))
+        end
+    end
     self:Record('COMPLETE',roll,'Result only. Loot award remains manual.')
     NLL:Print((a.test and '[TEST - no loot awarded] ' or '') ..
         a.itemName .. ': winning ticket ' .. roll .. ' = ' .. a.winner ..

@@ -1,7 +1,7 @@
 # Gear Plans Import / Export — First Review Stage
 
 **Branch:** dev/nll-gear-plan-import-export (stacked on unmerged PR #8).
-**Status:** Review only. Not installed, published, merged or authorised for live saved-data edits.
+**Status:** Original add-only Import / Export was owner-tested and released as experimental `v0.1.0.29-rc.1` on 16 October. The **NEW paging controls** in this branch remain **review-only, unmerged and not installed or released**. Never modify live saved plans automatically.
 **Client:** WoW 3.3.5a / Interface 30300 / Lua 5.1.
 
 ## Design and behaviour
@@ -25,6 +25,28 @@ Statuses: NEEDED, GREED, OBTAINED, DISABLED. The importer accepts ASCII and care
 **WoW 3.3.5a clipboard compatibility:** The owner verified on the actual client that pasting a row with seven single `|` separators produces fourteen (`||` between all fields) inside the import EditBox. The importer now accepts exactly seven `|` or exactly seven `||` separators per record, converts doubled delimiters only while parsing, and continues to reject mixed/triple pipes, unknown items/roles/statuses, and duplicate entries. The export text format is unchanged (seven single pipes per row); **do not manually edit all batches to double pipes**. Run Preview Changes first, never Confirm ADD without checking the preview. Strict preview/apply source-text equality remains required.
 
 The first version allows up to **250 plans or 48,000 bytes per paste**. Invalid, duplicated or malformed rows, unknown roles/items, manual or player-submitted sources, and old/different status conflicts are rejected before any mutation. If a batch is edited after preview, the confirm button is disabled automatically. No automation, local disk I/O, network transfer, SQL or live loot award is involved.
+
+## NEW: Safe 604-Plan Export Paging (post-rc.1 review only)
+
+**Why:** The published pre-release `v0.1.0.29-rc.1` refuses one-click export if a Playerbot has more than 250 saved plans. The development branch adds separate **Previous Export** / **Next Export** controls *inside the Import/Export dialog*, below the text box. It does NOT change the Gear Plans six-row pager.
+
+- Clicking **Export Bot Plans** begins a fresh read-only export on **Page 1 / 3** for a 604-plan account, and selects that page's entire text for **Ctrl+C**. The footer shows the page count and the 604-plan total.
+- Every page is an independently importable `NLL-GEARPLANS-1` document, with **250**, **250**, and **104** records respectively. Copy each page into a **different** plain-text file, e.g. `NLL-Backup-Part-01.txt`, `NLL-Backup-Part-02.txt`, `NLL-Backup-Part-03.txt`. Do not overwrite one page with another. Preserve the header on **each** page.
+- **Next Export** and **Previous Export** select the text on the new page automatically; check each page indicator before Ctrl+C. Do not try to combine all pages into one paste, as the input is still limited to 250 rows and 48,000 bytes per paste.
+- Export validates every stored bot plan before producing ANY page; an invalid record blocks the export rather than omitting it. If saved Gear Plans change between pages, further navigation is refused and the text is cleared, with a prompt to restart **Export Bot Plans** on page 1.
+- **Paste / Import** remains add-only; clicking it exits export mode and disables paging. None of these steps perform a live loot roll, real award, SQL action, or SavedVariables migration.
+
+### Focused owner check before accepting the new branch
+
+1. Close WoW, preserve the **paired backups** of your known-working rc.1 addon folder and its `NaxxLootLottery.lua` (+ `.bak`). Do not test this on tomorrow's active raid build.
+2. Install the newly built **PR #9 TEST-ONLY** artifact in a separate backed-up WoW test directory.
+3. Open `/nll` > Wishlists > Gear Plans > Import / Export, and check the page controls are visible **below the text area**, with no overlapping status/footer on your UI scale.
+4. On 604 plans, confirm **Page 1/3, Page 2/3, Page 3/3** and copy each page to its own `.txt` file. Verify the counts of **250, 250, 104** and all documents start with `NLL-GEARPLANS-1`.
+5. Without saving any additional plans, paste each page into a **fresh backed-up test profile** (or preview against the existing account), and verify no missing/duplicate/conflicting records. **Preview only** is safest for the existing live data, where every record should show **identical**. Do not Confirm ADD for identical or unexpected conflicts.
+6. Confirm changing any original saved plan during an export **blocks navigation** instead of mixing two datasets. Test only with expendable fixture data, NOT your 604-plan working profile.
+7. Return to the official rc.1 package for the raid if the new controls are not separately accepted. No actual Master Loot delivery test is part of this milestone.
+
+**Offline evidence:** `tests/test_gear_plan_export_pages.lua` exercises 604 synthetic bot plans, all 469 NEED / 135 GREED statuses, the exact `TangØ` UTF-8 name, deterministic 250/250/104 source files, exact restore via three add-only batches, conflicts, stale snapshots, and preservation of roles, personal wishlists and loot histories. `tests/test_gear_plan_transfer_ui.lua` exercises buttons/navigation, Ctrl+C selection and blocked stale export. CI does not prove live WoW visual behaviour.
 
 ## Step-by-step test in a spare backed-up game client
 

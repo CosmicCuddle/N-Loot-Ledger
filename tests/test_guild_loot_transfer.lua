@@ -61,6 +61,7 @@ assert(loadfile("NaxxLootLottery/Storage/Database.lua"))()
 N.Database:Initialize()
 assert(loadfile("NaxxLootLottery/Core/GuildLootReview.lua"))()
 assert(loadfile("NaxxLootLottery/Core/GuildLootTransfer.lua"))()
+assert(loadfile("NaxxLootLottery/Core/GuildLootReconcile.lua"))()
 local T=N.GuildLootTransfer
 local guild=N.GuildLootReview
 local reference=N.db
@@ -198,7 +199,18 @@ ok(rankAtCall.status=="LOOT_SLOT_CLEARED" and
 N.db.settings.directMasterLootEnabled=true
 T:SetEnabled(true)
 sent,msg=T:Review(target)
-ok(not sent and msg:find("already requested"),"same item/slot blocked even after reload")
+ok(not sent and msg:find("unresolved"),
+    "cleared slot remains unresolved without human receipt")
+local reconcile=N.GuildLootReconcile
+ok(reconcile:Review(1),"original recorded operator can inspect old item")
+ok(reconcile:Arm("RECEIVED"),"physical receipt confirmation requires a first click")
+ok(reconcile:Commit(),"human verified receipt closes only the old global hold")
+ok(rankAtCall.status=="RECONCILED_RECEIVED" and
+   rankAtCall.reconciliationEvidence=="OPERATOR_CHECKED_RECIPIENT_INVENTORY",
+   "reconciliation is audit evidence, not server delivery proof")
+sent,msg=T:Review(target)
+ok(not sent and msg:find("already requested"),
+   "even after confirmed receipt the SAME item/slot cannot be sent twice")
 local target2={slotIndex=rows[2].slotIndex,itemID=rows[2].itemID,
     itemLink=rows[2].itemLink,quantity=rows[2].quantity}
 LootFrame.selectedSlot=2

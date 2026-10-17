@@ -186,6 +186,7 @@ function UI:CreateCurrentLootPanel(parent)
     reviewButton:SetScript('OnClick',function()
         local entry=NLL.LootDetection:GetCurrentLoot()[UI.currentLootSelected or 1]
         if entry and NLL.AwardWorkflow:GetOutcome(entry) then
+            -- Opens a guarded review; it NEVER transfers on this click.
             UI:OpenAwardReview()
         elseif NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
             UI.settingsMode='debug';UI:ShowPanel('settings')
@@ -1053,7 +1054,10 @@ function UI:RefreshTicketLotteryControls(selected)
     self.currentLootNewDropButton.label:SetText(
         self.currentLootNewDropPending and 'Confirm Drop' or 'New Drop')
     local a=L:GetActiveFor(selected)
-    self.currentLootReviewButton.label:SetText(a and a.status=='COMPLETE' and 'Review Award' or 'Review Pool')
+    self.currentLootReviewButton.label:SetText(
+        a and a.status=='COMPLETE' and a.winner and
+        not a.awardStatus and 'Award Winner' or
+        (a and a.status=='COMPLETE' and 'Award Status' or 'Review Pool'))
     if a and a.status == "COMPLETE" and a.winner then
         local awardTag = '[NOT AWARDED]'
         if a.awardStatus == 'LEADER_REPORTED' then awardTag='[REPORTED]'

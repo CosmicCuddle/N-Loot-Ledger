@@ -44,6 +44,25 @@ function UI:CreateAwardSettingsContent(parent)
     foot:SetWidth(670)
     foot:SetJustifyH('LEFT')
     foot:SetText('NLL never auto-awards after a roll. A successful GiveMasterLoot call is only a request, not proof the winner received it. Fake raids never make this call.')
+    local guildStatus=page:CreateFontString(nil,'OVERLAY','GameFontHighlight')
+    guildStatus:SetPoint('TOPLEFT',foot,'BOTTOMLEFT',0,-26)
+    guildStatus:SetWidth(650)
+    guildStatus:SetJustifyH('LEFT')
+    local guildToggle=UI:CreateTextButton(page,'Enable Guild Transfers',224)
+    guildToggle:SetPoint('TOPLEFT',guildStatus,'BOTTOMLEFT',0,-12)
+    guildToggle:SetScript('OnClick',function()
+        local T=NLL.GuildLootTransfer
+        if not T then return end
+        local change=T:SetEnabled(not (NLL.db.settings.guildLootTransfersEnabled==true))
+        if change then
+            NLL:Print(NLL.db.settings.guildLootTransfersEnabled and
+                'MANUAL guild-loot transfers enabled. Direct Master Loot ALSO required; each item needs Review, Arm and Confirm.' or
+                'Manual guild-loot transfers disabled.')
+        end
+        UI:RefreshAwardSettingsContent()
+    end)
+    self.awardSettingsGuildStatus=guildStatus
+    self.awardSettingsGuildToggle=guildToggle
     self.awardSettingsPage = page
     self.awardSettingsStatus = status
     self.awardSettingsToggle = toggle
@@ -56,9 +75,19 @@ function UI:RefreshAwardSettingsContent()
         '|cff66ff99Direct Master Loot: OFF (recommended until live testing)|r')
     self.awardSettingsToggle.label:SetText(enabled and
         'Disable Direct Awards' or 'Enable Direct Awards')
-    if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
-        self.awardSettingsToggle:Disable()
-    else
-        self.awardSettingsToggle:Enable()
+    local fake=NLL.DebugSimulator and NLL.DebugSimulator:IsActive()
+    if fake then self.awardSettingsToggle:Disable()
+    else self.awardSettingsToggle:Enable() end
+    local T=NLL.GuildLootTransfer
+    if self.awardSettingsGuildStatus then
+        local consent=NLL.db and NLL.db.settings and
+            NLL.db.settings.guildLootTransfersEnabled==true
+        self.awardSettingsGuildStatus:SetText(consent and
+            '|cffffaa55Guild transfers: ON, but EACH item requires review + ARM + CONFIRM|r' or
+            '|cff66ff99Guild transfers: OFF (resets each login/reload)|r')
+        self.awardSettingsGuildToggle.label:SetText(consent and
+            'Disable Guild Transfers' or 'Enable Guild Transfers')
+        if fake or not T then self.awardSettingsGuildToggle:Disable()
+        else self.awardSettingsGuildToggle:Enable() end
     end
 end

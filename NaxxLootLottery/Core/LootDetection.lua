@@ -374,6 +374,9 @@ eventFrame:SetScript(
             if NLL.AwardWorkflow then
                 NLL.AwardWorkflow:OnLootSlotCleared(...)
             end
+            if NLL.GuildLootTransfer then
+                NLL.GuildLootTransfer:OnLootSlotCleared(...)
+            end
             return
         end
         if event == "LOOT_CLOSED" then
@@ -388,6 +391,9 @@ eventFrame:SetScript(
             end
             if NLL.AwardWorkflow then
                 NLL.AwardWorkflow:OnLootClosed()
+            end
+            if NLL.GuildLootTransfer then
+                NLL.GuildLootTransfer:OnLootClosed()
             end
             if NLL.TicketLottery then
                 NLL.TicketLottery.liveLootObserved = false

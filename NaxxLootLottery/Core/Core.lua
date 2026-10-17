@@ -338,6 +338,24 @@ function NLL:HandleSlashCommand(message)
         return
     end
 
+    if command=="guildgive" then
+        local option=string.lower(arguments or "")
+        local T=self.GuildLootTransfer
+        if option=="on" or option=="off" then
+            if T:SetEnabled(option=="on") then
+                self:Print("Manual guild transfers "..(option=="on" and
+                    "ENABLED: requires Direct Master Loot ON and TWO confirmation clicks." or
+                    "OFF."))
+            else self:Print("Unable to change guild transfer consent while in fake mode.") end
+        else
+            self:Print("Manual guild transfers: "..
+                (self.db.settings.guildLootTransfersEnabled and "ON" or "OFF")..
+                "; Direct Master Loot: "..
+                (self.AwardWorkflow:IsDirectEnabled() and "ON" or "OFF")..
+                ". Use /nll guildgive on|off.")
+        end
+        return
+    end
     if command=="guildloot" then
         self.UI:ShowMainFrame("currentloot")
         self.UI:OpenGuildLootReview()
@@ -615,6 +633,7 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll lotteryhistory - Show last 5 lottery records.")
         self:Print("/nll awardreview - Review the selected winner and manual award.")
         self:Print("/nll guildloot - Read-only review of ALL visible item slots, including materials.")
+        self:Print("/nll guildgive on|off - Separate login-only consent for manual guild transfers.")
         self:Print("/nll awardhistory - Show manual, requested and observed awards.")
         self:Print("/nll directaward off - Immediately disable live direct awarding.")
         self:Print("/nll raidchat on|off - Optional RAID ticket/winner announcements.")
@@ -713,6 +732,10 @@ function NLL:Initialize()
     RequireModule(
         "Core/GuildLootReview.lua",
         self.GuildLootReview
+    )
+    RequireModule(
+        "Core/GuildLootTransfer.lua",
+        self.GuildLootTransfer
     )
 
     RequireModule(

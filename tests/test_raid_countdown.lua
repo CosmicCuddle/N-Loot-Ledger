@@ -36,6 +36,7 @@ NaxxLootLottery={
     Roster={Refresh=function()end},
     DebugSimulator={IsActive=function()return false end},
     LootIdentity={IsProcessed=function(_,uid)return processed[uid]==true end,
+        RestoreOutcome=function()return nil end,
         MarkCompleted=function(_,uid)processed[uid]=true end},
     LootDetection={lootOpen=true,GetCurrentLoot=function()return entries end},
     TicketPlanner={BuildPreview=function()

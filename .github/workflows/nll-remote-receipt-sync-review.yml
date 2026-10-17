@@ -1,0 +1,72 @@
+name: Player Receipt Inbox Sync safety (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-remote-receipt-sync
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nll-remote-receipt-sync-draft
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Lua 5.1 / two-client privacy & no-auto-award safety
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact draft head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Confirm only approved non-awarding sync changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=765dc06f5e65273114b272bb38cfeffb226fe340
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          while IFS= read -r p; do
+            case "$p" in
+              NaxxLootLottery/Core/ReceiptSync.lua|NaxxLootLottery/UI/ReceiptSyncFrame.lua|NaxxLootLottery/Storage/Database.lua|NaxxLootLottery/Core/LootReceiptTracker.lua|NaxxLootLottery/Core/Communication.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_remote_receipt_sync.lua|tests/test_receipt_sync_ui.lua|docs/TESTING_REMOTE_RECEIPT_SYNC_DRAFT.md|.github/workflows/nll-remote-receipt-sync-review.yml) ;;
+              *) echo "::error::Unapproved file in non-awarding sync draft: $p"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          if git diff --name-only "$BASE" "$GITHUB_SHA" | grep -E '^NaxxLootLottery/Core/(AwardWorkflow|GuildLootTransfer|TicketLottery).lua$'; then
+            echo "::error::No physical transfer or lottery code changes allowed"; exit 1
+          fi
+          if grep -Eiq '^[^\-]*(GiveMasterLoot|RandomRoll)\s*\(' NaxxLootLottery/Core/ReceiptSync.lua NaxxLootLottery/UI/ReceiptSyncFrame.lua; then
+            echo "::error::Receipt sync is forbidden from awarding physical loot or rolling"; exit 1
+          fi
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'self:CanAccept(key)' NaxxLootLottery/Core/ReceiptSync.lua
+          grep -qx '## Version: 0.1.0.29-rc.1-dev3' NaxxLootLottery/NaxxLootLottery.toc
+          echo "All guards present: player-only acceptance, no auto-awards, two dangerous opt-ins OFF"
+
+      - name: Install Lua 5.1
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse all addon and test files using Lua 5.1
+        run: find NaxxLootLottery tests -name '*.lua' -type f -print0 | xargs -0 -n1 luac5.1 -p
+
+      - name: Execute complete historical Lua regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in tests/test_*.lua; do
+            echo "Running $file"
+            lua5.1 "$file"
+          done
+
+      - name: Check reproducible packaging and defaults
+        run: python3 tests/test_release_packaging.py
+
+      - name: Confirm draft-only workflow
+        run: |
+          echo "Review complete; deliberately NO installable addon ZIP, GitHub release, tag or merge."

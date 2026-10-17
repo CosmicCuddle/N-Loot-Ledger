@@ -169,15 +169,6 @@ function UI:CreateCurrentLootPanel(parent)
         if not ok then NLL:Print(notice) end
         UI:RefreshCurrentLootPanel()
     end)
-    -- Clear and Cancel Tickets do not start a new physical loot opportunity.
-    -- Two explicit clicks use the existing /nll newloot safety gates.
-    local newDrop=self:CreateTextButton(panel,'New Drop',106)
-    newDrop:SetPoint('LEFT',draw,'RIGHT',8,0)
-    newDrop:SetScript('OnClick',function()
-        UI:RequestNewDrop()
-    end)
-    self.currentLootNewDropButton=newDrop
-
     local cancel=self:CreateTextButton(panel,'Cancel Tickets',132)
     cancel:SetPoint('BOTTOMLEFT',panel,'BOTTOMLEFT',8,8)
     cancel:SetScript('OnClick',function()
@@ -252,6 +243,16 @@ function UI:CreateCurrentLootPanel(parent)
     )
 
     dropsHeaderText:SetText("Detected Loot")
+    -- A third ticket-row button intruded into the right-hand match paginator.
+    -- Anchor New Drop in the left-hand loot header (inside its 326px column).
+    -- This leaves both ticket rows and the right-hand controls unobstructed.
+    -- Clicking still uses the identical guarded two-step reset as /nll newloot.
+    local newDrop=self:CreateTextButton(panel,'New Drop',106)
+    newDrop:SetPoint('TOPRIGHT',dropsHeader,'TOPRIGHT',-4,0)
+    newDrop:SetScript('OnClick',function()
+        UI:RequestNewDrop()
+    end)
+    self.currentLootNewDropButton=newDrop
 
     local matchHeader =
         CreateFrame(

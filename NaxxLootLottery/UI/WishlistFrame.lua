@@ -144,6 +144,15 @@ function UI:CreateLocalWishlistContent(parent)
         UI:RefreshLocalWishlist()
     end)
 
+    -- Access pending human-to-human receipt confirmations from My Wishlist.
+    -- A remote leader's whisper never changes this player's wishlist.
+    local receiptButton=self:CreateTextButton(content,"Receipt Inbox",112)
+    receiptButton:SetPoint("RIGHT",itemsButton,"LEFT",-8,0)
+    receiptButton:SetScript("OnClick",function()
+        UI:OpenReceiptSyncReview()
+    end)
+    self.localReceiptInboxButton=receiptButton
+
     self.localWishlistItemsButton = itemsButton
     self.localWishlistRecipesButton = recipesButton
     self.localWishlistCategory = "items"

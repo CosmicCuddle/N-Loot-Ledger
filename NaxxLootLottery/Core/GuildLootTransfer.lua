@@ -39,6 +39,14 @@ function T:IsUnresolved()
             return true
         end
     end
+    -- Also include persisted winner-award attempts, not just live
+    -- references that vanish at /reload. Missing receipts fail closed.
+    for _,row in ipairs(NLL.db and NLL.db.lootAwardHistory or {}) do
+        if row.status=="AWARD_REQUESTED" or
+           row.status=="AWARD_OUTCOME_UNKNOWN" then
+            return true
+        end
+    end
     if NLL.AwardWorkflow then
         for _,v in pairs(NLL.AwardWorkflow.liveRequests or {}) do
             if v.history and v.history.status=="AWARD_REQUESTED" then
@@ -94,6 +102,15 @@ function T:Validate(target)
     end
     if self:IsUnresolved() then
         return false,"An earlier item transfer is unresolved; review its receipt first."
+    end
+    local active=NLL.TicketLottery and NLL.TicketLottery.active
+    if active and active.status~="COMPLETE" and
+       active.status~="CANCELLED" and active.status~="INVALIDATED" then
+        return false,"A ticket lottery is still active. Finish or cancel it first."
+    end
+    local winnerReview=NLL.AwardWorkflow and NLL.AwardWorkflow.verification
+    if winnerReview and not winnerReview.simulated then
+        return false,"Another Master Loot winner review is pending. Close it first."
     end
     if self:WasAttempted(row.itemID,row.slotIndex) then
         return false,"This item/slot was already requested. No duplicate attempt is allowed."

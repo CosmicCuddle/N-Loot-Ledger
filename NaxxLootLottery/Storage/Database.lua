@@ -296,6 +296,9 @@ end
 
 function Database:SetLocalInterest(characterName, raidKey, itemID, status)
     if status~="NEEDED" and status~="GREED" then return false end
+    if self:GetLocalInterest(characterName,raidKey,itemID)=="OBTAINED" then
+        return false
+    end
     if not self:IsLocallyReserved(characterName,raidKey,itemID) then
         return false
     end

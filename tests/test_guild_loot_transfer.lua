@@ -114,6 +114,21 @@ local malformed={slotIndex=rows[5].slotIndex,itemID=rows[5].itemID,
     itemLink=rows[5].itemLink,quantity=rows[5].quantity}
 wantReview=T:Review(malformed)
 ok(not wantReview,"legendary item cannot be guild-transferred through this path")
+N.TicketLottery.active={status="COUNTDOWN"}
+wantReview,why=T:Review(target)
+ok(not wantReview and why:find("ticket lottery"),
+    "pending countdown prevents guild transfer")
+N.TicketLottery.active=nil
+N.AwardWorkflow.verification={dropUID="SOME_OTHER_WINNER",winner="Other"}
+wantReview,why=T:Review(target)
+ok(not wantReview and why:find("winner review"),
+    "unfinished winner award review prevents a competing transfer")
+N.AwardWorkflow.verification=nil
+N.db.lootAwardHistory={{status="AWARD_OUTCOME_UNKNOWN",itemID=17011}}
+wantReview,why=T:Review(target)
+ok(not wantReview and why:find("unresolved"),
+    "old winner transfer uncertainty survives into guild routing guard")
+N.db.lootAwardHistory={}
 local okReview,reviewMessage=T:Review(target)
 ok(okReview and reviewMessage:find("ARM") and #given==0,
     "review records exact material, quantity and leader without giving")

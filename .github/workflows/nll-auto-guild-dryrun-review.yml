@@ -1,0 +1,61 @@
+name: Automatic Guild Loot preview-only safety (NO RELEASE)
+on:
+  push:
+    branches:
+      - dev/nll-auto-guild-dryrun
+permissions:
+  contents: read
+concurrency:
+  group: nll-guild-auto-dryrun
+  cancel-in-progress: true
+jobs:
+  validate:
+    name: All Lua 5.1 tests and ZERO item transfer guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Diff and no-real-award guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=aed0312e9019986b13c52a93198c8b102e0f4d84
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          while IFS= read -r p; do
+            case "$p" in
+              NaxxLootLottery/Core/GuildAutoPreview.lua|NaxxLootLottery/UI/GuildAutoPreviewFrame.lua|NaxxLootLottery/Core/GuildLootReview.lua|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_guild_auto_preview.lua|tests/test_guild_auto_preview_ui.lua|docs/TESTING_GUILD_AUTO_PREVIEW_DRAFT.md|.github/workflows/nll-auto-guild-dryrun-review.yml) ;;
+              *) echo "::error::Unexpected file: $p"; exit 1;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          if git diff --name-only "$BASE" "$GITHUB_SHA" | grep -E '^NaxxLootLottery/Core/(AwardWorkflow|GuildLootTransfer|TicketLottery|GuildLootReconcile).lua$'; then
+            echo "::error::Real transfer/reconciliation code must remain unchanged"; exit 1
+          fi
+          if grep -E '^[[:space:]]*(GiveMasterLoot|RandomRoll)\(' NaxxLootLottery/Core/GuildAutoPreview.lua NaxxLootLottery/UI/GuildAutoPreviewFrame.lua; then
+            echo "::error::DRY RUN must never transfer or roll"; exit 1
+          fi
+          grep -Fq 'transferAuthorized=false' NaxxLootLottery/Core/GuildAutoPreview.lua
+          grep -Fq 'realTransfers=0' NaxxLootLottery/Core/GuildAutoPreview.lua
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -qx '## Version: 0.1.0.29-rc.1-dev5' NaxxLootLottery/NaxxLootLottery.toc
+          echo 'All proposals remain unverified and unawarded.'
+      - name: Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse addon and test files
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Run entire regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          for t in tests/test_*.lua; do
+            echo "RUNNING $t"
+            lua5.1 "$t"
+          done
+      - name: Reproducible packaging smoke
+        run: python3 tests/test_release_packaging.py
+      - name: No publishing
+        run: echo "Preview only. No downloadable artifact, install, tag, release, merge or server loot."

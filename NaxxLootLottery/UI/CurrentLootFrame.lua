@@ -1233,10 +1233,14 @@ function UI:RefreshTicketLotteryControls(selected)
     self.currentLootNewDropButton.label:SetText(
         self.currentLootNewDropPending and 'Confirm Drop' or 'New Drop')
     local a=L:GetActiveFor(selected)
+    local receipt=a and NLL.LootReceiptTracker and
+        NLL.LootReceiptTracker:Get(a.dropUID)
     self.currentLootReviewButton.label:SetText(
-        a and a.status=='COMPLETE' and a.winner and
-        not a.awardStatus and 'Award Winner' or
-        (a and a.status=='COMPLETE' and 'Award Status' or 'Review Pool'))
+        receipt and receipt.status=="OBTAINED" and "Obtained" or
+        (receipt and a.awardStatus and "Confirm Receipt" or
+        (a and a.status=='COMPLETE' and a.winner and
+            not a.awardStatus and 'Award Winner' or
+            (a and a.status=='COMPLETE' and 'Award Status' or 'Review Pool'))))
     if a and a.status == "COMPLETE" and a.winner then
         local awardTag = '[NOT AWARDED]'
         if a.awardStatus == 'LEADER_REPORTED' then awardTag='[REPORTED]'

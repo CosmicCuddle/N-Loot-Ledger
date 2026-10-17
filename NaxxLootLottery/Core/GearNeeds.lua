@@ -420,6 +420,19 @@ function GearNeeds:ReplacePlayerSubmitted(
         end
     end
 
+    -- Keep a previously OBTAINED submitted item obtained if someone
+    -- re-sends an old wishlist. A submission must never silently
+    -- downgrade a verified receipt into NEED or GREED.
+    local previouslyObtained={}
+    for _,old in pairs(NLL.db.gearNeeds or {}) do
+        if type(old)=="table" and old.source=="PLAYER_SUBMITTED" and
+           self:NormalizeCharacterName(old.character)==
+               self:NormalizeCharacterName(characterName) and
+           old.raidKey==raidKey and old.status=="OBTAINED" then
+            previouslyObtained[tonumber(old.itemID)]=true
+        end
+    end
+
     self:RemovePlayerSubmittedForRaid(
         characterName,
         raidKey
@@ -454,7 +467,8 @@ function GearNeeds:ReplacePlayerSubmitted(
                     itemID,
                     raidKey,
                     role,
-                    interests[itemID] or "NEEDED",
+                    previouslyObtained[itemID] and "OBTAINED" or
+                        (interests[itemID] or "NEEDED"),
                     "PLAYER_SUBMITTED",
                     "PLAYER"
                 )

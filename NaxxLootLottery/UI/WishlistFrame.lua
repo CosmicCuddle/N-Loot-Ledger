@@ -210,10 +210,10 @@ function UI:CreateLocalWishlistContent(parent)
             "GameFontHighlightSmall"
         )
         bossText:SetPoint("LEFT", row, "LEFT", 375, 0)
-        bossText:SetWidth(255)
+        bossText:SetWidth(190) -- reserve space for full OBTAINED label
         bossText:SetJustifyH("LEFT")
 
-        local interest=self:CreateTextButton(row,"NEED",77)
+        local interest=self:CreateTextButton(row,"NEED",102)
         interest:SetPoint("RIGHT",row,"RIGHT",-84,0)
         interest:SetScript("OnClick",function(self)
             if not self.itemID then return end
@@ -408,10 +408,13 @@ function UI:RefreshLocalWishlist()
                 NLL.Database:GetLocalInterest(
                     NLL.ItemSearch:GetPlayerName(),"MOLTEN_CORE",item.itemID)
                 or "NEEDED"
-            row.interest.label:SetText(choice=="GREED" and "GREED" or "NEED")
+            row.interest.label:SetText(
+                choice=="OBTAINED" and "OBTAINED" or
+                (choice=="GREED" and "GREED" or "NEED"))
             -- Recipes always remain explicit guild/manual distribution:
             -- interest stays NEED; never imply they can join a normal roll.
-            if category=="recipes" then row.interest:Disable()
+            if category=="recipes" or choice=="OBTAINED" then
+                row.interest:Disable()
             else row.interest:Enable() end
             row:Show()
         else

@@ -87,6 +87,9 @@ function Database:Initialize()
     if type(db.lootAwardHistory) ~= "table" then
         db.lootAwardHistory = {}
     end
+    if type(db.lootReceiptTracker) ~= "table" then
+        db.lootReceiptTracker = {}
+    end
     if type(db.candidateAudit) ~= 'table' then
         db.candidateAudit = {}
     end
@@ -103,6 +106,9 @@ function Database:Initialize()
     -- wishlist is kept untouched so existing reservations remain NEED.
     if type(db.localWishlistGreed) ~= "table" then
         db.localWishlistGreed = {}
+    end
+    if type(db.localWishlistObtained) ~= "table" then
+        db.localWishlistObtained = {}
     end
 
     if type(db.submissionInbox) ~= "table" then
@@ -273,6 +279,12 @@ end
 function Database:GetLocalInterest(characterName, raidKey, itemID)
     local wishlist=self:GetLocalWishlist(characterName,raidKey)
     if not wishlist or wishlist[itemID]~=true then return nil end
+    local obtained=NLL.db.localWishlistObtained and
+        NLL.db.localWishlistObtained[characterName]
+    local complete=type(obtained)=="table" and obtained[raidKey]
+    if type(complete)=="table" and complete[itemID]==true then
+        return "OBTAINED"
+    end
     local character=NLL.db.localWishlistGreed and
         NLL.db.localWishlistGreed[characterName]
     local raid=type(character)=="table" and character[raidKey]
@@ -284,6 +296,9 @@ end
 
 function Database:SetLocalInterest(characterName, raidKey, itemID, status)
     if status~="NEEDED" and status~="GREED" then return false end
+    if self:GetLocalInterest(characterName,raidKey,itemID)=="OBTAINED" then
+        return false
+    end
     if not self:IsLocallyReserved(characterName,raidKey,itemID) then
         return false
     end
@@ -298,6 +313,19 @@ function Database:SetLocalInterest(characterName, raidKey, itemID, status)
     return true
 end
 
+function Database:MarkLocalObtained(characterName,raidKey,itemID)
+    if not self:IsLocallyReserved(characterName,raidKey,itemID) then
+        return false
+    end
+    local all=NLL.db.localWishlistObtained
+    if type(all[characterName])~="table" then all[characterName]={} end
+    if type(all[characterName][raidKey])~="table" then
+        all[characterName][raidKey]={}
+    end
+    all[characterName][raidKey][itemID]=true
+    return true
+end
+
 function Database:SetLocalReservation(characterName, raidKey, itemID, wanted)
     local wishlist = self:GetLocalWishlist(characterName, raidKey)
     if not wishlist then return false end
@@ -309,6 +337,10 @@ function Database:SetLocalReservation(characterName, raidKey, itemID, wanted)
             NLL.db.localWishlistGreed[characterName]
         local raid=type(character)=="table" and character[raidKey]
         if type(raid)=="table" then raid[itemID]=nil end
+        local obtained=NLL.db.localWishlistObtained and
+            NLL.db.localWishlistObtained[characterName]
+        local complete=type(obtained)=="table" and obtained[raidKey]
+        if type(complete)=="table" then complete[itemID]=nil end
     end
     return true
 end

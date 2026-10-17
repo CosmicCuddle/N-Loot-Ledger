@@ -191,6 +191,11 @@ function Comm:BuildLocalWishlistItemIDs()
 
     for itemID, wanted in pairs(wishlist or {}) do
         if wanted
+            -- An OBTAINED local reservation remains visible in My Wishlist,
+            -- but must not be submitted as a fresh NEED/GREED request.
+            and (not NLL.Database.GetLocalInterest or
+                 NLL.Database:GetLocalInterest(
+                     player,"MOLTEN_CORE",tonumber(itemID))~="OBTAINED")
             and NLL.Data.MoltenCore:GetItem(
                 tonumber(itemID)
             ) then

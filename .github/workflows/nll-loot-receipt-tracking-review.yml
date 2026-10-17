@@ -1,0 +1,68 @@
+name: Verified loot receipt / OBTAINED draft (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-receipt-tracking
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nll-receipt-obtained-safety
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Full Lua 5.1 receipt/loot/history data safety
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact development commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Allowlist only new receipt and non-awarding integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=dbcc5370bbb9d2772b162eed6a11a6d399437b71
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          while IFS= read -r path; do
+            case "$path" in
+              NaxxLootLottery/Core/LootReceiptTracker.lua|NaxxLootLottery/Core/TicketLottery.lua|NaxxLootLottery/Storage/Database.lua|NaxxLootLottery/Core/Communication.lua|NaxxLootLottery/Core/GearNeeds.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/UI/AwardReviewFrame.lua|NaxxLootLottery/UI/AwardHistoryFrame.lua|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_loot_receipt_tracking.lua|tests/test_receipt_savedvariables.lua|tests/test_receipt_review_ui.lua|docs/TESTING_LOOT_RECEIPT_TRACKING_DRAFT.md|.github/workflows/nll-loot-receipt-tracking-review.yml) ;;
+              *) echo "::error::Unexpected source change in receipt-tracking-only PR: $path"; exit 1;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          if git diff --name-only "$BASE" "$GITHUB_SHA" | grep -E '^NaxxLootLottery/Core/(AwardWorkflow|GuildLootTransfer).lua$'; then
+            echo "::error::Real item transfer engine must remain unchanged"; exit 1
+          fi
+          if grep -Eq '(^|[^(])GiveMasterLoot\(' NaxxLootLottery/Core/LootReceiptTracker.lua; then
+            echo "::error::Receipt tracker may not award any physical loot"; exit 1
+          fi
+          grep -Fq 'status="WON_AWAITING_ITEM"' NaxxLootLottery/Core/LootReceiptTracker.lua
+          grep -Fq 'self:CanConfirm(dropUID)' NaxxLootLottery/Core/LootReceiptTracker.lua
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -qx '## Version: 0.1.0.29-rc.1-dev2' NaxxLootLottery/NaxxLootLottery.toc
+          echo 'No item-transfer call from receipt update; both real award switches OFF'
+      - name: Install Lua 5.1
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse all Lua 5.1 addon/test sources
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Execute EVERY Lua regression test
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in tests/test_*.lua; do
+            echo "Running $f"
+            lua5.1 "$f"
+          done
+      - name: Reproducible package smoke + direct award OFF
+        run: python3 tests/test_release_packaging.py
+      - name: Keep test-only artifact unpublished
+        run: |
+          echo 'Unmerged development only. No install ZIP, release, tag or real loot transfer.'

@@ -101,7 +101,8 @@ CreateFrame = function() return frame() end
 local UI = NLL.UI
 function UI:CreateTextButton(_, label, width)
     local b = frame()
-    b.label = label
+    b.label = frame()
+    b.label:SetText(label)
     b.width = width
     return b
 end

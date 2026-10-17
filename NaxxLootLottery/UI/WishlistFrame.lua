@@ -835,6 +835,16 @@ function UI:CreateGearPlansContent(parent)
     self.gearFilterBox = filterBox
     self.gearPlanFilter = ""
 
+    -- Keep the transfer entry point above the list. The six-row footer
+    -- must not move back into the saved Gear Plans, at any UI font scale.
+    local transferButton =
+        self:CreateTextButton(content, "Import / Export", 125)
+    transferButton:SetPoint("TOPRIGHT", content, "TOPRIGHT", -8, -75)
+    transferButton:SetScript("OnClick", function()
+        UI:ShowGearPlanTransfer()
+    end)
+    self.gearTransferButton = transferButton
+
     -- List header
     local header = CreateFrame("Frame", nil, content)
     header:SetPoint(
@@ -2033,4 +2043,265 @@ function UI:RefreshSimulationWishlist()
     else self.simulationWishlistPrev:Enable() end
     if self.simulationNeedsPage>=pages then self.simulationWishlistNext:Disable()
     else self.simulationWishlistNext:Enable() end
+end
+
+
+-- ============================================================
+-- OPTIONAL PLAYERBOT GEAR PLAN COPY / PASTE
+-- ============================================================
+-- This dialog never writes data without a separate Preview -> Confirm.
+-- It does not use local files, account SavedVariables, chat or addon messages.
+function UI:CreateGearPlanTransfer()
+    if self.gearTransferDialog then return end
+    local panel=CreateFrame("Frame","NaxxLootLotteryGearTransferDialog",UIParent)
+    panel:SetWidth(744)
+    panel:SetHeight(477)
+    panel:SetPoint("CENTER",UIParent,"CENTER",0,0)
+    panel:SetFrameStrata("DIALOG")
+    panel:SetMovable(true)
+    panel:SetClampedToScreen(true)
+    panel:EnableMouse(true)
+    panel:RegisterForDrag("LeftButton")
+    panel:SetScript("OnDragStart",function(frame)frame:StartMoving()end)
+    panel:SetScript("OnDragStop",function(frame)frame:StopMovingOrSizing()end)
+    self:RegisterSkinnedFrame(panel,"main")
+
+    local title=panel:CreateFontString(nil,"OVERLAY","GameFontNormalLarge")
+    title:SetPoint("TOPLEFT",panel,"TOPLEFT",16,-14)
+    title:SetText("Playerbot Gear Plans - Import / Export")
+
+    local hint=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    hint:SetPoint("TOPLEFT",title,"BOTTOMLEFT",0,-12)
+    hint:SetWidth(700)
+    hint:SetJustifyH("LEFT")
+    hint:SetText("Copy existing bot plans, or paste a NLL-GEARPLANS-1 list. Preview first. Existing plans are NEVER overwritten.")
+    local format=panel:CreateFontString(nil,"OVERLAY","GameFontDisableSmall")
+    format:SetPoint("TOPLEFT",hint,"BOTTOMLEFT",0,-8)
+    format:SetWidth(700)
+    format:SetJustifyH("LEFT")
+    format:SetText("Format: Character | PLAYERBOT | Role | MOLTEN_CORE | Item ID | BOT_GEAR_PLAN | Status | 1")
+
+    local exportButton=self:CreateTextButton(panel,"Export Bot Plans",130)
+    exportButton:SetPoint("TOPLEFT",panel,"TOPLEFT",16,-91)
+    local importButton=self:CreateTextButton(panel,"Paste / Import",120)
+    importButton:SetPoint("LEFT",exportButton,"RIGHT",10,0)
+    local previewButton=self:CreateTextButton(panel,"Preview Changes",125)
+    previewButton:SetPoint("LEFT",importButton,"RIGHT",10,0)
+    local confirmButton=self:CreateTextButton(panel,"Confirm ADD",115)
+    confirmButton:SetPoint("LEFT",previewButton,"RIGHT",10,0)
+    local closeButton=self:CreateTextButton(panel,"Close",66)
+    closeButton:SetPoint("TOPRIGHT",panel,"TOPRIGHT",-15,-13)
+
+    local well=CreateFrame("Frame",nil,panel)
+    well:SetPoint("TOPLEFT",panel,"TOPLEFT",16,-129)
+    well:SetPoint("BOTTOMRIGHT",panel,"BOTTOMRIGHT",-16,86)
+    self:RegisterSkinnedFrame(well,"row")
+    -- Wrath 3.3.5a's UIPanelScrollFrameTemplate accesses
+    -- frame:GetName() while creating $parentScrollBar. An unnamed
+    -- ScrollFrame makes FrameXML/ScrollFrame_OnLoad concatenate nil.
+    -- Give this singleton dialog's scroll frame a stable global name.
+    local scroll=CreateFrame(
+        "ScrollFrame",
+        "NaxxLootLotteryGearTransferScrollFrame",
+        well,
+        "UIPanelScrollFrameTemplate"
+    )
+    scroll:SetPoint("TOPLEFT",well,"TOPLEFT",8,-8)
+    scroll:SetPoint("BOTTOMRIGHT",well,"BOTTOMRIGHT",-30,8)
+    local edit=CreateFrame("EditBox",nil,scroll)
+    edit:SetMultiLine(true)
+    edit:SetAutoFocus(false)
+    edit:SetFontObject(ChatFontNormal)
+    edit:SetWidth(656)
+    edit:SetHeight(255)
+    edit:SetMaxLetters(0)
+    edit:SetScript("OnEscapePressed",function(box)box:ClearFocus()end)
+    scroll:SetScrollChild(edit)
+
+    -- Every export page contains a complete NLL-GEARPLANS-1 header.
+    -- Controls sit below the paste well, not in the six-row Gear Plans list.
+    local exportPrev=self:CreateTextButton(panel,"Previous Export",120)
+    exportPrev:SetPoint("BOTTOMLEFT",panel,"BOTTOMLEFT",16,52)
+    local exportNext=self:CreateTextButton(panel,"Next Export",110)
+    exportNext:SetPoint("LEFT",exportPrev,"RIGHT",10,0)
+    local exportPageLabel=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    exportPageLabel:SetPoint("LEFT",exportNext,"RIGHT",16,0)
+    exportPageLabel:SetWidth(350)
+    exportPageLabel:SetJustifyH("LEFT")
+    exportPageLabel:SetText("Export pages: not loaded")
+    exportPrev:Disable()
+    exportNext:Disable()
+
+    local status=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    status:SetPoint("BOTTOMLEFT",panel,"BOTTOMLEFT",18,18)
+    status:SetWidth(705)
+    status:SetJustifyH("LEFT")
+    status:SetText("No changes made. Export is read-only; Import requires a preview and confirmation.")
+
+    local preview=nil
+    local mode="EXPORT"
+    local exportSnapshot=nil
+    local exportPage=1
+    local exportPages=1
+    confirmButton:Disable()
+    previewButton:Disable()
+
+    local function ClearPreview()
+        preview=nil
+        confirmButton:Disable()
+    end
+    local function SetStatus(message)
+        status:SetText(tostring(message or ""))
+    end
+    local function SetMode(nextMode)
+        mode=nextMode
+        ClearPreview()
+        exportPrev:Disable()
+        exportNext:Disable()
+        if mode=="EXPORT" then
+            previewButton:Disable()
+        else
+            exportSnapshot=nil
+            exportPage=1
+            exportPages=1
+            exportPageLabel:SetText("Export pages: switch to Export Bot Plans")
+            previewButton:Enable()
+        end
+    end
+
+    local function ShowExportPage(page)
+        if mode~="EXPORT" then return end
+        local data,count,pages,total,snapshot=
+            NLL.GearPlanTransfer:Export(page,exportSnapshot)
+        if not data then
+            exportPrev:Disable()
+            exportNext:Disable()
+            edit:SetText("")
+            exportPageLabel:SetText("Export blocked; restart at page 1")
+            SetStatus("EXPORT BLOCKED: "..tostring(count)..
+                " Click Export Bot Plans to restart safely.")
+            return
+        end
+        exportSnapshot=snapshot
+        exportPage=page
+        exportPages=pages
+        exportPageLabel:SetText("Page "..page.."/"..pages.." - "..total.." bot plans total")
+        if page>1 then exportPrev:Enable() else exportPrev:Disable() end
+        if page<pages then exportNext:Enable() else exportNext:Disable() end
+        edit:SetText(data)
+        edit:SetFocus()
+        edit:HighlightText()
+        SetStatus("EXPORT ONLY: page "..page.."/"..pages.." ("..count..
+            " records). Ctrl+C and save as a SEPARATE .txt file; then Next Export. No data changed.")
+    end
+
+    exportPrev:SetScript("OnClick",function()
+        if mode=="EXPORT" and exportSnapshot and exportPage>1 then
+            ShowExportPage(exportPage-1)
+        end
+    end)
+    exportNext:SetScript("OnClick",function()
+        if mode=="EXPORT" and exportSnapshot and exportPage<exportPages then
+            ShowExportPage(exportPage+1)
+        end
+    end)
+
+    edit:SetScript("OnTextChanged",function(box)
+        -- Invalidate confirmation if the user changes even one byte.
+        ClearPreview()
+        -- ScrollFrame needs a child taller than the visible area when
+        -- pasting larger multi-line lists on the 3.3.5a client.
+        local length=#(box:GetText() or "")
+        local _,newlines=(box:GetText() or ""):gsub("\n","\n")
+        local visualLines=math.max(17,newlines+1,math.ceil(length/74))
+        box:SetHeight(math.max(255,visualLines*14))
+    end)
+
+    exportButton:SetScript("OnClick",function()
+        SetMode("EXPORT")
+        exportSnapshot=nil
+        exportPage=1
+        exportPages=1
+        ShowExportPage(1)
+    end)
+
+    importButton:SetScript("OnClick",function()
+        local alreadyImport=(mode=="IMPORT")
+        SetMode("IMPORT")
+        -- Only discard the read-only export when FIRST entering import mode.
+        -- A second click must not silently delete a player's pasted raid list.
+        if not alreadyImport then
+            edit:SetText("")
+        end
+        edit:SetFocus()
+        if alreadyImport then
+            SetStatus("Import mode: existing pasted text kept. Click in the large box and press Ctrl+V if needed, then Preview Changes.")
+        else
+            SetStatus("Import mode ready. Click inside the large text box and press Ctrl+V, THEN Preview Changes. No plans changed.")
+        end
+    end)
+
+    previewButton:SetScript("OnClick",function()
+        ClearPreview()
+        if mode~="IMPORT" then
+            SetStatus("Choose Paste / Import before previewing.")
+            return
+        end
+        local pastedText=edit:GetText() or ""
+        if #pastedText==0 then
+            SetStatus("PREVIEW BLOCKED: The import text box is EMPTY. Click inside the large box and press Ctrl+V. Do not click Import Mode again after pasting.")
+            return
+        end
+        local candidate,errorText=NLL.GearPlanTransfer:Preview(pastedText)
+        if not candidate then
+            SetStatus("PREVIEW BLOCKED: "..tostring(errorText))
+            return
+        end
+        preview=candidate
+        SetStatus(NLL.GearPlanTransfer:Summary(candidate))
+        if candidate.ready then confirmButton:Enable() end
+    end)
+
+    confirmButton:SetScript("OnClick",function()
+        if mode~="IMPORT" or not preview then
+            SetStatus("Preview the import before confirming.")
+            confirmButton:Disable()
+            return
+        end
+        local ok,message=NLL.GearPlanTransfer:Apply(preview,edit:GetText())
+        ClearPreview()
+        SetStatus((ok and "IMPORT COMPLETE: " or "IMPORT BLOCKED: ")..
+            tostring(message))
+        if ok and UI.RefreshGearPlans then
+            UI:RefreshGearPlans()
+        end
+    end)
+    closeButton:SetScript("OnClick",function()
+        ClearPreview()
+        edit:ClearFocus()
+        panel:Hide()
+    end)
+
+    self.gearTransferDialog=panel
+    self.gearTransferTextBox=edit
+    self.gearTransferPreview=previewButton
+    self.gearTransferConfirm=confirmButton
+    self.gearTransferStatus=status
+    self.gearTransferExport=exportButton
+    self.gearTransferImport=importButton
+    self.gearTransferExportPrev=exportPrev
+    self.gearTransferExportNext=exportNext
+    self.gearTransferExportPageLabel=exportPageLabel
+    panel:Hide()
+end
+
+function UI:ShowGearPlanTransfer()
+    if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
+        NLL:Print("Stop the fake raid before using real Gear Plan Import / Export.")
+        return
+    end
+    self:CreateGearPlanTransfer()
+    self.gearTransferDialog:Show()
+    -- Open safely in read-only export mode and highlight the text.
+    self.gearTransferExport:GetScript("OnClick")()
 end

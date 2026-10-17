@@ -1,0 +1,426 @@
+-- Naxxramas Loot Ledger / WoW 3.3.5a Lua 5.1.
+-- Copy/paste Gear Plan import/export. No file I/O, network, gear award or
+-- migration. Import changes only NEW BOT_GEAR_PLAN records after confirmation.
+local NLL=NaxxLootLottery
+NLL.GearPlanTransfer=NLL.GearPlanTransfer or {}
+local T=NLL.GearPlanTransfer
+T.HEADER="NLL-GEARPLANS-1"
+T.MAX_ROWS=250
+T.MAX_BYTES=48000
+
+local function Trim(s)
+    return (tostring(s or ""):match("^%s*(.-)%s*$") or "")
+end
+-- WoW 3.3.5a uses Lua 5.1, where %a is byte/locale based rather
+-- than Unicode-aware. Validate UTF-8 bytes explicitly so characters such
+-- as TangØ (C3 98) survive *unchanged* instead of being renamed to TangO.
+-- Limit this first importer to ASCII/Latin-1 letters and interior hyphens.
+-- Other scripts fail closed rather than accepting arbitrary invalid UTF-8.
+local function SafeName(s)
+    if type(s)~="string" or #s<2 or #s>80 then return false end
+    local i,count=1,0
+    while i<=#s do
+        local b=s:byte(i)
+        local letter=(b>=65 and b<=90) or (b>=97 and b<=122)
+        if letter then
+            i=i+1
+        elseif b==45 and count>0 and i<#s then
+            -- Hyphen allowed only inside a character name.
+            i=i+1
+        elseif b==195 then
+            local nextByte=s:byte(i+1)
+            if not nextByte or not
+                ((nextByte>=128 and nextByte<=150) or
+                 (nextByte>=152 and nextByte<=182) or
+                 (nextByte>=184 and nextByte<=191)) then
+                return false
+            end
+            i=i+2
+        else
+            return false
+        end
+        count=count+1
+        if count>40 then return false end
+    end
+    return count>=2
+end
+-- Only for collision detection: WoW character identity is case-insensitive,
+-- while old stored keys must remain byte-for-byte unchanged. Fold Latin-1
+-- uppercase letters (including Ø -> ø) in *comparisons*, never in exports.
+local function CasefoldName(value)
+    local out={}
+    local i=1
+    value=tostring(value or "")
+    while i<=#value do
+        local b=value:byte(i)
+        if b==195 and i<#value then
+            local nextByte=value:byte(i+1)
+            if (nextByte>=128 and nextByte<=150) or
+               (nextByte>=152 and nextByte<=158) then
+                out[#out+1]=string.char(195,nextByte+32)
+            else
+                out[#out+1]=value:sub(i,i+1)
+            end
+            i=i+2
+        else
+            out[#out+1]=string.lower(value:sub(i,i))
+            i=i+1
+        end
+    end
+    return table.concat(out)
+end
+local function SameCharacterItemKey(row)
+    return CasefoldName(row.character).."|"..tostring(row.raidKey).."|"..
+        tostring(row.itemID).."|"..tostring(row.source)
+end
+local function Fields(line)
+    -- Wrath 3.3.5a's EditBox can escape a literal | to || when using
+    -- Ctrl+V. In the owner's real client, the seven expected separators
+    -- arrived as fourteen (seven exact || pairs).
+    --
+    -- Normalize ONLY whole rows with exactly seven single separators OR
+    -- exactly seven double separators. Never broadly replace pipes in
+    -- unvalidated text: mixed/triple separators fail closed.
+    local _,pipeCount=line:gsub("|","")
+    if pipeCount==14 then
+        if line:find("|||",1,true) then return nil end
+        local pairs
+        line,pairs=line:gsub("||","|")
+        if pairs~=7 then return nil end
+    elseif pipeCount~=7 then
+        return nil
+    end
+    local cells={}
+    -- Capture empty fields too; a missing field must not shift columns.
+    for value in (line.."|"):gmatch("(.-)|") do
+        cells[#cells+1]=value
+    end
+    if #cells~=8 then return nil end
+    return cells
+end
+local function SortRows(a,b)
+    local ca,cb=string.lower(a.character),string.lower(b.character)
+    if ca~=cb then return ca<cb end
+    if a.itemID~=b.itemID then return a.itemID<b.itemID end
+    return a.status<b.status
+end
+local function Existing()
+    if not NLL.db or type(NLL.db.gearNeeds)~="table" then
+        return nil,"Gear Plans database not ready."
+    end
+    return NLL.db.gearNeeds
+end
+local function Valid(row)
+    local G=NLL.GearNeeds
+    if row.characterType~="PLAYERBOT" or row.source~="BOT_GEAR_PLAN" then
+        return false,"Only Playerbot BOT_GEAR_PLAN records are supported."
+    end
+    if not SafeName(row.character) then
+        return false,"Invalid character name (2-40 letters; hyphens allowed)."
+    end
+    if row.raidKey~="MOLTEN_CORE" then
+        return false,"Only Molten Core plans are supported."
+    end
+    if row.role=="-" then row.role=nil end
+    if not row.role or not NLL.roleLabels[row.role] then
+        return false,"A known Raid Role is required."
+    end
+    if not G:IsValidStatus(row.status) then
+        return false,"Invalid interest/status."
+    end
+    if row.copyIndex~="1" then
+        return false,"Multi-copy import is not enabled; copy index must be 1."
+    end
+    if not row.itemID or row.itemID<1 or row.itemID>999999 or
+       row.itemID%1~=0 or
+       not NLL.Data.MoltenCore:GetItem(row.itemID) then
+        return false,"Unknown/invalid Molten Core Item ID."
+    end
+    return true
+end
+local function Snapshot()
+    local gear=Existing()
+    if not gear then return nil end
+    local parts={}
+    -- Snapshot *all* Gear Needs, not only bot records. No other source can
+    -- be silently overwritten between preview and Confirm.
+    for key,row in pairs(gear) do
+        if type(row)=="table" then
+            parts[#parts+1]=tostring(key).."="..
+                tostring(row.character)..":"..tostring(row.itemID)..":"..
+                tostring(row.raidKey)..":"..tostring(row.role)..":"..
+                tostring(row.status)..":"..tostring(row.source)..":"..
+                tostring(row.characterType)
+        else
+            parts[#parts+1]=tostring(key).."=INVALID:"..tostring(row)
+        end
+    end
+    table.sort(parts)
+    return table.concat(parts,"\n")
+end
+local function Matching(saved,row)
+    return saved.character==row.character and
+        saved.itemID==row.itemID and
+        saved.raidKey==row.raidKey and
+        saved.role==row.role and
+        saved.status==row.status and
+        saved.source==row.source and
+        saved.characterType==row.characterType
+end
+function T:IsBlocked()
+    if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
+        return true,"Stop the Debug Lab before importing real Gear Plans."
+    end
+    local active=NLL.TicketLottery and NLL.TicketLottery.active
+    if active and active.status and active.status~="COMPLETE" then
+        return true,"A lottery is active; finish/cancel before importing."
+    end
+    if NLL.LootDetection and NLL.LootDetection.lootOpen then
+        return true,"Close the real loot window before importing."
+    end
+    if GetNumRaidMembers and (GetNumRaidMembers() or 0)>0 and
+       not ((IsRaidLeader and IsRaidLeader()) or
+            (IsRaidOfficer and IsRaidOfficer())) then
+        return true,"Only the raid leader/officer can import while in a raid."
+    end
+    return false
+end
+-- The export page is a COMPLETE, individually importable NLL-GEARPLANS-1
+-- batch. Its header is repeated per page. Never store partial export state in
+-- SavedVariables, and never silently truncate a large plan library.
+-- expectedSnapshot pins Next/Previous to the exact same Gear Plan dataset.
+function T:Export(page,expectedSnapshot)
+    if page==nil then page=1 end
+    if type(page)~="number" or page<1 or page%1~=0 then
+        return nil,"Invalid export page; start at page 1."
+    end
+    local gear,errorText=Existing()
+    if not gear then return nil,errorText end
+    local rows={}
+    for key,need in pairs(gear) do
+        if type(need)=="table" and
+           (need.source=="BOT_GEAR_PLAN" or
+            need.characterType=="PLAYERBOT" and need.source==nil) then
+            -- Never silently omit invalid records or pretend unknown data
+            -- roundtrips successfully.
+            local row={
+                character=need.character,
+                characterType=need.characterType,
+                role=need.role,
+                raidKey=need.raidKey,
+                itemID=need.itemID,
+                source=need.source,
+                status=need.status,
+                copyIndex="1"
+            }
+            local valid,why=Valid(row)
+            if not valid then
+                return nil,"Cannot export "..tostring(key)..": "..why
+            end
+            local expected=NLL.GearNeeds:MakeKey(
+                row.character,row.raidKey,row.itemID,row.source)
+            if key~=expected then
+                return nil,"Stored Gear Plan key is inconsistent: "..tostring(key)
+            end
+            rows[#rows+1]=row
+        end
+    end
+    if #rows>10000 then
+        return nil,"Too many plans for a safe export (over 10,000)."
+    end
+    -- Check ALL rows and build the snapshot before permitting *any* pages.
+    -- Any saved-plan changes after copying page 1 force a fresh export.
+    local snapshot=Snapshot()
+    if expectedSnapshot~=nil and
+       (type(expectedSnapshot)~="string" or expectedSnapshot~=snapshot) then
+        return nil,"Gear Plans changed during export. Start again at page 1."
+    end
+    table.sort(rows,SortRows)
+    local total=#rows
+    local pageCount=math.max(1,math.ceil(total/self.MAX_ROWS))
+    if page>pageCount then
+        return nil,"Export page "..page.." is out of range (1-"..pageCount..")."
+    end
+    local start=(page-1)*self.MAX_ROWS+1
+    local last=math.min(total,start+self.MAX_ROWS-1)
+    local out={self.HEADER}
+    for i=start,last do
+        local row=rows[i]
+        out[#out+1]=table.concat({
+            row.character,row.characterType,row.role,row.raidKey,
+            tostring(row.itemID),row.source,row.status,row.copyIndex},"|")
+    end
+    local text=table.concat(out,"\n")
+    if #text>self.MAX_BYTES then
+        return nil,"Export page exceeds 48,000 bytes; no truncated data returned."
+    end
+    -- Compatible with old callers: first return is text, second is the
+    -- number of records in THIS PAGE; others are optional metadata.
+    return text,math.max(0,last-start+1),pageCount,total,snapshot
+end
+function T:Parse(text)
+    if type(text)~="string" or #text>self.MAX_BYTES then
+        return nil,"Paste is missing or larger than 48,000 bytes."
+    end
+    text=text:gsub("\r\n","\n"):gsub("\r","\n")
+    if text:find("[%z\1-\8\11\12\14-\31]") then
+        return nil,"Paste contains unsupported control characters."
+    end
+    local lines={}
+    for line in (text.."\n"):gmatch("(.-)\n") do
+        if #line>512 then return nil,"A line exceeds 512 characters." end
+        if Trim(line)~="" then lines[#lines+1]=Trim(line) end
+    end
+    if lines[1]~=self.HEADER then
+        -- Diagnostic only: never auto-repair missing line breaks or accept an
+        -- unexpected header. The 3.3.5a clipboard can change pasted text.
+        -- Show a bounded printable prefix and raw leading bytes so the owner
+        -- can report what GetText ACTUALLY returned, without exposing plans.
+        local first=lines[1] or ""
+        local prefix=first:sub(1,24):gsub("[%z\1-\31\127-\255]","?")
+        local hex={}
+        for i=1,math.min(8,#text) do
+            hex[#hex+1]=string.format("%02X",text:byte(i))
+        end
+        local _,lineBreaks=text:gsub("\n","")
+        return nil,"Wrong file format. Expected "..self.HEADER..
+            ". Pasted "..#text.." bytes, LF="..lineBreaks..
+            ", first=["..prefix.."], hex="..table.concat(hex," ").."."
+    end
+    if #lines-1>self.MAX_ROWS then
+        return nil,"More than "..self.MAX_ROWS.." plans; split the paste."
+    end
+    local rows,seen={},{}
+    for lineNo=2,#lines do
+        local fields=Fields(lines[lineNo])
+        if not fields or #fields~=8 then
+            return nil,"Line "..lineNo..
+                " needs exactly eight | fields (7 single | or 7 doubled || separators)."
+        end
+        local rawID=fields[5]
+        if not rawID:match("^%d+$") then
+            return nil,"Line "..lineNo.." has an invalid Item ID."
+        end
+        local row={
+            character=fields[1],characterType=fields[2],
+            role=fields[3],raidKey=fields[4],itemID=tonumber(rawID),
+            source=fields[6],status=fields[7],copyIndex=fields[8]
+        }
+        local valid,why=Valid(row)
+        if not valid then return nil,"Line "..lineNo..": "..why end
+        local key=NLL.GearNeeds:MakeKey(
+            row.character,row.raidKey,row.itemID,row.source)
+        local foldedKey=SameCharacterItemKey(row)
+        if seen[foldedKey] then
+            return nil,"Line "..lineNo..
+                " repeats a character/item/source (including UTF-8 case variants)."
+        end
+        seen[foldedKey]=true
+        row.key=key
+        rows[#rows+1]=row
+    end
+    if #rows==0 then
+        return nil,"No plans supplied. Header-only paste cannot import anything."
+    end
+    return rows
+end
+function T:Preview(text)
+    local gear,why=Existing()
+    if not gear then return nil,why end
+    local blocked,reason=self:IsBlocked()
+    if blocked then return nil,reason end
+    local rows,errorText=self:Parse(text)
+    if not rows then return nil,errorText end
+    local preview={
+        sourceText=text,rows={},additions={},unchanged=0,
+        conflicts={},newCount=0,currentSnapshot=Snapshot(),used=false
+    }
+    -- Build read-only alias map: importing TangØ must not create a second
+    -- character/item row if a legacy save uses Tangø (different UTF-8 case).
+    local foldedExisting={}
+    for key,saved in pairs(gear) do
+        if type(saved)=="table" and type(saved.character)=="string" and
+           saved.itemID and saved.raidKey and saved.source then
+            local alias=SameCharacterItemKey(saved)
+            if foldedExisting[alias] and foldedExisting[alias]~=key then
+                return nil,"Existing saved Gear Plans contain case-colliding keys."
+            end
+            foldedExisting[alias]=key
+        end
+    end
+    for _,row in ipairs(rows) do
+        local saved=gear[row.key]
+        local aliasKey=foldedExisting[SameCharacterItemKey(row)]
+        if saved==nil and aliasKey~=nil then
+            preview.conflicts[#preview.conflicts+1]={
+                character=row.character,itemID=row.itemID,key=aliasKey}
+        elseif saved==nil then
+            preview.additions[#preview.additions+1]=row
+            preview.newCount=preview.newCount+1
+        elseif type(saved)=="table" and Matching(saved,row) then
+            preview.unchanged=preview.unchanged+1
+        else
+            preview.conflicts[#preview.conflicts+1]={
+                character=row.character,itemID=row.itemID,key=row.key}
+        end
+        preview.rows[#preview.rows+1]=row
+    end
+    preview.ready=#preview.conflicts==0 and preview.newCount>0
+    return preview
+end
+function T:Summary(p)
+    if not p then return "No preview." end
+    local result="Parsed "..#p.rows.." plans: "..p.newCount.." NEW, "..
+        p.unchanged.." already identical, "..#p.conflicts.." CONFLICTS."
+    if #p.conflicts>0 then
+        local first=p.conflicts[1]
+        return result.."\nBLOCKED: existing "..first.character..
+            " / item "..first.itemID.." differs. Nothing will be overwritten."
+    end
+    if p.newCount==0 then
+        return result.."\nNo changes needed. Import cannot be applied."
+    end
+    return result.."\nPreview only. Confirm to ADD the new plans. "..
+        "Existing plans, raid roles and history are left untouched."
+end
+function T:Apply(preview,currentText)
+    if type(preview)~="table" or preview.used or not preview.ready or
+       type(currentText)~="string" or currentText~=preview.sourceText then
+        return false,"Paste or preview changed. Preview again before confirming."
+    end
+    local blocked,why=self:IsBlocked()
+    if blocked then return false,why end
+    if Snapshot()~=preview.currentSnapshot then
+        return false,"Saved Gear Plans changed since preview. Preview again."
+    end
+    -- Re-parse/re-validate source at the confirmation boundary, then ensure
+    -- the exact batch and expected additions still agree.
+    local verified,errorText=self:Preview(currentText)
+    if not verified or not verified.ready or
+       verified.newCount~=preview.newCount or
+       verified.unchanged~=preview.unchanged or
+       #verified.conflicts>0 or
+       verified.currentSnapshot~=preview.currentSnapshot then
+        return false,errorText or "Candidate plans changed. Preview again."
+    end
+    local gear=Existing()
+    for _,row in ipairs(verified.additions) do
+        if gear[row.key]~=nil then
+            return false,"A plan was added while confirming. Preview again."
+        end
+    end
+    -- Apply is synchronous and add-only. Do NOT call AddNeed here: it also
+    -- rewrites global raid role/type assignments, which an import must not do.
+    for _,row in ipairs(verified.additions) do
+        gear[row.key]={
+            key=row.key,character=row.character,itemID=row.itemID,
+            raid="Molten Core",raidKey=row.raidKey,role=row.role,
+            status=row.status,source=row.source,
+            characterType=row.characterType
+        }
+    end
+    preview.used=true
+    return true,"Added "..#verified.additions.." Playerbot Gear Plans. "..
+        verified.unchanged.." identical plan(s) left unchanged. "..
+        "No existing plans, raid roles or loot history changed."
+end

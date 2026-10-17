@@ -31,7 +31,7 @@ The current published NLL source is `v0.1.0.28`. The prior milestones below pres
 - [x] Add Lua 5.1 Need Before Greed, 40-bot simulation, Gear Plans layout and history persistence regressions.
 - [x] Add real-Database in-place v0.1.0.28 upgrade/reload test and full server-result-path regression for GREED, including late Need blocker, missing raid member, invalid class and audited cancellation.
 - [ ] Reconfirm complete PR-head GitHub CI after final documentation changes; distinguish offline tests from actual client approval.
-- [ ] Owner verifies on a backed-up test copy in WoW 3.3.5a: UI scaling, six-row footer, Greed status/reload, Need-vs-Greed preview, fake `mc40greed`, no real award.
+- [x] Owner reports test-build installation, corrected six-row Gear Plans overlap, visible GREED option, preserved existing Gear Plans/wishlists and fake `mc40greed` pool of 16 equal Greed candidates. A fake draw selected SimPal3 (#9) with no server roll/award (16 October). **Winner announcement window label, persistence after a new GREED entry and actual Master Loot delivery remain unverified.**
 - [ ] Review live loot/corpse evidence separately; do not claim Master Loot delivered or verified Playerbot inventory.
 - [ ] Obtain explicit owner approval before any merge, packaging, release or installed-client change.
 - **Acceptance/rollback:** [Need Before Greed guide](TESTING_NEED_BEFORE_GREED.md).
@@ -43,12 +43,23 @@ The current published NLL source is `v0.1.0.28`. The prior milestones below pres
 - [ ] Confirm per-item unique/unique-equipped restrictions before enabling a second copy, especially for item 19147 (Ring of Spell Power).
 - [ ] Do not permit multiple tickets for the same character and same physical loot copy.
 
-### M9 — Safe Gear Plan import/export (planned, not implemented)
+### M9 — Safe Gear Plan import/export (initial rc.1 pre-release; paging review-only)
 
-- [ ] Export readable leader-managed bot plans (name, type, role, item, need/greed, future copy count) to pasteable text in WoW 3.3.5a.
-- [ ] Import only through parse/preview/diff/confirmation, never by blind overwriting existing plans or history.
-- [ ] Bound size, reject duplicates, invalid statuses/item IDs/roles, and preserve rollback/migration without touching AzerothCore.
-- **Design blueprint:** [multi-copy and import/export](MULTI_COPY_IMPORT_EXPORT_BLUEPRINT.md).
+- [x] Create `dev/nll-gear-plan-import-export`, stacked on unmerged Need Before Greed PR #8, preserving the tested PR #8 branch and published `main`.
+- [x] Export playerbot `BOT_GEAR_PLAN` statuses/roles/item IDs as copyable `NLL-GEARPLANS-1` text, requiring no disk access.
+- [x] Add parse → preview → explicit Confirm ADD, with duplicate/unknown item/role/status rejection, size limits and snapshot revalidation.
+- [x] Make import **add-only**: identical plans are skipped, any conflicting row blocks the entire batch, and existing plans/roles/wishlists/award history cannot be rewritten by import.
+- [x] Add the Gear Plans Import / Export dialog without moving the already-tested six-row pager.
+- [x] Add separate Lua 5.1 backend and UI interaction regressions and a [test/rollback checklist](TESTING_GEAR_PLAN_TRANSFER.md).
+- [ ] Confirm this branch's exact HEAD passes GitHub CI and safe ZIP packaging.
+- [ ] Owner tests text selection, preview, confirm-add, conflict rejection, `/reload` and rollback with paired backups.
+- [ ] Explicit approval before merge/release/install. Do not infer approval from Need Before Greed tests.
+- [x] **Owner in-game acceptance of initial add-only importer:** 604 total records (166+135+164+121+18) for 38 Playerbots; 469 NEEDED, 135 GREED; TangØ name preserved; Ruby and Arley excluded. Owner reports successful `/reload`. Published as **experimental [v0.1.0.29-rc.1](https://github.com/CosmicCuddle/N-Loot-Ledger/releases/tag/v0.1.0.29-rc.1)** from a separate release branch; stable main and draft PRs remain untouched.
+- [x] Add **paged export** (250 rows per page, repeated import header, Previous/Next controls), deterministic complete dataset checks, and stale-snapshot rejection. Synthetic 604-row roundtrip and UI regressions are included in draft PR #9.
+- [ ] Verify exact latest PR #9 head with GitHub CI after docs updates, safe review ZIP and owner in-client **paged export** layout, Ctrl+C, all 3 copies, and re-import idempotence. Do NOT alter tomorrow's rc.1 build to do this.
+- [ ] Future optional phase: guarded edits to existing bot plans with individual before/after diff and confirmation. Multi-copy equipment reservations remain separately scoped M8.
+- **Original detailed design:** [multi-copy and import/export](MULTI_COPY_IMPORT_EXPORT_BLUEPRINT.md).
+
 
 ### M0 — Handover and branch hygiene (documentation only; complete)
 

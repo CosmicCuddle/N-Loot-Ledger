@@ -1,0 +1,84 @@
+name: PR9 Gear Plans Import Export test ZIP (NOT A RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-gear-plan-import-export
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nll-pr9-review-zip
+  cancel-in-progress: true
+
+jobs:
+  review-archive:
+    name: Validate Lua 5.1 and package test-only addon
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact development commit
+        uses: actions/checkout@v4
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Check Lua 5.1 syntax in all addon modules and test suites
+        run: |
+          set -euo pipefail
+          find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Run every Lua regression (including historical data and Need Before Greed)
+        run: |
+          set -euo pipefail
+          for test_file in tests/test_*.lua; do
+            echo "Running $test_file"
+            lua5.1 "$test_file"
+          done
+      - name: Validate deterministic packaging and Direct Master Loot default OFF
+        run: python3 tests/test_release_packaging.py
+      - name: Build separate, unmistakably test-only PR9 review ZIP
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          python3 scripts/build_release_zip.py --output dist/NLL-PR9-Gear-Plans-Import-Export-TEST-ONLY.zip
+          cd dist
+          sha256sum NLL-PR9-Gear-Plans-Import-Export-TEST-ONLY.zip > SHA256SUMS.txt
+          cat > README-PR9-TEST-ONLY.txt <<'NOTE'
+          NAXXRAMAS LOOT LEDGER - PR #9 GEAR PLANS IMPORT / EXPORT
+          EXPERIMENTAL TEST BUILD ONLY - NOT A PUBLISHED RELEASE
+
+          This ZIP is from an unmerged development PR. It is not v0.1.0.28,
+          even though its WoW addon TOC/Core retain the v0.1.0.28 version
+          field for unchanged compatibility. Do NOT confuse this test archive
+          with the published v0.1.0.28 release download.
+
+          Do not replace an existing game installation without separate
+          owner approval and paired backups of:
+            Interface/AddOns/NaxxLootLottery/
+            WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua
+            WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua.bak
+          Also preserve any character-level copies where present.
+
+          Never use this branch's unverified code for real Master Loot
+          delivery. All in-client tests should be non-awarding and
+          performed on an expendable/backup-backed test installation.
+          Real Master Loot is experimental and disabled at login/reload.
+
+          PR: https://github.com/CosmicCuddle/N-Loot-Ledger/pull/9
+          Guide: docs/TESTING_GEAR_PLAN_TRANSFER.md
+          No personal SavedVariables, login credentials, SQL files or
+          external repositories are included in the addon ZIP.
+          NOTE
+          echo "Commit: ${GITHUB_SHA}" >> README-PR9-TEST-ONLY.txt
+          sha256sum -c SHA256SUMS.txt
+      - name: Upload temporary review package; NEVER publish/tag
+        uses: actions/upload-artifact@v4
+        with:
+          name: NLL-PR9-Gear-Plans-Import-Export-TEST-ONLY
+          path: |
+            dist/NLL-PR9-Gear-Plans-Import-Export-TEST-ONLY.zip
+            dist/SHA256SUMS.txt
+            dist/README-PR9-TEST-ONLY.txt
+          if-no-files-found: error
+          retention-days: 14

@@ -12,6 +12,7 @@ Core\RaidRoster.lua
 Core\PlayerbotCompatibility.lua
 Core\ItemSearch.lua
 Core\GearNeeds.lua
+Core\GearPlanTransfer.lua
 Core\Communication.lua
 Core\NeedMatcher.lua
 Core\PriorityEngine.lua

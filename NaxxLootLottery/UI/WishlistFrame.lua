@@ -113,7 +113,7 @@ function UI:CreateLocalWishlistContent(parent)
         "GameFontHighlightSmall"
     )
     status:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -2)
-    status:SetWidth(450)
+    status:SetWidth(382)
     status:SetJustifyH("LEFT")
     self.localWishlistStatus = status
 

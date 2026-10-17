@@ -713,6 +713,13 @@ function UI:CreateCurrentLootPanel(parent)
         UI.currentLootMatchPage = (UI.currentLootMatchPage or 1)+1
         UI:RefreshCurrentLootPanel()
     end)
+    -- Optional read-only all-slot view; sits on its own footer row,
+    -- away from Prev Matches / Prepare Tickets (HF1 overlap regression).
+    local guild=self:CreateTextButton(panel,"Guild Loot",104)
+    guild:SetPoint("BOTTOMLEFT",panel,"BOTTOMLEFT",342,98)
+    guild:SetScript("OnClick",function() UI:OpenGuildLootReview() end)
+    self.currentLootGuildReviewButton=guild
+
     self.currentLootMatchPrev=back
     self.currentLootMatchNext=forward
     self.currentLootMatchPageText=panel:CreateFontString(nil,"OVERLAY","GameFontDisableSmall")
@@ -726,6 +733,115 @@ function UI:CreateCurrentLootPanel(parent)
     self.currentLootPanel = panel
 
     panel:Hide()
+end
+
+-- This preview covers every real item-link slot, even non-MC materials.
+-- Review-only: there are NO GiveMasterLoot or AwardWorkflow calls here.
+function UI:CreateGuildLootDialog()
+    if self.guildLootDialog then return end
+    local f=CreateFrame("Frame",nil,self.mainFrame)
+    f:SetSize(725,440)
+    f:SetPoint("CENTER",self.mainFrame,"CENTER",0,0)
+    f:SetFrameStrata("DIALOG")
+    f:SetFrameLevel((self.mainFrame:GetFrameLevel() or 0)+32)
+    f:EnableMouse(true)
+    f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",
+        edgeFile="Interface\\DialogFrame\\UI-DialogBox-Border",
+        tile=true,tileSize=16,edgeSize=26,
+        insets={left=8,right=8,top=8,bottom=8}})
+    f:SetBackdropColor(.055,.065,.085,.99)
+    f:SetBackdropBorderColor(.96,.72,.25,1)
+
+    local heading=f:CreateFontString(nil,"OVERLAY","GameFontNormalLarge")
+    heading:SetPoint("TOP",f,"TOP",0,-23)
+    heading:SetText("GUILD LOOT - LEADER REVIEW ONLY")
+    local status=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    status:SetPoint("TOP",heading,"BOTTOM",0,-13)
+    status:SetWidth(670)
+    status:SetJustifyH("CENTER")
+    self.guildLootStatus=status
+    self.guildLootRows={}
+    for i=1,6 do
+        local row=CreateFrame("Frame",nil,f)
+        row:SetPoint("TOPLEFT",f,"TOPLEFT",25,-101-44*(i-1))
+        row:SetWidth(675)
+        row:SetHeight(42)
+        self:RegisterSkinnedFrame(row,(i%2)==0 and "rowAlt" or "row")
+        local name=row:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+        name:SetPoint("TOPLEFT",row,"TOPLEFT",8,-3)
+        name:SetWidth(650)
+        name:SetJustifyH("LEFT")
+        local reason=row:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+        reason:SetPoint("BOTTOMLEFT",row,"BOTTOMLEFT",8,4)
+        reason:SetWidth(650)
+        reason:SetJustifyH("LEFT")
+        row.nameText=name
+        row.reasonText=reason
+        self.guildLootRows[i]=row
+    end
+    local prev=self:CreateTextButton(f,"Previous",100)
+    prev:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",24,20)
+    prev:SetScript("OnClick",function()
+        UI.guildLootPage=math.max(1,(UI.guildLootPage or 1)-1)
+        UI:RefreshGuildLootDialog()
+    end)
+    local nextB=self:CreateTextButton(f,"Next",85)
+    nextB:SetPoint("LEFT",prev,"RIGHT",8,0)
+    nextB:SetScript("OnClick",function()
+        UI.guildLootPage=(UI.guildLootPage or 1)+1
+        UI:RefreshGuildLootDialog()
+    end)
+    local page=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    page:SetPoint("LEFT",nextB,"RIGHT",12,0)
+    page:SetWidth(125)
+    self.guildLootPageText=page
+    local close=self:CreateTextButton(f,"Close (No Award)",150)
+    close:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-24,20)
+    close:SetScript("OnClick",function() f:Hide() end)
+    self.guildLootPrev=prev
+    self.guildLootNext=nextB
+    self.guildLootDialog=f
+    f:Hide()
+end
+
+function UI:RefreshGuildLootDialog()
+    if not self.guildLootDialog or not NLL.GuildLootReview then return end
+    local rows,message=NLL.GuildLootReview:Scan()
+    local candidates=0
+    for _,item in ipairs(rows) do
+        if item.status=="GUILD_REVIEW" then candidates=candidates+1 end
+    end
+    self.guildLootStatus:SetText(tostring(message)..
+        "  Guild review: "..candidates..
+        ". ALL routing is MANUAL and unverified.")
+    local pages=math.max(1,math.ceil(#rows/6))
+    self.guildLootPage=math.min(pages,math.max(1,self.guildLootPage or 1))
+    self.guildLootPageText:SetText("Page "..self.guildLootPage.."/"..pages)
+    if self.guildLootPage<=1 then self.guildLootPrev:Disable()
+    else self.guildLootPrev:Enable() end
+    if self.guildLootPage>=pages then self.guildLootNext:Disable()
+    else self.guildLootNext:Enable() end
+    for i=1,6 do
+        local row=self.guildLootRows[i]
+        local item=rows[(self.guildLootPage-1)*6+i]
+        if item then
+            row.nameText:SetText(
+                "Slot "..item.slotIndex..": "..item.itemName..
+                " x"..item.quantity.." ["..item.status.."]")
+            row.reasonText:SetText(tostring(item.reason)..
+                "  |  Leader: "..tostring(item.leader))
+            row:Show()
+        else
+            row:Hide()
+        end
+    end
+end
+
+function UI:OpenGuildLootReview()
+    self:CreateGuildLootDialog()
+    self.guildLootPage=1
+    self:RefreshGuildLootDialog()
+    self.guildLootDialog:Show()
 end
 
 function UI:RefreshCurrentLootPanel()

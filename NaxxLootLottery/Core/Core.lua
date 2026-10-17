@@ -356,6 +356,11 @@ function NLL:HandleSlashCommand(message)
         end
         return
     end
+    if command=="guildpreview" then
+        self.UI:ShowMainFrame("currentloot")
+        self.UI:OpenGuildAutoPreview()
+        return
+    end
     if command=="guildaudit" then
         self.UI:ShowMainFrame("currentloot")
         self.UI:OpenGuildReconciliation()

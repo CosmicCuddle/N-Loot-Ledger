@@ -185,7 +185,15 @@ function T:IsBlocked()
     end
     return false
 end
-function T:Export()
+-- The export page is a COMPLETE, individually importable NLL-GEARPLANS-1
+-- batch. Its header is repeated per page. Never store partial export state in
+-- SavedVariables, and never silently truncate a large plan library.
+-- expectedSnapshot pins Next/Previous to the exact same Gear Plan dataset.
+function T:Export(page,expectedSnapshot)
+    if page==nil then page=1 end
+    if type(page)~="number" or page<1 or page%1~=0 then
+        return nil,"Invalid export page; start at page 1."
+    end
     local gear,errorText=Existing()
     if not gear then return nil,errorText end
     local rows={}
@@ -217,22 +225,38 @@ function T:Export()
             rows[#rows+1]=row
         end
     end
-    if #rows>self.MAX_ROWS then
-        return nil,"Too many bot plans to export in one chunk ("..
-            #rows.." / "..self.MAX_ROWS..")."
+    if #rows>10000 then
+        return nil,"Too many plans for a safe export (over 10,000)."
+    end
+    -- Check ALL rows and build the snapshot before permitting *any* pages.
+    -- Any saved-plan changes after copying page 1 force a fresh export.
+    local snapshot=Snapshot()
+    if expectedSnapshot~=nil and
+       (type(expectedSnapshot)~="string" or expectedSnapshot~=snapshot) then
+        return nil,"Gear Plans changed during export. Start again at page 1."
     end
     table.sort(rows,SortRows)
+    local total=#rows
+    local pageCount=math.max(1,math.ceil(total/self.MAX_ROWS))
+    if page>pageCount then
+        return nil,"Export page "..page.." is out of range (1-"..pageCount..")."
+    end
+    local start=(page-1)*self.MAX_ROWS+1
+    local last=math.min(total,start+self.MAX_ROWS-1)
     local out={self.HEADER}
-    for _,row in ipairs(rows) do
+    for i=start,last do
+        local row=rows[i]
         out[#out+1]=table.concat({
             row.character,row.characterType,row.role,row.raidKey,
             tostring(row.itemID),row.source,row.status,row.copyIndex},"|")
     end
     local text=table.concat(out,"\n")
     if #text>self.MAX_BYTES then
-        return nil,"Export exceeds the text-size limit; split into batches."
+        return nil,"Export page exceeds 48,000 bytes; no truncated data returned."
     end
-    return text,#rows
+    -- Compatible with old callers: first return is text, second is the
+    -- number of records in THIS PAGE; others are optional metadata.
+    return text,math.max(0,last-start+1),pageCount,total,snapshot
 end
 function T:Parse(text)
     if type(text)~="string" or #text>self.MAX_BYTES then

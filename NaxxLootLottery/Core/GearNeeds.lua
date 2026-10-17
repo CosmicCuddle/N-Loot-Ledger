@@ -467,7 +467,8 @@ function GearNeeds:ReplacePlayerSubmitted(
                     itemID,
                     raidKey,
                     role,
-                    interests[itemID] or "NEEDED",
+                    previouslyObtained[itemID] and "OBTAINED" or
+                        (interests[itemID] or "NEEDED"),
                     "PLAYER_SUBMITTED",
                     "PLAYER"
                 )

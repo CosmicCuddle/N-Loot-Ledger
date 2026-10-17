@@ -233,14 +233,25 @@ function L:StartRoll(entry)
     if NLL.Roster then NLL.Roster:Refresh() end
     local good,reason=self:PoolStillMatches(entry)
     if not good then return false,reason end
+    if a.test then
+        -- Preserve the standalone debug testdrop path; no RAID chat, timer,
+        -- real roll or Master Loot call is allowed for a fake item.
+        a.status='WAITING_FOR_ROLL'
+        a.rollStarted=Now()
+        a.roller=CharacterKey(UnitName and UnitName('player'))
+        self:Finish(math.random(1,#a.tickets),'LOCAL_TEST_RANDOM')
+        return true,'TEST draw completed; no loot awarded.'
+    end
     -- Only the real owner action starts this countdown. OnUpdate will
     -- revalidate the same live corpse, candidates and leader authority.
     if not RandomRoll then
         return false,'RandomRoll API missing; no draw started.'
     end
     if NLL.db and NLL.db.settings and
-       NLL.db.settings.raidCountdownEnabled==true and
-       NLL.LootDetection and NLL.LootDetection.lootOpen then
+       NLL.db.settings.raidCountdownEnabled==true then
+        if not NLL.LootDetection or not NLL.LootDetection.lootOpen then
+            return false,'Live corpse closed; countdown and roll blocked.'
+        end
         a.status='COUNTDOWN'
         a.countdownEnds=Now()+5
         a.lastCountdown=5

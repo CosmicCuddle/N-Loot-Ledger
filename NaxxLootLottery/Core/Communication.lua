@@ -15,7 +15,8 @@ NLL.Communication = NLL.Communication or {}
 local Comm = NLL.Communication
 
 Comm.prefix = "NLL"
-Comm.protocol = "V1"
+Comm.protocol = "V1" -- unchanged for legacy NEED-only submissions
+Comm.interestProtocol = "V2" -- strictly required when any item is GREED
 Comm.incoming = {}
 Comm.pendingOutgoing = nil
 Comm.timeoutSeconds = 6
@@ -205,6 +206,18 @@ function Comm:BuildLocalWishlistItemIDs()
     return output
 end
 
+function Comm:BuildLocalWishlistInterests(itemIDs)
+    local statuses={}
+    local player=UnitName("player")
+    for _,id in ipairs(itemIDs or {}) do
+        local choice=NLL.Database.GetLocalInterest and
+            NLL.Database:GetLocalInterest(player,"MOLTEN_CORE",id) or "NEEDED"
+        if choice~="GREED" then choice="NEEDED" end
+        statuses[id]=choice
+    end
+    return statuses
+end
+
 function Comm:CreateSubmissionID()
     local player =
         UnitName("player") or "Player"
@@ -245,6 +258,12 @@ function Comm:SubmitLocalWishlist()
         return
     end
 
+    local interests=self:BuildLocalWishlistInterests(itemIDs)
+    local hasGreed=false
+    for _,id in ipairs(itemIDs) do
+        if interests[id]=="GREED" then hasGreed=true;break end
+    end
+    local protocol=hasGreed and self.interestProtocol or self.protocol
     local player = UnitName("player")
 
     if player
@@ -260,7 +279,8 @@ function Comm:SubmitLocalWishlist()
             submissionID,
             player,
             "MOLTEN_CORE",
-            itemIDs
+            itemIDs,
+            interests
         )
 
         NLL:Print(
@@ -280,13 +300,15 @@ function Comm:SubmitLocalWishlist()
         leader = leader,
         raidKey = "MOLTEN_CORE",
         itemIDs = itemIDs,
+        interests = interests,
+        protocol = protocol,
         state = "WAIT_HELLO",
         startedAt = GetTime()
     }
 
     self:SendWhisper(
         leader,
-        self.protocol .. "|HELLO"
+        protocol .. "|HELLO"
     )
 
     NLL:Print(
@@ -307,9 +329,10 @@ function Comm:SendPendingWishlist()
     local submissionID =
         pending.submissionID
 
+    local protocol=pending.protocol or self.protocol
     self:SendWhisper(
         leader,
-        self.protocol ..
+        protocol ..
         "|BEGIN|" ..
         submissionID ..
         "|" ..
@@ -319,21 +342,24 @@ function Comm:SendPendingWishlist()
     )
 
     for i = 1, #pending.itemIDs do
+        local id=pending.itemIDs[i]
+        local tail=protocol==self.interestProtocol and
+            ("|"..tostring(pending.interests[id] or "NEEDED")) or ""
         self:SendWhisper(
             leader,
-            self.protocol ..
+            protocol ..
             "|ITEM|" ..
             submissionID ..
             "|" ..
             tostring(i) ..
             "|" ..
-            tostring(pending.itemIDs[i])
+            tostring(id) .. tail
         )
     end
 
     self:SendWhisper(
         leader,
-        self.protocol ..
+        protocol ..
         "|END|" ..
         submissionID
     )
@@ -348,7 +374,7 @@ function Comm:SendPendingWishlist()
     self:RefreshUI()
 end
 
-function Comm:HandleHello(sender)
+function Comm:HandleHello(sender, protocol)
     if not self:IsSelfRaidLeader() then
         return
     end
@@ -359,15 +385,16 @@ function Comm:HandleHello(sender)
 
     self:SendWhisper(
         CleanName(sender),
-        self.protocol .. "|HELLO_ACK"
+        (protocol or self.protocol) .. "|HELLO_ACK"
     )
 end
 
-function Comm:HandleHelloAck(sender)
+function Comm:HandleHelloAck(sender, protocol)
     local pending = self.pendingOutgoing
 
     if not pending
-        or pending.state ~= "WAIT_HELLO" then
+        or pending.state ~= "WAIT_HELLO"
+        or (pending.protocol or self.protocol) ~= protocol then
         return
     end
 
@@ -387,7 +414,8 @@ function Comm:HandleBegin(
     sender,
     submissionID,
     raidKey,
-    countText
+    countText,
+    protocol
 )
     if not self:IsSelfRaidLeader() then
         return
@@ -423,7 +451,9 @@ function Comm:HandleBegin(
         player = senderName,
         raidKey = raidKey,
         expectedCount = expectedCount,
+        protocol = protocol or self.protocol,
         items = {},
+        interests = {},
         receivedIndexes = {},
         startedAt = GetTime()
     }
@@ -433,7 +463,9 @@ function Comm:HandleItem(
     sender,
     submissionID,
     indexText,
-    itemIDText
+    itemIDText,
+    interestText,
+    protocol
 )
     if not self:IsSelfRaidLeader() then
         return
@@ -450,10 +482,17 @@ function Comm:HandleItem(
     local incoming =
         self.incoming[key]
 
-    if not incoming then
+    if not incoming or incoming.protocol~=(protocol or self.protocol) then
         return
     end
 
+    local interest="NEEDED"
+    if incoming.protocol==self.interestProtocol then
+        if interestText~="NEEDED" and interestText~="GREED" then
+            return
+        end
+        interest=interestText
+    end
     local index = tonumber(indexText)
     local itemID = tonumber(itemIDText)
 
@@ -476,9 +515,10 @@ function Comm:HandleItem(
 
     incoming.receivedIndexes[index] = true
     incoming.items[index] = itemID
+    incoming.interests[itemID] = interest
 end
 
-function Comm:HandleEnd(sender, submissionID)
+function Comm:HandleEnd(sender, submissionID, protocol)
     if not self:IsSelfRaidLeader() then
         return
     end
@@ -494,7 +534,7 @@ function Comm:HandleEnd(sender, submissionID)
     local incoming =
         self.incoming[key]
 
-    if not incoming then
+    if not incoming or incoming.protocol~=(protocol or self.protocol) then
         return
     end
 
@@ -515,14 +555,15 @@ function Comm:HandleEnd(sender, submissionID)
         incoming.submissionID,
         senderName,
         incoming.raidKey,
-        itemIDs
+        itemIDs,
+        incoming.interests
     )
 
     self.incoming[key] = nil
 
     self:SendWhisper(
         senderName,
-        self.protocol ..
+        incoming.protocol ..
         "|ACK|" ..
         submissionID ..
         "|" ..
@@ -543,13 +584,15 @@ end
 function Comm:HandleAck(
     sender,
     submissionID,
-    countText
+    countText,
+    protocol
 )
     local pending = self.pendingOutgoing
 
     if not pending
         or pending.state ~= "WAIT_ACK"
-        or pending.submissionID ~= submissionID then
+        or pending.submissionID ~= submissionID
+        or (pending.protocol or self.protocol)~=protocol then
         return
     end
 
@@ -592,19 +635,21 @@ function Comm:HandleAddonMessage(
 
     local fields = Split(message, "|")
 
-    if fields[1] ~= self.protocol then
+    local protocol=fields[1]
+    if protocol~=self.protocol and protocol~=self.interestProtocol then
         return
     end
-
+    -- V2 may never be downgraded to V1 on the wire: an old raid leader
+    -- simply cannot acknowledge a GREED submission rather than promote it.
     local command = fields[2]
 
     if command == "HELLO" then
-        self:HandleHello(sender)
+        self:HandleHello(sender,protocol)
         return
     end
 
     if command == "HELLO_ACK" then
-        self:HandleHelloAck(sender)
+        self:HandleHelloAck(sender,protocol)
         return
     end
 
@@ -617,7 +662,8 @@ function Comm:HandleAddonMessage(
             sender,
             fields[3],
             fields[4],
-            fields[5]
+            fields[5],
+            protocol
         )
         return
     end
@@ -631,7 +677,9 @@ function Comm:HandleAddonMessage(
             sender,
             fields[3],
             fields[4],
-            fields[5]
+            fields[5],
+            fields[6],
+            protocol
         )
         return
     end
@@ -641,7 +689,8 @@ function Comm:HandleAddonMessage(
 
         self:HandleEnd(
             sender,
-            fields[3]
+            fields[3],
+            protocol
         )
         return
     end
@@ -653,7 +702,8 @@ function Comm:HandleAddonMessage(
         self:HandleAck(
             sender,
             fields[3],
-            fields[4]
+            fields[4],
+            protocol
         )
         return
     end
@@ -663,7 +713,8 @@ function Comm:StoreInboxSubmission(
     submissionID,
     playerName,
     raidKey,
-    itemIDs
+    itemIDs,
+    interests
 )
     local key =
         string.lower(playerName) ..
@@ -676,6 +727,7 @@ function Comm:StoreInboxSubmission(
         player = playerName,
         raidKey = raidKey,
         itemIDs = itemIDs,
+        interests = interests or {},
         excluded = {},
         status = "PENDING",
         receivedAt =
@@ -804,8 +856,13 @@ function Comm:AcceptSubmission(key)
         NLL.GearNeeds:ReplacePlayerSubmitted(
             submission.player,
             submission.raidKey,
-            itemIDs
+            itemIDs,
+            submission.interests
         )
+    if added==false then
+        NLL:Print(tostring(conflicts))
+        return false
+    end
 
     submission.status = "ACCEPTED"
     submission.acceptedAt =
@@ -929,7 +986,9 @@ timeoutFrame:SetScript(
 
             if pending.state == "WAIT_HELLO" then
                 NLL:Print(
-                    "No compatible Naxxramas Loot Ledger raid leader was detected."
+                    (pending.protocol==Comm.interestProtocol and
+                    "Leader's NLL cannot receive NEED/GREED submissions. Ask the raid leader to update; nothing was changed." or
+                    "No compatible Naxxramas Loot Ledger raid leader was detected.")
                 )
             else
                 NLL:Print(

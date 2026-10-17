@@ -29,6 +29,11 @@ function Database:Initialize()
     -- Direct real loot transfer must be opted into EACH LOGIN/reload.
     -- Do not persist a previous enabled flag across client restarts.
     db.settings.directMasterLootEnabled = false
+    -- Guild-material Master Loot is a separate consent and never persists.
+    db.settings.guildLootTransfersEnabled = false
+    if type(db.guildLootTransferAudit)~="table" then
+        db.guildLootTransferAudit={}
+    end
     -- Raid announcements/countdown are separate, non-awarding opt-ins.
     if type(db.settings.raidAnnouncementsEnabled)~="boolean" then
         db.settings.raidAnnouncementsEnabled=false

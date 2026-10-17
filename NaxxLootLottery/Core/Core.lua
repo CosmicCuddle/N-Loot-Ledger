@@ -365,6 +365,28 @@ function NLL:HandleSlashCommand(message)
         end
         return
     end
+    if command=="raidchat" or command=="rollcountdown" then
+        -- Only affects optional announcements/timing. Never enables
+        -- GiveMasterLoot or changes the current lottery winner.
+        local option=command=="raidchat" and
+            "raidAnnouncementsEnabled" or "raidCountdownEnabled"
+        local arg=string.lower(arguments or "")
+        local settings=self.db and self.db.settings
+        if not settings then
+            self:Print("NLL is not initialized.")
+            return
+        end
+        if arg=="on" or arg=="off" then
+            if self.DebugSimulator and self.DebugSimulator:IsActive() then
+                self:Print("Stop fake raid before changing raid announcement settings.")
+                return
+            end
+            settings[option]=(arg=="on")
+        end
+        self:Print(command.." is "..(settings[option] and "ON" or "OFF")..
+            ". Use /nll "..command.." on|off.")
+        return
+    end
     if command == "candidateaudit" then
         local history=self.db and self.db.candidateAudit or {}
         self:Print('Candidate review events: '..tostring(#history))
@@ -589,6 +611,9 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll awardreview - Review the selected winner and manual award.")
         self:Print("/nll awardhistory - Show manual, requested and observed awards.")
         self:Print("/nll directaward off - Immediately disable live direct awarding.")
+        self:Print("/nll raidchat on|off - Optional RAID ticket/winner announcements.")
+        self:Print("/nll rollcountdown on|off - Optional 5-second pre-roll delay.")
+
         self:Print("/nll sim next|select <number>|award - Test multiple drops/award.")
         self:Print("/nll canceltickets - Cancel pending tickets, log cancellation.")
         self:Print("/nll version - Show addon version.")

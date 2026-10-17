@@ -413,7 +413,8 @@ function UI:RefreshLocalWishlist()
                 (choice=="GREED" and "GREED" or "NEED"))
             -- Recipes always remain explicit guild/manual distribution:
             -- interest stays NEED; never imply they can join a normal roll.
-            if category=="recipes" then row.interest:Disable()
+            if category=="recipes" or choice=="OBTAINED" then
+                row.interest:Disable()
             else row.interest:Enable() end
             row:Show()
         else

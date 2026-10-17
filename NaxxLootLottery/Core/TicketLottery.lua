@@ -13,6 +13,19 @@ local function Now() return GetTime and GetTime() or 0 end
 local function CharacterKey(s)
     return string.lower((tostring(s or ''):match('^([^%-]+)') or ''))
 end
+-- RAID chat is opt-in and never used in simulation or to award items.
+function L:Announce(message)
+    local settings=NLL.db and NLL.db.settings or {}
+    if settings.raidAnnouncementsEnabled~=true or
+       not SendChatMessage or
+       (NLL.DebugSimulator and NLL.DebugSimulator:IsActive()) or
+       not self:AuthorityAllowed(false) then return false end
+    local safe=tostring(message or ""):gsub("[\r\n]"," ")
+    if #safe>220 then safe=safe:sub(1,217).."..." end
+    local ok=pcall(SendChatMessage,safe,"RAID")
+    return ok
+end
+
 local function CopyTickets(tickets)
     local out={}
     for i,t in ipairs(tickets or {}) do out[i]={number=t.number, character=t.character} end
@@ -131,6 +144,17 @@ function L:Prepare(entry, matches)
     for _,t in ipairs(tickets) do
         NLL:Print('Ticket ' .. t.number .. ' - ' .. t.character)
     end
+    if not isTest then
+        self:Announce("NLL: "..entry.itemName.." - "..stageLabel..
+            ", "..#tickets.." ticket(s) prepared.")
+        -- One compact follow-up instead of 40 individual raid messages.
+        local names={}
+        for i=1,math.min(8,#tickets) do
+            names[#names+1]=tostring(i)..":"..tostring(tickets[i].character)
+        end
+        local suffix=#tickets>8 and (" (+"..(#tickets-8).." more)") or ""
+        self:Announce("NLL tickets: "..table.concat(names,", ")..suffix)
+    end
     return true, 'Tickets prepared; check the roster, then click Start Roll.'
 end
 function L:PoolStillMatches(entry)
@@ -181,6 +205,10 @@ function L:Finish(roll,method)
     NLL:Print((a.test and '[TEST - no loot awarded] ' or '') ..
         a.itemName .. ': winning ticket ' .. roll .. ' = ' .. a.winner ..
         '. Award remains MANUAL.')
+    if not a.test then
+        self:Announce("NLL WINNER: "..a.itemName.." -> "..a.winner..
+            " (ticket #"..roll.."). Item not yet awarded.")
+    end
     if NLL.UI and NLL.UI.RefreshCurrentLootPanel then
         NLL.UI:RefreshCurrentLootPanel()
     end
@@ -205,24 +233,72 @@ function L:StartRoll(entry)
     if NLL.Roster then NLL.Roster:Refresh() end
     local good,reason=self:PoolStillMatches(entry)
     if not good then return false,reason end
-    -- One server-visible ticket roll per drop. No automatic winner before here.
-    a.status='WAITING_FOR_ROLL'
-    a.rollStarted=Now()
-    a.roller=CharacterKey(UnitName and UnitName('player'))
-    if a.test then
-        local result = math.random(1,#a.tickets)
-        self:Finish(result,'LOCAL_TEST_RANDOM')
-        return true,'TEST draw completed; no loot awarded.'
-    end
+    -- Only the real owner action starts this countdown. OnUpdate will
+    -- revalidate the same live corpse, candidates and leader authority.
     if not RandomRoll then
-        a.status='PREPARED'
         return false,'RandomRoll API missing; no draw started.'
     end
+    if NLL.db and NLL.db.settings and
+       NLL.db.settings.raidCountdownEnabled==true and
+       NLL.LootDetection and NLL.LootDetection.lootOpen then
+        a.status='COUNTDOWN'
+        a.countdownEnds=Now()+5
+        a.lastCountdown=5
+        self:Announce("NLL: "..a.itemName.." rolling in 5...")
+        NLL:Print("5-second countdown started for "..a.itemName..".")
+        if NLL.UI and NLL.UI.RefreshCurrentLootPanel then
+            NLL.UI:RefreshCurrentLootPanel()
+        end
+        return true,'5-second countdown begun; roll pending.'
+    end
+    return self:BeginServerRoll(a)
+end
+
+function L:BeginServerRoll(a)
+    if not a or (a.status~='PREPARED' and a.status~='COUNTDOWN') then
+        return false,'Tickets not ready for a new server roll.'
+    end
+    if not RandomRoll then return false,'RandomRoll API missing.' end
+    a.status='WAITING_FOR_ROLL'
+    a.countdownEnds=nil
+    a.lastCountdown=nil
+    a.rollStarted=Now()
+    a.roller=CharacterKey(UnitName and UnitName('player'))
     a.method='SERVER_RANDOM_ROLL'
     RandomRoll(1,#a.tickets)
+    self:Announce("NLL: Rolling "..a.itemName.." now ("..#a.tickets.." tickets).")
     NLL:Print('Waiting for YOUR server /roll (1-' .. #a.tickets ..
         '). Do not start another roll until resolved.')
     return true,'Waiting for WoW server roll result.'
+end
+
+function L:UpdateCountdown()
+    local a=self.active
+    if not a or a.status~='COUNTDOWN' then return end
+    local selected=self:GetSelectedEntry()
+    if not selected or selected.dropUID~=a.dropUID or
+       selected.identityUncertain or not NLL.LootDetection or
+       not NLL.LootDetection.lootOpen or not self.liveLootObserved or
+       not self:AuthorityAllowed(false) or
+       (NLL.DebugSimulator and NLL.DebugSimulator:IsActive()) then
+        self:Invalidate('Countdown cancelled: live corpse/leader/item changed')
+        NLL:Print('NLL countdown cancelled: corpse or raid context changed. No roll.')
+        return
+    end
+    if NLL.Roster then NLL.Roster:Refresh() end
+    local matches,reason=self:PoolStillMatches(selected)
+    if not matches then
+        self:Invalidate('Countdown cancelled: '..tostring(reason))
+        NLL:Print('NLL countdown cancelled: '..tostring(reason))
+        return
+    end
+    local remaining=math.ceil((a.countdownEnds or 0)-Now())
+    if remaining<=0 then
+        self:BeginServerRoll(a)
+    elseif remaining<a.lastCountdown then
+        a.lastCountdown=remaining
+        self:Announce("NLL: "..remaining.." ...")
+    end
 end
 -- Parse the localized WoW 3.3.5 RANDOM_ROLL_RESULT message exactly.
 -- Do not interpret unrelated raid members' rolls as NLL's winner.
@@ -263,6 +339,9 @@ function L:GetStatus(entry)
         return 'No tickets prepared.'
     end
     if a.status=='PREPARED' then return #a.tickets .. ' tickets ready; press Start Roll.' end
+    if a.status=='COUNTDOWN' then
+        return 'Roll starts in '..math.max(0,math.ceil((a.countdownEnds or Now())-Now()))..' second(s).'
+    end
     if a.status=='WAITING_FOR_ROLL' then return 'Awaiting server roll; no winner yet.' end
     if a.status=='COMPLETE' then
         return (a.test and '[TEST] ' or '')..'Won # ' .. a.winningTicket .. ': '..a.winner ..
@@ -275,6 +354,10 @@ function L:OnUpdate(elapsed)
     if self.tick < 0.5 then return end
     self.tick=0
     local a=self.active
+    if a and a.status=='COUNTDOWN' then
+        self:UpdateCountdown()
+        a=self.active
+    end
     if a and a.status=='WAITING_FOR_ROLL' and Now()-a.rollStarted>15 then
         a.status='ROLL_UNCONFIRMED'
         NLL:Print('Could not verify server roll. NO WINNER recorded. '

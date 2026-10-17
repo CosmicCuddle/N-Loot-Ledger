@@ -159,6 +159,12 @@ function UI:OpenAwardReview()
     -- An already-requested award has an unknown receipt; never offer a
     -- second request against that same physical drop.
     if result.awardStatus then
+        -- Once WoW's award is reported, allow the leader to review a
+        -- distinct receipt confirmation without ever re-sending loot.
+        if NLL.LootReceiptTracker and
+           NLL.LootReceiptTracker:Get(entry.dropUID) then
+            return self:OpenReceiptReview(entry)
+        end
         NLL:Print(NLL.AwardWorkflow:GetStatus(entry)..
             '. Check award history before any new action.')
         return false
@@ -198,5 +204,120 @@ function UI:OpenAwardReview()
     self.awardReviewFrame:Show()
     -- Opening the modal NEVER requires an unsafe guessed slot or awards
     -- an item; a live missing/closed context can be reviewed diagnostically.
+    return true
+end
+
+-- Confirmation is intentionally distinct from "I Awarded It in WoW":
+-- a sent Master Loot request, slot clear, or winner is not receipt proof.
+function UI:CreateReceiptReview()
+    if self.receiptReviewFrame then return end
+    local f=CreateFrame("Frame",nil,self.mainFrame)
+    f:SetSize(605,248)
+    f:SetPoint("CENTER",self.mainFrame,"CENTER",0,0)
+    f:SetFrameStrata("DIALOG")
+    f:SetFrameLevel((self.mainFrame:GetFrameLevel() or 0)+32)
+    f:EnableMouse(true)
+    f:SetBackdrop({
+        bgFile="Interface\\Buttons\\WHITE8X8",
+        edgeFile="Interface\\DialogFrame\\UI-DialogBox-Border",
+        tile=true,tileSize=16,edgeSize=26,
+        insets={left=8,right=8,top=8,bottom=8}
+    })
+    f:SetBackdropColor(.055,.065,.085,.99)
+    f:SetBackdropBorderColor(.96,.72,.25,1)
+    local title=f:CreateFontString(nil,"OVERLAY","GameFontNormalLarge")
+    title:SetPoint("TOP",f,"TOP",0,-22)
+    title:SetText("CONFIRM ITEM RECEIPT - NOT A ROLL")
+    local info=f:CreateFontString(nil,"OVERLAY","GameFontHighlight")
+    info:SetPoint("TOP",title,"BOTTOM",0,-22)
+    info:SetWidth(560)
+    info:SetJustifyH("CENTER")
+    local warning=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    warning:SetPoint("TOP",info,"BOTTOM",0,-23)
+    warning:SetWidth(555)
+    warning:SetJustifyH("CENTER")
+    local verify=self:CreateTextButton(f,"I Checked Inventory",194)
+    verify:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",22,25)
+    verify:SetScript("OnClick",function()
+        local row=NLL.LootReceiptTracker:Get(UI.receiptReviewUID)
+        local entry=NLL.LootDetection:GetCurrentLoot()[
+            UI.currentLootSelected or 1]
+        if not row or not entry or entry.dropUID~=row.dropUID or
+            row.character~=UI.receiptReviewWinner then
+            warning:SetText("Item selection changed. Reopen receipt review.")
+            UI.receiptReviewArmedAt=nil
+            return
+        end
+        local ok,msg=NLL.LootReceiptTracker:CanConfirm(row.dropUID)
+        warning:SetText(tostring(msg or
+            (ok and "Recheck the inventory, then click MARK OBTAINED." or
+                "Receipt cannot be confirmed.")))
+        if ok then
+            UI.receiptReviewArmedAt=GetTime and GetTime() or 0
+            UI.receiptReviewComplete:Enable()
+        else
+            UI.receiptReviewArmedAt=nil
+            UI.receiptReviewComplete:Disable()
+        end
+    end)
+    local complete=self:CreateTextButton(f,"MARK OBTAINED",170)
+    complete:SetPoint("LEFT",verify,"RIGHT",12,0)
+    complete:SetScript("OnClick",function()
+        local entry=NLL.LootDetection:GetCurrentLoot()[
+            UI.currentLootSelected or 1]
+        if not entry or entry.dropUID~=UI.receiptReviewUID or
+            not UI.receiptReviewArmedAt or
+            ((GetTime and GetTime() or 0)-UI.receiptReviewArmedAt)>15 then
+            UI.receiptReviewArmedAt=nil
+            complete:Disable()
+            warning:SetText("Receipt verification expired or item changed.")
+            return
+        end
+        UI.receiptReviewArmedAt=nil
+        complete:Disable()
+        local ok,msg=NLL.LootReceiptTracker:ConfirmReceipt(
+            UI.receiptReviewUID)
+        NLL:Print(msg)
+        warning:SetText(tostring(msg))
+        if ok then
+            f:Hide()
+        end
+    end)
+    local cancel=self:CreateTextButton(f,"Cancel",115)
+    cancel:SetPoint("LEFT",complete,"RIGHT",12,0)
+    cancel:SetScript("OnClick",function()
+        UI.receiptReviewArmedAt=nil
+        f:Hide()
+    end)
+    self.receiptReviewFrame=f
+    self.receiptReviewInfo=info
+    self.receiptReviewWarning=warning
+    self.receiptReviewComplete=complete
+    f:Hide()
+end
+
+function UI:OpenReceiptReview(entry)
+    entry=entry or (NLL.LootDetection:GetCurrentLoot() or {})[
+        self.currentLootSelected or 1]
+    local row=entry and NLL.LootReceiptTracker and
+        NLL.LootReceiptTracker:Get(entry.dropUID)
+    if not row then
+        NLL:Print("No tracked real winner for the selected item.")
+        return false
+    end
+    self:CreateReceiptReview()
+    self.receiptReviewUID=row.dropUID
+    self.receiptReviewWinner=row.character
+    self.receiptReviewArmedAt=nil
+    self.receiptReviewComplete:Disable()
+    self.receiptReviewInfo:SetText(
+        tostring(row.itemName or row.itemID).." -> "..
+        tostring(row.character).." ["..tostring(row.selectionType).."]")
+    local ok,msg=NLL.LootReceiptTracker:CanConfirm(row.dropUID)
+    self.receiptReviewWarning:SetText(
+        (ok and "CHECK the recipient's inventory first. " or
+            "NOT READY: ")..tostring(ok and
+                "Winning alone does not mean obtained." or msg))
+    self.receiptReviewFrame:Show()
     return true
 end

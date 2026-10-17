@@ -43,7 +43,7 @@ The current published NLL source is `v0.1.0.28`. The prior milestones below pres
 - [ ] Confirm per-item unique/unique-equipped restrictions before enabling a second copy, especially for item 19147 (Ring of Spell Power).
 - [ ] Do not permit multiple tickets for the same character and same physical loot copy.
 
-### M9 — Safe Gear Plan import/export (separate review branch; NO RELEASE)
+### M9 — Safe Gear Plan import/export (initial rc.1 pre-release; paging review-only)
 
 - [x] Create `dev/nll-gear-plan-import-export`, stacked on unmerged Need Before Greed PR #8, preserving the tested PR #8 branch and published `main`.
 - [x] Export playerbot `BOT_GEAR_PLAN` statuses/roles/item IDs as copyable `NLL-GEARPLANS-1` text, requiring no disk access.
@@ -54,7 +54,10 @@ The current published NLL source is `v0.1.0.28`. The prior milestones below pres
 - [ ] Confirm this branch's exact HEAD passes GitHub CI and safe ZIP packaging.
 - [ ] Owner tests text selection, preview, confirm-add, conflict rejection, `/reload` and rollback with paired backups.
 - [ ] Explicit approval before merge/release/install. Do not infer approval from Need Before Greed tests.
-- [ ] Future optional phase: guarded edits to existing bot plans (per-row diff/confirmation) and supported multi-chunk export when more than 250 rows are present.
+- [x] **Owner in-game acceptance of initial add-only importer:** 604 total records (166+135+164+121+18) for 38 Playerbots; 469 NEEDED, 135 GREED; TangØ name preserved; Ruby and Arley excluded. Owner reports successful `/reload`. Published as **experimental [v0.1.0.29-rc.1](https://github.com/CosmicCuddle/N-Loot-Ledger/releases/tag/v0.1.0.29-rc.1)** from a separate release branch; stable main and draft PRs remain untouched.
+- [x] Add **paged export** (250 rows per page, repeated import header, Previous/Next controls), deterministic complete dataset checks, and stale-snapshot rejection. Synthetic 604-row roundtrip and UI regressions are included in draft PR #9.
+- [ ] Verify exact latest PR #9 head with GitHub CI after docs updates, safe review ZIP and owner in-client **paged export** layout, Ctrl+C, all 3 copies, and re-import idempotence. Do NOT alter tomorrow's rc.1 build to do this.
+- [ ] Future optional phase: guarded edits to existing bot plans with individual before/after diff and confirmation. Multi-copy equipment reservations remain separately scoped M8.
 - **Original detailed design:** [multi-copy and import/export](MULTI_COPY_IMPORT_EXPORT_BLUEPRINT.md).
 
 

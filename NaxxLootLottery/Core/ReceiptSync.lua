@@ -30,9 +30,19 @@ local function Tell(message)
 end
 function S:IsTrustedLeader(sender)
     local C=NLL.Communication
-    return C and C.IsSenderCurrentRaidLeader and
-        C:IsSenderCurrentRaidLeader(sender)==true and
-        C:IsSenderInRaid(sender)==true
+    if not C or not C.IsSenderCurrentRaidLeader or
+       not C:IsSenderCurrentRaidLeader(sender) or
+       not C:IsSenderInRaid(sender) then return false end
+    -- Refuse split/ambiguous raid leadership before ever offering a
+    -- player-controlled SavedVariables write. CHAT_MSG_ADDON sender names
+    -- alone are not cryptographic proof of item delivery.
+    if not GetNumRaidMembers or not GetRaidRosterInfo then return false end
+    local leaders=0
+    for i=1,(GetNumRaidMembers() or 0) do
+        local _,rank=GetRaidRosterInfo(i)
+        if rank==2 then leaders=leaders+1 end
+    end
+    return leaders==1
 end
 function S:EligibleHuman(row)
     if not row or type(row.needs)~="table" or

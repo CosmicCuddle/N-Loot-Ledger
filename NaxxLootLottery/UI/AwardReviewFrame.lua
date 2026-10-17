@@ -44,6 +44,16 @@ function UI:CreateAwardReview()
     check:SetPoint('BOTTOM',frame,'BOTTOM',0,120)
     check:SetScript('OnClick',function()
         local entry=NLL.AwardWorkflow:GetReviewedDrop()
+        local outcome=entry and NLL.AwardWorkflow:GetOutcome(entry)
+        if not entry or entry.dropUID~=UI.awardReviewDropUID or
+            not outcome or outcome.winner~=UI.awardReviewWinner then
+            NLL.AwardWorkflow:Cancel()
+            manual:Disable()
+            direct:Disable()
+            status:SetText('|cffff7777Selection changed. Close and reopen Award Winner.|r')
+            NLL:Print('Award review stopped: selected item or winner changed.')
+            return
+        end
         local ok,message=NLL.AwardWorkflow:Review(entry)
         status:SetText((ok and '|cff66ff99' or '|cffffaa55')..
             tostring(message)..'|r')
@@ -67,6 +77,14 @@ function UI:CreateAwardReview()
     manual=self:CreateTextButton(frame,'I Awarded It in WoW',173)
     manual:SetPoint('BOTTOMLEFT',frame,'BOTTOMLEFT',22,25)
     manual:SetScript('OnClick',function()
+        local entry=NLL.AwardWorkflow:GetReviewedDrop()
+        if not entry or entry.dropUID~=UI.awardReviewDropUID then
+            NLL.AwardWorkflow:Cancel()
+            NLL:Print('Award review stopped: item selection changed.')
+            manual:Disable()
+            direct:Disable()
+            return
+        end
         local ok,msg=NLL.AwardWorkflow:Confirm()
         NLL:Print(msg)
         if ok then frame:Hide() end
@@ -80,6 +98,15 @@ function UI:CreateAwardReview()
     direct:SetPoint('LEFT',manual,'RIGHT',12,0)
     direct:SetScript('OnClick',function()
         local entry=NLL.AwardWorkflow:GetReviewedDrop()
+        local outcome=entry and NLL.AwardWorkflow:GetOutcome(entry)
+        if not entry or entry.dropUID~=UI.awardReviewDropUID or
+            not outcome or outcome.winner~=UI.awardReviewWinner then
+            NLL.AwardWorkflow:Cancel()
+            NLL:Print('Award review stopped: item or winner changed.')
+            direct:Disable()
+            manual:Disable()
+            return
+        end
         local verified=NLL.AwardWorkflow.verification
         local ok,msg
         if verified and verified.armedAt then
@@ -136,6 +163,8 @@ function UI:OpenAwardReview()
             '. Check award history before any new action.')
         return false
     end
+    self.awardReviewDropUID=entry.dropUID
+    self.awardReviewWinner=result.winner
     local ok,msg=NLL.AwardWorkflow:Review(entry)
     self.awardReviewSubject:SetText(tostring(entry.itemName)..
         '  ->  '..tostring(result.winner))

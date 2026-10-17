@@ -113,8 +113,9 @@ function R:CanConfirm(dropUID)
         if need and (Key(need.character)~=Key(row.character) or
             tonumber(need.itemID)~=row.itemID or
             need.raidKey~=row.raidKey or
-            (need.status~="NEEDED" and need.status~="GREED" and
-             need.status~="OBTAINED")) then
+            (need.status~=snapshot.from and
+             not (need.status=="OBTAINED" and
+                  need.obtainedDropUID==dropUID))) then
             return false,"A Gear Plan has changed since the roll. Review "..
                 "the plan before confirming receipt."
         end

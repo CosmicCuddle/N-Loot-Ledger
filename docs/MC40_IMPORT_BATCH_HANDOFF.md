@@ -1,6 +1,6 @@
 # Molten Core 40-bot Need/Greed Import — Source Blueprint Handoff
 
-**Preparation only.** This document records the owner's uploaded `README_NLL_40_Bot_Import_Blueprint.txt` specification. The original 640 individual rows / five ready-import text files have **not been provided to this review branch**. Never invent missing bot/item reservations or claim a completed import.
+**Historical source blueprint and completed owner import.** The initial 640-row blueprint was reduced to **604** by excluding benched Ruby and Arley. The owner subsequently provided/verified the source rows, imported five prepared batches into their backed-up WoW client, and confirmed persistence across `/reload`. This document preserves the **original reported 640-row blueprint counts** as historical context, NOT the 38-bot import totals. No private SavedVariables are included in the GitHub repository.
 
 ## Owner's reported target counts (to verify against actual files)
 
@@ -15,7 +15,7 @@
 
 The blueprint reports **40 distinct bots** (10 Raid01, 10 Raid02, 10 Raid03, 10 Raid04), with **501 NEEDED** and **139 GREED** rows. P1: NEEDED 377, GREED 96; P2: NEEDED 124, GREED 43. Reported 123 distinct MC item IDs. The 640 actual input rows, uniqueness and row accuracy must be verified from the input files; this README does not contain them.
 
-**Special:** The actual character is **TangØ** (Unicode U+00D8), regardless of the ASCII filename `TangO_UTF8_REVIEW_ONLY`. Never replace the name with `TangO`. The importer now includes a Lua 5.1 Latin-1 UTF-8 byte validator, exact-name roundtrip regression and case-variant collision protection (TangØ versus Tangø). **The owner's previously installed PR9 test build predates this fix**; a freshly built experimental package, paired backups, and separate test approval are needed before batch 05.
+**Special:** The actual character is **TangØ** (Unicode U+00D8), regardless of the ASCII filename `TangO_UTF8_REVIEW_ONLY`. Never replace the name with `TangO`. The importer now includes a Lua 5.1 Latin-1 UTF-8 byte validator, exact-name roundtrip regression and case-variant collision protection (TangØ versus Tangø). The owner later tested the fixed PR9 client build and imported TangØ's separate 18-record batch successfully; its exact name was preserved. These initial features were published experimentally as rc.1 (not a stable release).
 
 **Hunters:** Meshana, Elki, Mani, Hettraz all require NLL role ID `RANGED_PHYSICAL_DPS`. Do not silently change their roles in the import or alter any global Raid Role assignment.
 
@@ -34,9 +34,16 @@ The blueprint reports **40 distinct bots** (10 Raid01, 10 Raid02, 10 Raid03, 10 
 
 In WoW 3.3.5a, owner provided direct evidence that a correct Gorak row pasted as `Gorak||PLAYERBOT||TANK||...||NEEDED||1` with **14 pipes**, whereas the `.txt` source has 7. PR #9 now safely accepts all-seven-single or all-seven-doubled separators, and rejects malformed/mixed copies. **Do not manually double pipes** in the 604-entry import batches; the original versioned text files are still the source of truth. The owner must install a newer PR #9 test-only artifact after paired backups, preview just Raid01 and provide the NEW/UNCHANGED/CONFLICT counts before Confirm ADD. Ruby and Arley remain excluded. No saved plans were changed by these failed previews.
 
-## Actual input files are still required
+## Completed owner acceptance and new export backup follow-up (16–17 October 2026)
 
-Ask the owner to provide the five prepared `NLL_Import_*.txt` files, or the original `NLL_40_Bot_Quick_Entry.txt` used to generate them. After receipt, perform **offline** tests before any in-game import:
+- Raid01: **166** new plans, Raid02: **135**, Raid03: **164**, Raid04 without Ruby and Arley: **121**, and final TangØ: **18** — **604 added** for **38 Playerbots**, **469 NEEDED** and **135 GREED**, with no reported conflicts. Owner reports successful `/reload` persistence.
+- The original detailed records were supplied during the owner review; they are not copied into this public repository, and the owner retains their own prepared import text and SavedVariables backups.
+- The official [v0.1.0.29-rc.1 pre-release](https://github.com/CosmicCuddle/N-Loot-Ledger/releases/tag/v0.1.0.29-rc.1) was published for the 17 October raid; it does not include a complete 604-row export. Preserve the paired SavedVariables backups.
+- New in **unmerged draft PR #9 only**: export all 604 rows as **three separate files (250, 250, 104)**, each with its own valid `NLL-GEARPLANS-1` header, and require unchanged saved-data snapshot across pages. In-game UI verification is still needed. No further owner install or live-award testing is authorised.
+
+## Historical verification procedure (now superseded by the completed import)
+
+Historical instructions from the earlier preparation stage, retained here for audit context:
 
 1. Verify exact counts per file, total 640 unique `(character, raid, item, source)` keys, 40 names, 501/139 status split, P1/P2 source planning metadata where present, and 123 item IDs against the actual `MoltenCore.lua` catalogue.
 2. Validate strict version header, eight fields, no invalid status, no unexpected character names, proper Hunter roles, and TangØ UTF-8 exact preservation.
@@ -46,4 +53,4 @@ Ask the owner to provide the five prepared `NLL_Import_*.txt` files, or the orig
 6. Handle TangØ only after installing a NEW experimental build with the UTF-8 fix and checking preview. Never use an older PR9 build for batch 05.
 7. Verify `/reload`, role assignments, saved plans, `/nll botcheck`, and fake Need/Greed stage results. Direct Master Loot stays OFF.
 
-**Status:** Compatibility fix and automated tests implemented in PR #9. 640-row contents not yet received; no real import, role update, server changes, simulated award or loot transfer has been performed.
+**Status (updated):** The owner confirmed 604 actual reservations imported and preserved after `/reload`. Existing raid-role assignments/loot histories were not modified by the add-only importer. Actual Master Loot transfer has **not** been tested. New paged export remains unreleased review code on PR #9.

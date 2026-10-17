@@ -292,6 +292,8 @@ function UI:CreateReceiptReview()
     self.receiptReviewFrame=f
     self.receiptReviewInfo=info
     self.receiptReviewWarning=warning
+    self.receiptReviewCheck=verify
+    self.receiptReviewCancel=cancel
     self.receiptReviewComplete=complete
     f:Hide()
 end

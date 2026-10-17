@@ -34,6 +34,10 @@ function Database:Initialize()
     if type(db.guildLootTransferAudit)~="table" then
         db.guildLootTransferAudit={}
     end
+    -- Append-only operator attestations, separate from old award records.
+    if type(db.guildLootReconciliations)~="table" then
+        db.guildLootReconciliations={}
+    end
     -- Raid announcements/countdown are separate, non-awarding opt-ins.
     if type(db.settings.raidAnnouncementsEnabled)~="boolean" then
         db.settings.raidAnnouncementsEnabled=false

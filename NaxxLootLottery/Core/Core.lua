@@ -9,7 +9,7 @@ local NLL = NaxxLootLottery
 
 NLL.name = "Naxxramas Loot Ledger"
 NLL.shortName = "NLL"
-NLL.version = "0.1.0.29-rc.1-dev3"
+NLL.version = "0.1.0.29-rc.1-dev4"
 NLL.databaseVersion = 1
 NLL.initialized = false
 NLL.initializeAttempted = false
@@ -356,6 +356,11 @@ function NLL:HandleSlashCommand(message)
         end
         return
     end
+    if command=="guildaudit" then
+        self.UI:ShowMainFrame("currentloot")
+        self.UI:OpenGuildReconciliation()
+        return
+    end
     if command=="guildloot" then
         self.UI:ShowMainFrame("currentloot")
         self.UI:OpenGuildLootReview()
@@ -652,6 +657,7 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll receiptinbox - Review my pending award confirmations.")
         self:Print("/nll receiptsync <dropUID> - Resend a previously verified human receipt.")
         self:Print("/nll guildloot - Read-only review of ALL visible item slots, including materials.")
+        self:Print("/nll guildaudit - Inspect old material/gear transfer attempts and verify receipts.")
         self:Print("/nll guildgive on|off - Separate login-only consent for manual guild transfers.")
         self:Print("/nll awardhistory - Show manual, requested and observed awards.")
         self:Print("/nll directaward off - Immediately disable live direct awarding.")
@@ -764,6 +770,10 @@ function NLL:Initialize()
         "Core/ReceiptSync.lua",
         self.ReceiptSync
     )
+    RequireModule(
+        "Core/GuildLootReconcile.lua",
+        self.GuildLootReconcile
+    )
 
     RequireModule(
         "Core/TicketPlanner.lua",
@@ -784,6 +794,10 @@ function NLL:Initialize()
     RequireModule(
         "UI/ReceiptSyncFrame.lua",
         self.UI and self.UI.OpenReceiptSyncReview
+    )
+    RequireModule(
+        "UI/GuildReconciliationFrame.lua",
+        self.UI and self.UI.OpenGuildReconciliation
     )
     RequireModule(
         "Core/PrioritySuggestions.lua",

@@ -826,6 +826,13 @@ function UI:CreateGuildLootDialog()
     self.guildLootArm=arm
     self.guildLootConfirm=give
 
+    local auditButton=self:CreateTextButton(f,"Transfer Audit",140)
+    auditButton:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-188,20)
+    auditButton:SetScript("OnClick",function()
+        NLL.GuildLootTransfer:Cancel()
+        UI:OpenGuildReconciliation()
+    end)
+    self.guildLootAuditButton=auditButton
     local close=self:CreateTextButton(f,"Close (No Award)",150)
     close:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-24,20)
     close:SetScript("OnClick",function()

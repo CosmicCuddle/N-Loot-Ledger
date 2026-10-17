@@ -35,7 +35,9 @@ function T:IsUnresolved()
     -- Never retry silently after an uncertain outcome, even after /reload.
     for _,row in ipairs(audit) do
         if row.status=="AWARD_REQUESTED" or
-           row.status=="AWARD_OUTCOME_UNKNOWN" then
+           row.status=="AWARD_OUTCOME_UNKNOWN" or
+           row.status=="LOOT_SLOT_CLEARED" or
+           row.status=="INVESTIGATION_HOLD" then
             return true
         end
     end
@@ -221,6 +223,7 @@ function T:Commit()
         itemID=fresh.itemID,itemLink=fresh.link,quantity=fresh.quantity,
         slotIndex=fresh.slot,recipient=fresh.leader,
         candidateIndex=fresh.candidate,
+        actor=UnitName and UnitName("player") or nil,
         status="AWARD_OUTCOME_UNKNOWN",
         note="Request attempt; no recipient receipt verified",
         when=date and date("%Y-%m-%d %H:%M:%S") or "unknown",

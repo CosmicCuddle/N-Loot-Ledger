@@ -1,0 +1,62 @@
+name: Guild award reconciliation guards (NO RELEASE)
+on:
+  push:
+    branches:
+      - dev/nll-audit-reconciliation-preview
+permissions:
+  contents: read
+concurrency:
+  group: nll-guild-audit-draft
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Lua 5.1 + no-regrant audit protections
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify approved non-awarding change set
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=82ce0ebb8a32a5723977a848f23b50b9c4bde32b
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          while IFS= read -r f; do
+            case "$f" in
+              NaxxLootLottery/Core/GuildLootTransfer.lua|NaxxLootLottery/Core/GuildLootReconcile.lua|NaxxLootLottery/Storage/Database.lua|NaxxLootLottery/UI/GuildReconciliationFrame.lua|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_guild_loot_transfer.lua|tests/test_guild_loot_reconcile.lua|tests/test_guild_reconciliation_ui.lua|docs/TESTING_GUILD_RECONCILIATION_DRAFT.md|.github/workflows/nll-guild-audit-reconciliation-review.yml) ;;
+              *) echo "::error::Unexpected change: $f"; exit 1;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          if git diff --name-only "$BASE" "$GITHUB_SHA" | grep -E '^NaxxLootLottery/Core/(AwardWorkflow|LootReceiptTracker|TicketLottery).lua$'; then
+             echo "::error::Winner/roll award engine must remain unchanged"; exit 1
+          fi
+          grep -Fq 'row.status=="LOOT_SLOT_CLEARED"' NaxxLootLottery/Core/GuildLootTransfer.lua
+          grep -Fq 'row.status="RECONCILED_RECEIVED"' NaxxLootLottery/Core/GuildLootReconcile.lua && echo 'Status direct assignment not expected' && exit 1 || true
+          grep -Fq '"RECONCILED_RECEIVED"' NaxxLootLottery/Core/GuildLootReconcile.lua
+          grep -Fq 'noRegrant=true' NaxxLootLottery/Core/GuildLootReconcile.lua
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -qx '## Version: 0.1.0.29-rc.1-dev4' NaxxLootLottery/NaxxLootLottery.toc
+          if grep -E '^[[:space:]]*(GiveMasterLoot|RandomRoll)\(' NaxxLootLottery/Core/GuildLootReconcile.lua NaxxLootLottery/UI/GuildReconciliationFrame.lua; then
+             echo "::error::Reconciliation may not award or reroll any loot"; exit 1
+          fi
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y lua5.1
+      - name: Parse all Lua modules/tests
+        run: find NaxxLootLottery tests -name '*.lua' -type f -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Run ALL historical and new regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          for t in tests/test_*.lua; do
+            echo "RUNNING $t"
+            lua5.1 "$t"
+          done
+      - name: Package/version smoke only
+        run: python3 tests/test_release_packaging.py
+      - name: No release or artifact
+        run: echo "No ZIP uploaded, no release, tag, merge, installation or live loot transfer."

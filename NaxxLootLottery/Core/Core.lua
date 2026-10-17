@@ -737,6 +737,10 @@ function NLL:Initialize()
         "Core/GuildLootTransfer.lua",
         self.GuildLootTransfer
     )
+    RequireModule(
+        "Core/LootReceiptTracker.lua",
+        self.LootReceiptTracker
+    )
 
     RequireModule(
         "Core/TicketPlanner.lua",

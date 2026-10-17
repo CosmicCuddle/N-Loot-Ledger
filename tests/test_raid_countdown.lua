@@ -47,6 +47,8 @@ NaxxLootLottery={
 local N=NaxxLootLottery
 assert(loadfile("NaxxLootLottery/Core/TicketLottery.lua"))()
 local L=N.TicketLottery
+-- A real LOOT_OPENED event sets this flag before tickets can be prepared.
+L.liveLootObserved=true
 local prepared,msg=L:Prepare(first)
 ok(prepared and L.active.status=="PREPARED","prepare tickets is manual")
 ok(#rolls==0 and #public==2,"prepare announces only; no server roll")

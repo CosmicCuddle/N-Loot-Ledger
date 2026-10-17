@@ -246,6 +246,26 @@ function Loot:ScanLootWindow(forceNew)
     if NLL.TicketLottery then NLL.TicketLottery.liveLootObserved=true end
     self:SetCurrentLoot(entries,{newOpportunity=forceNew==true})
 
+    -- Tell the leader while the *real* loot window is still open. A
+    -- restored winner/ambiguous copy must never turn into a silent,
+    -- apparently unresponsive Prepare Tickets button.
+    if not forceNew then
+        local repeated=false
+        for _,entry in ipairs(entries) do
+            if entry.identityUncertain or
+                (NLL.LootIdentity and
+                 NLL.LootIdentity:IsProcessed(entry.dropUID)) then
+                repeated=true
+                break
+            end
+        end
+        if repeated and NLL.Print then
+            NLL:Print("REPEATED LOOT DETECTED: open Current Loot "..
+                "and use New Drop > Confirm Drop ONLY if this is a "..
+                "different corpse. Do so BEFORE the loot window closes.")
+        end
+    end
+
     if #entries > 0 then
         NLL:Print(
             "Detected " ..

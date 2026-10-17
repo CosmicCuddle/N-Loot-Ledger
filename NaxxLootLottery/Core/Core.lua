@@ -804,6 +804,10 @@ function NLL:Initialize()
         self.UI and self.UI.OpenGuildReconciliation
     )
     RequireModule(
+        "UI/GuildAutoPreviewFrame.lua",
+        self.UI and self.UI.OpenGuildAutoPreview
+    )
+    RequireModule(
         "Core/PrioritySuggestions.lua",
         self.PrioritySuggestions
     )

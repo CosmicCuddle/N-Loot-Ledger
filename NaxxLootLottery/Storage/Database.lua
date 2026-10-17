@@ -107,6 +107,9 @@ function Database:Initialize()
     if type(db.localWishlistGreed) ~= "table" then
         db.localWishlistGreed = {}
     end
+    if type(db.localWishlistObtained) ~= "table" then
+        db.localWishlistObtained = {}
+    end
 
     if type(db.submissionInbox) ~= "table" then
         db.submissionInbox = {}

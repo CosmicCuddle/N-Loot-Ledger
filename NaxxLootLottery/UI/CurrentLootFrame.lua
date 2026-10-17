@@ -754,7 +754,7 @@ function UI:CreateGuildLootDialog()
 
     local heading=f:CreateFontString(nil,"OVERLAY","GameFontNormalLarge")
     heading:SetPoint("TOP",f,"TOP",0,-23)
-    heading:SetText("GUILD LOOT - LEADER REVIEW ONLY")
+    heading:SetText("GUILD LOOT - MANUAL TWO-CLICK REVIEW")
     local status=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
     status:SetPoint("TOP",heading,"BOTTOM",0,-13)
     status:SetWidth(670)
@@ -769,12 +769,22 @@ function UI:CreateGuildLootDialog()
         self:RegisterSkinnedFrame(row,(i%2)==0 and "rowAlt" or "row")
         local name=row:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
         name:SetPoint("TOPLEFT",row,"TOPLEFT",8,-3)
-        name:SetWidth(650)
+        name:SetWidth(540)
         name:SetJustifyH("LEFT")
         local reason=row:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
         reason:SetPoint("BOTTOMLEFT",row,"BOTTOMLEFT",8,4)
-        reason:SetWidth(650)
+        reason:SetWidth(540)
         reason:SetJustifyH("LEFT")
+        local review=self:CreateTextButton(row,"Review",90)
+        review:SetPoint("RIGHT",row,"RIGHT",-7,0)
+        review:SetScript("OnClick",function(button)
+            if not button.target then return end
+            local ok,message=NLL.GuildLootTransfer:Review(button.target)
+            NLL:Print(message)
+            UI.guildLootLastMessage=message
+            UI:RefreshGuildLootDialog()
+        end)
+        row.reviewButton=review
         row.nameText=name
         row.reasonText=reason
         self.guildLootRows[i]=row
@@ -795,9 +805,33 @@ function UI:CreateGuildLootDialog()
     page:SetPoint("LEFT",nextB,"RIGHT",12,0)
     page:SetWidth(125)
     self.guildLootPageText=page
+    -- The Review button above is read-only; neither of these controls
+    -- can ever send an item without the player's two extra clicks.
+    local arm=self:CreateTextButton(f,"Arm Leader Transfer",181)
+    arm:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",24,53)
+    arm:SetScript("OnClick",function()
+        local ok,msg=NLL.GuildLootTransfer:Arm()
+        NLL:Print(msg)
+        UI.guildLootLastMessage=msg
+        UI:RefreshGuildLootDialog()
+    end)
+    local give=self:CreateTextButton(f,"CONFIRM GIVE ITEM",185)
+    give:SetPoint("LEFT",arm,"RIGHT",12,0)
+    give:SetScript("OnClick",function()
+        local ok,msg=NLL.GuildLootTransfer:Commit()
+        NLL:Print(msg)
+        UI.guildLootLastMessage=msg
+        UI:RefreshGuildLootDialog()
+    end)
+    self.guildLootArm=arm
+    self.guildLootConfirm=give
+
     local close=self:CreateTextButton(f,"Close (No Award)",150)
     close:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-24,20)
-    close:SetScript("OnClick",function() f:Hide() end)
+    close:SetScript("OnClick",function()
+        if NLL.GuildLootTransfer then NLL.GuildLootTransfer:Cancel() end
+        f:Hide()
+    end)
     self.guildLootPrev=prev
     self.guildLootNext=nextB
     self.guildLootDialog=f
@@ -811,9 +845,26 @@ function UI:RefreshGuildLootDialog()
     for _,item in ipairs(rows) do
         if item.status=="GUILD_REVIEW" then candidates=candidates+1 end
     end
-    self.guildLootStatus:SetText(tostring(message)..
-        "  Guild review: "..candidates..
-        ". ALL routing is MANUAL and unverified.")
+    local T=NLL.GuildLootTransfer
+    local transferState=T and T:IsEnabled() and
+        "OPTIONAL TRANSFER ON (double confirm)" or "TRANSFER OFF"
+    self.guildLootStatus:SetText(
+        tostring(self.guildLootLastMessage or
+            ("Eligible for guild REVIEW: "..candidates..". "..transferState..
+             ". NO AUTO-ROUTING.")))
+    if self.guildLootArm and self.guildLootConfirm then
+        local review=T and T.review
+        if review and review.armedAt then
+            self.guildLootArm:Disable()
+            self.guildLootConfirm:Enable()
+        elseif review then
+            self.guildLootArm:Enable()
+            self.guildLootConfirm:Disable()
+        else
+            self.guildLootArm:Disable()
+            self.guildLootConfirm:Disable()
+        end
+    end
     local pages=math.max(1,math.ceil(#rows/6))
     self.guildLootPage=math.min(pages,math.max(1,self.guildLootPage or 1))
     self.guildLootPageText:SetText("Page "..self.guildLootPage.."/"..pages)
@@ -830,8 +881,16 @@ function UI:RefreshGuildLootDialog()
                 " x"..item.quantity.." ["..item.status.."]")
             row.reasonText:SetText(tostring(item.reason)..
                 "  |  Leader: "..tostring(item.leader))
+            row.reviewButton.target={
+                slotIndex=item.slotIndex,itemID=item.itemID,
+                itemLink=item.itemLink,quantity=item.quantity,
+            }
+            if item.status=="GUILD_REVIEW" then
+                row.reviewButton:Enable()
+            else row.reviewButton:Disable() end
             row:Show()
         else
+            row.reviewButton.target=nil
             row:Hide()
         end
     end
@@ -839,6 +898,8 @@ end
 
 function UI:OpenGuildLootReview()
     self:CreateGuildLootDialog()
+    if NLL.GuildLootTransfer then NLL.GuildLootTransfer:Cancel() end
+    self.guildLootLastMessage=nil
     self.guildLootPage=1
     self:RefreshGuildLootDialog()
     self.guildLootDialog:Show()

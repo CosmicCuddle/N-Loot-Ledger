@@ -240,9 +240,12 @@ function UI:CreateReceiptReview()
     verify:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",22,25)
     verify:SetScript("OnClick",function()
         local row=NLL.LootReceiptTracker:Get(UI.receiptReviewUID)
-        local entry=NLL.LootDetection:GetCurrentLoot()[
-            UI.currentLootSelected or 1]
-        if not row or not entry or entry.dropUID~=row.dropUID or
+        local entry=not UI.receiptReviewHistorical and
+            NLL.LootDetection:GetCurrentLoot()[
+                UI.currentLootSelected or 1] or nil
+        if not row or
+            (not UI.receiptReviewHistorical and
+             (not entry or entry.dropUID~=row.dropUID)) or
             row.character~=UI.receiptReviewWinner then
             warning:SetText("Item selection changed. Reopen receipt review.")
             UI.receiptReviewArmedAt=nil
@@ -265,7 +268,8 @@ function UI:CreateReceiptReview()
     complete:SetScript("OnClick",function()
         local entry=NLL.LootDetection:GetCurrentLoot()[
             UI.currentLootSelected or 1]
-        if not entry or entry.dropUID~=UI.receiptReviewUID or
+        if (not UI.receiptReviewHistorical and
+            (not entry or entry.dropUID~=UI.receiptReviewUID)) or
             not UI.receiptReviewArmedAt or
             ((GetTime and GetTime() or 0)-UI.receiptReviewArmedAt)>15 then
             UI.receiptReviewArmedAt=nil
@@ -299,10 +303,17 @@ function UI:CreateReceiptReview()
 end
 
 function UI:OpenReceiptReview(entry)
-    entry=entry or (NLL.LootDetection:GetCurrentLoot() or {})[
-        self.currentLootSelected or 1]
-    local row=entry and NLL.LootReceiptTracker and
-        NLL.LootReceiptTracker:Get(entry.dropUID)
+    -- Award History can explicitly select an immutable saved drop UID
+    -- after the corpse is gone. The Current Loot path still disarms
+    -- when a different item is selected before confirmation.
+    local historical=type(entry)=="string"
+    if not historical then
+        entry=entry or (NLL.LootDetection:GetCurrentLoot() or {})[
+            self.currentLootSelected or 1]
+    end
+    local uid=historical and entry or (entry and entry.dropUID)
+    local row=uid and NLL.LootReceiptTracker and
+        NLL.LootReceiptTracker:Get(uid)
     if not row then
         NLL:Print("No tracked real winner for the selected item.")
         return false
@@ -310,6 +321,7 @@ function UI:OpenReceiptReview(entry)
     self:CreateReceiptReview()
     self.receiptReviewUID=row.dropUID
     self.receiptReviewWinner=row.character
+    self.receiptReviewHistorical=historical
     self.receiptReviewArmedAt=nil
     self.receiptReviewComplete:Disable()
     self.receiptReviewInfo:SetText(

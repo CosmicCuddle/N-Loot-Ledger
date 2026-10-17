@@ -210,10 +210,10 @@ function UI:CreateLocalWishlistContent(parent)
             "GameFontHighlightSmall"
         )
         bossText:SetPoint("LEFT", row, "LEFT", 375, 0)
-        bossText:SetWidth(255)
+        bossText:SetWidth(190) -- reserve space for full OBTAINED label
         bossText:SetJustifyH("LEFT")
 
-        local interest=self:CreateTextButton(row,"NEED",77)
+        local interest=self:CreateTextButton(row,"NEED",102)
         interest:SetPoint("RIGHT",row,"RIGHT",-84,0)
         interest:SetScript("OnClick",function(self)
             if not self.itemID then return end

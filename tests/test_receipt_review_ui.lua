@@ -78,7 +78,38 @@ UI.receiptReviewFrame:Show()
 -- First button was created but not stored; test source control via
 -- mocked frame order isn't necessary when we store a handle in UI below.
 ok(confirms==0,"mere opening does not mark item obtained")
-local protected=UI.receiptReviewFrame
--- The modal open code always creates first button BEFORE final action.
--- Obtain the first button directly through a captured button array.
-print("PASS: "..assertions.." receipt modal opening assertions")
+UI.receiptReviewCheck.scripts.OnClick()
+ok(not UI.receiptReviewComplete.enabled and
+    UI.receiptReviewWarning.text:find("Delivery not recorded",1,true),
+    "unreported receipt cannot be marked obtained")
+can=true
+UI.receiptReviewCheck.scripts.OnClick()
+ok(UI.receiptReviewComplete.enabled and confirms==0,
+    "verification click enables separate second click but changes nothing")
+clock=clock+16
+UI.receiptReviewComplete.scripts.OnClick()
+ok(confirms==0 and not UI.receiptReviewComplete.enabled,
+    "confirmation expires after 15 seconds without changing wishlist")
+UI.receiptReviewCheck.scripts.OnClick()
+current={dropUID="DIFFERENT",itemID=18821}
+UI.receiptReviewComplete.scripts.OnClick()
+ok(confirms==0 and not UI.receiptReviewComplete.enabled,
+    "selected loot changes after verification: no receipt")
+current=drop
+UI.receiptReviewCheck.scripts.OnClick()
+ok(UI.receiptReviewComplete.enabled and confirms==0,
+    "same original drop may be reviewed again")
+UI.receiptReviewComplete.scripts.OnClick()
+ok(confirms==1 and ledger.status=="OBTAINED" and
+    not UI.receiptReviewFrame.shown,
+    "only second deliberate click confirms recipient inventory")
+UI:OpenReceiptReview(drop)
+ok(not UI.receiptReviewComplete.enabled,
+    "existing obtained receipt cannot be reconfirmed")
+UI.receiptReviewCheck.scripts.OnClick()
+ok(not UI.receiptReviewComplete.enabled and confirms==1,
+    "idempotent modal refuses duplicate confirmation")
+UI.receiptReviewCancel.scripts.OnClick()
+ok(not UI.receiptReviewFrame.shown and
+    UI.receiptReviewArmedAt==nil,"cancel disarms and hides modal")
+print("PASS: "..assertions.." two-click receipt UI/expiry/selection assertions")

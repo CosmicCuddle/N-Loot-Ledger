@@ -24,6 +24,7 @@ Core\AwardWorkflow.lua
 Core\DebugSimulator.lua
 Core\LootIdentity.lua
 Core\LootDetection.lua
+Core\GuildLootReview.lua
 UI\SkinManager.lua
 UI\MainFrame.lua
 UI\AwardReviewFrame.lua

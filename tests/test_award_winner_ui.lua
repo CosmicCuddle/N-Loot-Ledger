@@ -81,6 +81,12 @@ ok(not UI.awardReviewConfirm.enabled and not UI.awardReviewDirect.enabled,
     "old/stale dropdown can never activate a real transfer")
 ok(awards==0 and #N.db.lootAwardHistory==0,
     "opening award review is strictly non-awarding")
+UI.currentLootSelected=2
+UI.awardReviewCheck.scripts.OnClick()
+ok(not UI.awardReviewConfirm.enabled and not UI.awardReviewDirect.enabled and
+    UI.awardReviewStatus.text:find("Selection changed",1,true),
+    "reviewed recipient cannot silently switch to another selected item")
+UI.currentLootSelected=1
 LootFrame={selectedSlot=1,IsShown=function()return true end}
 UI.awardReviewCheck.scripts.OnClick()
 ok(UI.awardReviewConfirm.enabled and not UI.awardReviewDirect.enabled,
@@ -95,6 +101,15 @@ UI.awardReviewDirect.scripts.OnClick()
 ok(awards==0 and a.verification.armedAt==now and
     UI.awardReviewDirect.label.text=="CONFIRM GIVE ITEM",
     "first deliberate click arms but cannot transfer")
+UI.currentLootSelected=2
+UI.awardReviewDirect.scripts.OnClick()
+ok(awards==0 and a.verification==nil,
+    "switching selected item AFTER arming cannot transfer another recipient")
+UI.currentLootSelected=1
+UI.awardReviewCheck.scripts.OnClick()
+UI.awardReviewDirect.scripts.OnClick()
+ok(awards==0 and a.verification and a.verification.armedAt==now,
+    "new explicit review and arm required after selection drift")
 UI.awardReviewDirect.scripts.OnClick()
 ok(awards==1 and finished.awardStatus=="AWARD_REQUESTED",
     "second deliberate click requests exact transfer once")

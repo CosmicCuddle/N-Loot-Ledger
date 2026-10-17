@@ -1,0 +1,63 @@
+name: Guild Loot read-only safety validation (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-guild-loot-review
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nll-guild-review-safety
+  cancel-in-progress: true
+
+jobs:
+  guild-review:
+    name: Lua 5.1 + no-award safety + packaging smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify limited read-only change set
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='6f2a68c9e377d46cf5b1d092b2a4644468db0323'
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          while IFS= read -r f; do
+            case "$f" in
+              NaxxLootLottery/Core/GuildLootReview.lua|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/UI/AwardReviewFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/Core/LootDetection.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_guild_loot_review.lua|tests/test_award_winner_ui.lua|docs/GUILD_LOOT_REVIEW_BLUEPRINT.md|.github/workflows/nll-guild-loot-readonly-review.yml) ;;
+              *) echo "::error::Unexpected code changes in non-awarding guild preview: $f"; exit 1;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          test -f NaxxLootLottery/Core/GuildLootReview.lua
+          if grep -Eq '^[[:space:]]*(pcall\(GiveMasterLoot|GiveMasterLoot\()' NaxxLootLottery/Core/GuildLootReview.lua; then
+            echo "::error::Read-only guild reviewer must never transfer real items"; exit 1
+          fi
+          if git diff --name-only "$BASE" "$GITHUB_SHA" | grep -qx 'NaxxLootLottery/Core/AwardWorkflow.lua'; then
+            echo "::error::Real award engine must remain unchanged"; exit 1
+          fi
+      - name: Install Lua 5.1
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Syntax-check all source and tests
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Run entire Lua regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in tests/test_*.lua; do
+            echo "Running $f"
+            lua5.1 "$f"
+          done
+      - name: Smoke-check reproducible package and disabled Direct Award
+        run: python3 tests/test_release_packaging.py
+      - name: Confirm this workflow does not publish or install
+        run: |
+          echo "All tests complete; intentionally no test archive, GitHub Release, tag, merge, or live item transfer."

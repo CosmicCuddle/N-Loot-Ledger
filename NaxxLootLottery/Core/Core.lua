@@ -338,6 +338,11 @@ function NLL:HandleSlashCommand(message)
         return
     end
 
+    if command=="guildloot" then
+        self.UI:ShowMainFrame("currentloot")
+        self.UI:OpenGuildLootReview()
+        return
+    end
     if command == "awardreview" then
         self.UI:ShowMainFrame('currentloot')
         self.UI:OpenAwardReview()
@@ -609,6 +614,7 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll candidateaudit - Show recent leader candidate changes.")
         self:Print("/nll lotteryhistory - Show last 5 lottery records.")
         self:Print("/nll awardreview - Review the selected winner and manual award.")
+        self:Print("/nll guildloot - Read-only review of ALL visible item slots, including materials.")
         self:Print("/nll awardhistory - Show manual, requested and observed awards.")
         self:Print("/nll directaward off - Immediately disable live direct awarding.")
         self:Print("/nll raidchat on|off - Optional RAID ticket/winner announcements.")
@@ -703,6 +709,10 @@ function NLL:Initialize()
     RequireModule(
         "Core/LootDetection.lua",
         self.LootDetection
+    )
+    RequireModule(
+        "Core/GuildLootReview.lua",
+        self.GuildLootReview
     )
 
     RequireModule(

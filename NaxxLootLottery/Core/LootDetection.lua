@@ -358,6 +358,10 @@ eventFrame:SetScript(
         end
         if event == "LOOT_CLOSED" then
             Loot.lootOpen=false
+            -- The displayed items are saved history, not a live corpse.
+            -- Invalidate any half-confirmed New Drop operation immediately.
+            if NLL.LootIdentity then NLL.LootIdentity.confirmation=nil end
+            if NLL.UI then NLL.UI.currentLootNewDropPending=false end
             if NLL.LootIdentity then NLL.LootIdentity:OnLootClosed() end
             if NLL.TicketLottery then
                 NLL.TicketLottery:Invalidate('WoW loot window closed before result')
@@ -367,6 +371,11 @@ eventFrame:SetScript(
             end
             if NLL.TicketLottery then
                 NLL.TicketLottery.liveLootObserved = false
+            end
+            -- Refresh immediately; otherwise disabled buttons can look live
+            -- until the player manually changes tabs (despawn incident).
+            if NLL.UI and NLL.UI.RefreshCurrentLootPanel then
+                NLL.UI:RefreshCurrentLootPanel()
             end
             return
         end

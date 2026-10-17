@@ -2,8 +2,9 @@
 
 **Raid loot planning, wishlists, post-drop ticket lotteries, and award tracking for World of Warcraft 3.3.5a (Wrath of the Lich King) on AzerothCore.**
 
-**Latest published version:** `v0.1.0.28` (stable-core release, 13 October 2026)  
-**Current development:** Need Before Greed draft PR #8 was installed/tested by the owner but remains unmerged/unreleased. A separate stacked review branch `dev/nll-gear-plan-import-export` now proposes safe Playerbot plan copy/paste; it is **not installed or released**.  
+**Stable release:** `v0.1.0.28` (13 October 2026)  
+**Available pre-release:** [`v0.1.0.29-rc.1`](https://github.com/CosmicCuddle/N-Loot-Ledger/releases/tag/v0.1.0.29-rc.1) (16 October 2026; tested initial Need Before Greed and add-only Import/Export, but live Master Loot unverified)  
+**Current separate review:** Draft [PR #9](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/9) now extends the experimental exporter with **multi-page 250-row copies** for large plan sets. This new paging work is **not yet released or installed**; draft PR #8 remains unmerged.  
 **Status:** Direct Master Loot remains **experimental, unverified and OFF by default**. Live boss loot and bot inventory delivery are not certified.
 
 **Historical release sequence:** PRs #2, #3 and #6 have been merged into `main`, and v0.1.0.28 was published. The new Need Before Greed branch does not alter that release or activate real awarding.
@@ -13,7 +14,7 @@
 - Molten Core item browser and configurable loot priority rules with optional presets.
 - Gear wishlists for players and persistent manual gear plans for Playerbots.
 - **Under development (not in v0.1.0.28):** **Need Before Greed**: Gear Plans support `NEEDED`, `GREED`, `OBTAINED`, `DISABLED`. NEED uses configured Tier 1–3 rules; GREED is a **separate equal-interest stage, never Tier 4**, considered only when no eligible/unresolved Need blockers remain. Manual-only items remain manual. [Draft PR #8](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/8), [testing guide](docs/TESTING_NEED_BEFORE_GREED.md).
-- **Separate experimental branch (not published or installed):** Playerbot Gear Plans **Import / Export** with a bounded `NLL-GEARPLANS-1` copy/paste format, read-only dry-run preview, explicit Confirm ADD, identical skips and no changes to existing plans, roles, wishlists or history. [Safe test guide](docs/TESTING_GEAR_PLAN_TRANSFER.md).
+- **Experimental initial Import / Export is in pre-release rc.1:** Playerbot Gear Plans use `NLL-GEARPLANS-1` copy/paste with Preview Changes → Confirm ADD; identical entries are skipped and any conflicting existing entry blocks import. **New in unmerged PR #9 after rc.1:** Previous/Next Export pages (250/250/104 for 604 plans) to avoid the pre-release's 250-row export cap. [Safe testing guide](docs/TESTING_GEAR_PLAN_TRANSFER.md).
 - **My Wishlist → Gear / Items** and **Recipes** separate the display of existing reservations. Both groups are still submitted together to the raid leader; profession recipe allocation is **manual-only**.
 - Class/role eligibility checks, candidate review and drop-specific ticket lotteries.
 - Clear, visual winner announcements and winner persistence across multiple drops.

@@ -22,7 +22,7 @@ function UI:CreateAwardReview()
 
     local title=frame:CreateFontString(nil,'OVERLAY','GameFontNormalLarge')
     title:SetPoint('TOP',frame,'TOP',0,-25)
-    title:SetText('AWARD REVIEW')
+    title:SetText('AWARD WINNER - VERIFY MASTER LOOT')
     local subject=frame:CreateFontString(nil,'OVERLAY','GameFontHighlight')
     subject:SetPoint('TOP',title,'BOTTOM',0,-19)
     subject:SetWidth(570)
@@ -35,6 +35,31 @@ function UI:CreateAwardReview()
     warning:SetPoint('BOTTOM',frame,'BOTTOM',0,84)
     warning:SetWidth(550)
     warning:SetJustifyH('CENTER')
+
+    -- The first step never calls GiveMasterLoot. WoW Master Loot must be
+    -- open on THIS exact slot, then Check Master Loot validates the winner.
+    local check=self:CreateTextButton(frame,'Check Master Loot',169)
+    check:SetPoint('BOTTOM',frame,'BOTTOM',0,120)
+    check:SetScript('OnClick',function()
+        local entry=NLL.AwardWorkflow:GetReviewedDrop()
+        local ok,message=NLL.AwardWorkflow:Review(entry)
+        status:SetText((ok and '|cff66ff99' or '|cffffaa55')..
+            tostring(message)..'|r')
+        direct.label:SetText('Arm Direct Award')
+        if ok then
+            manual:Enable()
+            if entry and not entry.simulationOnly and
+                NLL.AwardWorkflow:IsDirectEnabled() then
+                direct:Enable()
+            else
+                direct:Disable()
+            end
+        else
+            manual:Disable()
+            direct:Disable()
+        end
+        NLL:Print(message)
+    end)
 
     -- The original manual confirmation remains available.
     local manual=self:CreateTextButton(frame,'I Awarded It in WoW',173)
@@ -82,6 +107,7 @@ function UI:CreateAwardReview()
         NLL.AwardWorkflow:Cancel()
     end)
 
+    self.awardReviewCheck=check
     self.awardReviewFrame=frame
     self.awardReviewSubject=subject
     self.awardReviewStatus=status
@@ -96,27 +122,50 @@ function UI:OpenAwardReview()
     self:CreateAwardReview()
     local loot=NLL.LootDetection:GetCurrentLoot() or {}
     local entry=loot[self.currentLootSelected or 1]
+    local result=entry and NLL.AwardWorkflow:GetOutcome(entry)
+    if not result or not result.winner then
+        NLL:Print('Finish a real lottery before reviewing its winner.')
+        return false
+    end
+    -- An already-requested award has an unknown receipt; never offer a
+    -- second request against that same physical drop.
+    if result.awardStatus then
+        NLL:Print(NLL.AwardWorkflow:GetStatus(entry)..
+            '. Check award history before any new action.')
+        return false
+    end
     local ok,msg=NLL.AwardWorkflow:Review(entry)
-    if not ok then NLL:Print(msg); return false end
-    local result=NLL.AwardWorkflow:GetOutcome(entry)
-    self.awardReviewSubject:SetText(tostring(entry.itemName)..'  ->  '..tostring(result.winner))
-    self.awardReviewStatus:SetText(msg)
+    self.awardReviewSubject:SetText(tostring(entry.itemName)..
+        '  ->  '..tostring(result.winner))
+    self.awardReviewStatus:SetText(
+        (ok and '|cff66ff99' or '|cffffaa55')..tostring(msg)..'|r')
     self.awardReviewDirect.label:SetText('Arm Direct Award')
+    if ok then self.awardReviewConfirm:Enable()
+    else self.awardReviewConfirm:Disable() end
     if entry.simulationOnly then
         self.awardReviewConfirm.label:SetText('Confirm Fake Award')
-        self.awardReviewWarning:SetText('|cffffbb66SIMULATION ONLY: no server roll or real award.|r')
+        self.awardReviewWarning:SetText(
+            '|cffffbb66SIMULATION ONLY: no server roll or real award.|r')
+        self.awardReviewCheck:Disable()
         self.awardReviewDirect:Hide()
     else
+        self.awardReviewCheck:Enable()
         self.awardReviewConfirm.label:SetText('I Awarded It in WoW')
         self.awardReviewDirect:Show()
         if NLL.AwardWorkflow:IsDirectEnabled() then
-            self.awardReviewDirect:Enable()
-            self.awardReviewWarning:SetText('|cffff9955Real item transfer possible. Arm and then CONFIRM GIVE ITEM deliberately.|r')
+            if ok then self.awardReviewDirect:Enable()
+            else self.awardReviewDirect:Disable() end
+            self.awardReviewWarning:SetText(
+                'Double-confirm REAL transfer. No delivery receipt is guaranteed.')
         else
             self.awardReviewDirect:Disable()
-            self.awardReviewWarning:SetText('Direct Awards OFF in Settings > Loot Awards. Manual award reports remain available.')
+            self.awardReviewWarning:SetText(
+                'Direct awards OFF. To use in-addon transfer, opt in '..
+                'at Settings > Loot Awards, then re-check this item.')
         end
     end
     self.awardReviewFrame:Show()
+    -- Opening the modal NEVER requires an unsafe guessed slot or awards
+    -- an item; a live missing/closed context can be reviewed diagnostically.
     return true
 end

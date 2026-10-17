@@ -29,6 +29,13 @@ function Database:Initialize()
     -- Direct real loot transfer must be opted into EACH LOGIN/reload.
     -- Do not persist a previous enabled flag across client restarts.
     db.settings.directMasterLootEnabled = false
+    -- Raid announcements/countdown are separate, non-awarding opt-ins.
+    if type(db.settings.raidAnnouncementsEnabled)~="boolean" then
+        db.settings.raidAnnouncementsEnabled=false
+    end
+    if type(db.settings.raidCountdownEnabled)~="boolean" then
+        db.settings.raidCountdownEnabled=false
+    end
 
     -- One-click, reversible preset library. Never bulk-overwrites guild rules.
     -- Disabled for all preexisting users until they opt in on Priority Setup.

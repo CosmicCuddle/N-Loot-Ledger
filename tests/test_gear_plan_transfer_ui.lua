@@ -169,4 +169,86 @@ ok(UI.gearTransferDialog.visible and
     "reopened export shows newly imported bot plan")
 ok(not UI.gearTransferConfirm.enabled,
     "reopen always clears any prior confirmation")
-print("PASS: "..checks.." transfer UI export, paste, preview/confirm assertions")
+-- Paged backup UI after a real-sized 604-plan import. All of these
+-- changes are limited to the synthetic test database; no live WoW data.
+N.Data.MoltenCore.GetItem=function(_,id)
+    if id==19147 or (id>=200001 and id<=200602) then
+        return {name="Synthetic test item"}
+    end
+end
+for i=1,602 do
+    local itemID=200000+i
+    local key=G:MakeKey("Meshana","MOLTEN_CORE",itemID,"BOT_GEAR_PLAN")
+    N.db.gearNeeds[key]={
+        key=key,character="Meshana",itemID=itemID,
+        raidKey="MOLTEN_CORE",role="CASTER_DPS",status="NEEDED",
+        source="BOT_GEAR_PLAN",characterType="PLAYERBOT",raid="Molten Core"
+    }
+end
+ok(G:GetCount()==604,"604 test entries for export-page UI")
+local refPlans=N.db.gearNeeds
+local refExisting=N.db.gearNeeds[key]
+UI:ShowGearPlanTransfer()
+ok(UI.gearTransferExportPageLabel.text:find("Page 1/3",1,true),
+    "opening transfer displays page 1 of 3 for 604 plans")
+ok(UI.gearTransferExportNext.enabled and
+    not UI.gearTransferExportPrev.enabled,
+    "page 1 next enabled and previous disabled")
+local firstPage=UI.gearTransferTextBox.text
+local firstRows,firstParse=N.GearPlanTransfer:Parse(firstPage)
+ok(firstRows and #firstRows==250,tostring(firstParse))
+UI.gearTransferExportNext.events.OnClick()
+ok(UI.gearTransferExportPageLabel.text:find("Page 2/3",1,true),
+    "Next Export selects page 2")
+ok(UI.gearTransferExportNext.enabled and
+    UI.gearTransferExportPrev.enabled,
+    "page 2 allows both directions")
+local secondRows=N.GearPlanTransfer:Parse(UI.gearTransferTextBox.text)
+ok(secondRows and #secondRows==250,
+    "page 2 contains 250 valid independent records")
+ok(UI.gearTransferTextBox.highlighted and UI.gearTransferTextBox.focused,
+    "every new page automatically selects text for Ctrl+C")
+UI.gearTransferExportNext.events.OnClick()
+ok(UI.gearTransferExportPageLabel.text:find("Page 3/3",1,true),
+    "Next Export selects last page")
+ok(not UI.gearTransferExportNext.enabled and
+    UI.gearTransferExportPrev.enabled,
+    "last page disables Next but allows Previous")
+local lastRows=N.GearPlanTransfer:Parse(UI.gearTransferTextBox.text)
+ok(lastRows and #lastRows==104,
+    "page 3 is complete independent 104-row import file")
+ok(UI.gearTransferStatus.text:find("104",1,true),
+    "status explains last-page count and Ctrl+C")
+UI.gearTransferExportPrev.events.OnClick()
+ok(UI.gearTransferExportPageLabel.text:find("Page 2/3",1,true),
+    "Previous Export navigates backwards")
+ok(N.db.gearNeeds==refPlans and
+    N.db.gearNeeds[key]==refExisting and N.db.roleAssignments==refs.roles and
+    N.db.localWishlists.Owner.MOLTEN_CORE==refs.wishlist and
+    N.db.lootAwardHistory==refs.awards,
+    "navigation never mutates existing plans/roles/wishlists/history")
+UI.gearTransferImport.events.OnClick()
+ok(not UI.gearTransferExportPrev.enabled and
+    not UI.gearTransferExportNext.enabled and
+    UI.gearTransferTextBox.text=="" and
+    not UI.gearTransferConfirm.enabled,
+    "switching to import clears exported content and disables export pages")
+UI.gearTransferExport.events.OnClick()
+ok(UI.gearTransferExportPageLabel.text:find("Page 1/3",1,true) and
+    UI.gearTransferTextBox.text==firstPage,
+    "Export Bot Plans restarts a deterministic export on page 1")
+local sample=G:MakeKey("Meshana","MOLTEN_CORE",200001,"BOT_GEAR_PLAN")
+N.db.gearNeeds[sample].status="GREED"
+UI.gearTransferExportNext.events.OnClick()
+ok(not UI.gearTransferExportNext.enabled and
+    not UI.gearTransferExportPrev.enabled and
+    UI.gearTransferStatus.text:find("changed during export",1,true),
+    "active export navigation blocks stale backups if SavedVariables change")
+ok(UI.gearTransferTextBox.text=="",
+    "stale page data cleared rather than copied as mixed backup")
+UI.gearTransferExport.events.OnClick()
+ok(UI.gearTransferExportNext.enabled and
+    UI.gearTransferExportPageLabel.text:find("Page 1/3",1,true),
+    "fresh export recovers after snapshot changes")
+N.db.gearNeeds[sample].status="NEEDED"
+print("PASS: "..checks.." transfer UI, 604-plan paging, snapshot safety and import isolation assertions")

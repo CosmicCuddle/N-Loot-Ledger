@@ -112,4 +112,17 @@ ok(not UI.receiptReviewComplete.enabled and confirms==1,
 UI.receiptReviewCancel.scripts.OnClick()
 ok(not UI.receiptReviewFrame.shown and
     UI.receiptReviewArmedAt==nil,"cancel disarms and hides modal")
-print("PASS: "..assertions.." two-click receipt UI/expiry/selection assertions")
+-- Historical Award History entries remain reviewable after another corpse
+-- replaces the Current Loot queue. Their UID is frozen at modal open.
+ledger.status="WON_AWAITING_ITEM"
+can=true
+current={dropUID="D2",itemID=17010}
+ok(UI:OpenReceiptReview("D1") and UI.receiptReviewHistorical,
+    "Award History can open an immutable past winner after corpse despawn")
+UI.receiptReviewCheck.scripts.OnClick()
+ok(UI.receiptReviewComplete.enabled,
+    "historical target is verified by drop UID, not live corpse index")
+UI.receiptReviewComplete.scripts.OnClick()
+ok(confirms==2 and ledger.status=="OBTAINED",
+    "later historical receipt updates only its own stored winning drop")
+print("PASS: "..assertions.." two-click receipt UI/expiry/history assertions")

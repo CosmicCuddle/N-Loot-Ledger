@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased after v0.1.0.29-rc.1 — Large Gear Plan export paging (draft PR #9)
+
+- Support **Previous Export / Next Export** controls that create independent 250-row max `NLL-GEARPLANS-1` files; 604 reservations export as **250 + 250 + 104**, each with its own header and no data truncation.
+- Deterministic ordering, per-page size and full-record validation, explicit whole-export total/page indicator, automatic Ctrl+C selection and protection against copying pages from changed SavedVariables (restart if data changes mid-export).
+- Lua 5.1 regression reconstructs **604 synthetic plans** with 469 NEEDED / 135 GREED and exact `TangØ` roundtrip, idempotent three-batch restore, preserved existing role/wishlist/history tables, and UI Previous/Next/Import-mode behaviour.
+- **Review only:** Not installed or released; `v0.1.0.29-rc.1` remains unchanged, and Master Loot delivery remains unverified.
+
+## v0.1.0.29-rc.1 — Experimental Need Before Greed and add-only Import / Export (published pre-release)
+
+[Pre-release notes](https://github.com/CosmicCuddle/N-Loot-Ledger/releases/tag/v0.1.0.29-rc.1). Owner confirmed 604 add-only bot reservations for 38 bots, including correct TangØ; Ruby and Arley excluded. Owner reported successful `/reload` preservation. Pre-release is not stable-certified, and its one-click export still stops at 250 rows.
+
 ## Unreleased — Playerbot Gear Plan Import / Export (separate stacked review branch)
 
 - Add a `Wishlists > Gear Plans > Import / Export` dialog with a copyable export and pasteable versioned `NLL-GEARPLANS-1` text format.
@@ -8,7 +19,7 @@
 - Preserve real Latin-1 UTF-8 character names (including TangØ); reject malformed bytes and case-colliding TangØ/Tangø reservations rather than generating duplicate Playerbot entries.
 - Restrict the first version to PLAYERBOT / BOT_GEAR_PLAN, configured Molten Core item IDs, NLL role IDs and statuses NEEDED/GREED/OBTAINED/DISABLED. No duplicate-copy reservations (copy index must be 1). Limit each batch to 250 rows / 48KB.
 - Do not modify existing Gear Plans, raid-role assignments, personal wishlists, loot identity, lottery/award history, priority rules, network, server or real loot; do not migrate SavedVariables.
-- Add offline Lua 5.1 backend and UI interaction regressions, packaging checks, and a paired-backup owner test checklist. **Not yet installed, accepted, merged, tagged or released.**
+- Add offline Lua 5.1 backend and UI interaction regressions, packaging checks, and a paired-backup owner test checklist. **Shipped in experimental v0.1.0.29-rc.1, though PR #9 itself remains unmerged.**
 
 ## Unreleased — Need Before Greed (draft PR #8; NOT PUBLISHED)
 

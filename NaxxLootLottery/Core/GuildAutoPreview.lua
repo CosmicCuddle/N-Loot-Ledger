@@ -23,7 +23,9 @@ function P:Plan()
 
     local method,masterIndex
     if type(GetLootMethod)=="function" then
-        method,_,masterIndex=GetLootMethod()
+        local lootMethod,partyIndex,raidIndex=GetLootMethod()
+        method=lootMethod
+        masterIndex=raidIndex
     end
     local masterName
     if method=="master" and type(masterIndex)=="number" and

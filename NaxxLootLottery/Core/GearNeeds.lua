@@ -406,9 +406,19 @@ end
 function GearNeeds:ReplacePlayerSubmitted(
     characterName,
     raidKey,
-    itemIDs
+    itemIDs,
+    interests
 )
     raidKey = raidKey or "MOLTEN_CORE"
+    interests=interests or {}
+    -- Validate the whole proposed submission before replacing a single
+    -- existing PLAYER_SUBMITTED row. An invalid status cannot become NEED.
+    for _,itemID in ipairs(itemIDs or {}) do
+        local status=interests[tonumber(itemID)] or "NEEDED"
+        if status~="NEEDED" and status~="GREED" then
+            return false, "Invalid personal NEED/GREED status; no plans changed."
+        end
+    end
 
     self:RemovePlayerSubmittedForRaid(
         characterName,
@@ -444,7 +454,7 @@ function GearNeeds:ReplacePlayerSubmitted(
                     itemID,
                     raidKey,
                     role,
-                    "NEEDED",
+                    interests[itemID] or "NEEDED",
                     "PLAYER_SUBMITTED",
                     "PLAYER"
                 )

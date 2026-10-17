@@ -397,6 +397,10 @@ eventFrame:SetScript(
             if NLL.UI and NLL.UI.RefreshCurrentLootPanel then
                 NLL.UI:RefreshCurrentLootPanel()
             end
+            if NLL.UI and NLL.UI.RefreshGuildLootDialog and
+                NLL.UI.guildLootDialog then
+                NLL.UI:RefreshGuildLootDialog()
+            end
             return
         end
 

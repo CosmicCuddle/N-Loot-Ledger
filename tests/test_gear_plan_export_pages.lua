@@ -6,7 +6,7 @@ local n={roleLabels={HEALER="Healer",TANK="Tank",
     Data={MoltenCore={GetItem=function(_,id)
         if id>=200001 and id<=200604 then return {name="Simulated MC item"} end
     end}},
-    db={gearNeeds={},roleAssignments={TangØ={role="HEALER"}},
+    db={gearNeeds={},roleAssignments={["TangØ"]={role="HEALER"}},
         localWishlists={Owner={MOLTEN_CORE={[19147]=true}}},
         lootAwardHistory={{winner="Before"}},lotteryHistory={{winner="Before"}}}
 }

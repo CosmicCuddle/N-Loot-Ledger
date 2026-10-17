@@ -31,7 +31,7 @@ jobs:
           git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
           while IFS= read -r p; do
             case "$p" in
-              NaxxLootLottery/Core/ReceiptSync.lua|NaxxLootLottery/UI/ReceiptSyncFrame.lua|NaxxLootLottery/Storage/Database.lua|NaxxLootLottery/Core/LootReceiptTracker.lua|NaxxLootLottery/Core/Communication.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_remote_receipt_sync.lua|tests/test_receipt_sync_ui.lua|docs/TESTING_REMOTE_RECEIPT_SYNC_DRAFT.md|.github/workflows/nll-remote-receipt-sync-review.yml) ;;
+              NaxxLootLottery/Core/ReceiptSync.lua|NaxxLootLottery/UI/ReceiptSyncFrame.lua|NaxxLootLottery/Storage/Database.lua|NaxxLootLottery/Core/LootReceiptTracker.lua|NaxxLootLottery/Core/Communication.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/UI/AwardHistoryFrame.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_remote_receipt_sync.lua|tests/test_receipt_sync_ui.lua|docs/TESTING_REMOTE_RECEIPT_SYNC_DRAFT.md|.github/workflows/nll-remote-receipt-sync-review.yml) ;;
               *) echo "::error::Unapproved file in non-awarding sync draft: $p"; exit 1 ;;
             esac
           done < <(git diff --name-only "$BASE" "$GITHUB_SHA")

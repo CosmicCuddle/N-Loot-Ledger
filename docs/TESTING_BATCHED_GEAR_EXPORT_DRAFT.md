@@ -34,7 +34,8 @@
 
 - [x] Lua 5.1 tests of exact 604 synthetic bot rows with 469 NEED / 135 GREED, no truncation/duplicates, deterministic order, roundtrip `Parse` and no write.
 - [x] 3.3.5a mocked window tests for Prev/Next, section label, Ctrl+C ready selection, Export-to-Import isolation and no ability to Confirm ADD while merely exporting.
-- [ ] Verify exact-head dedicated CI and full historical regression checks.
+- [x] Dedicated 604-plan no-release CI and all historical Lua 5.1
+      regression checks passed; exact-head links on PR #31.
 - [ ] Real 3.3.5a in-game font/clipboard screenshots with owner authorisation.
 
 **No merge, release, install, SQL/core change or actual item award is part of this stage.**

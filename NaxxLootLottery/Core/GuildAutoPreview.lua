@@ -7,11 +7,13 @@ NLL.GuildAutoPreview=NLL.GuildAutoPreview or {}
 local P=NLL.GuildAutoPreview
 local function PriorWinnerAttempt(itemID,slot)
     for _,row in ipairs(NLL.db and NLL.db.lootAwardHistory or {}) do
-        if tonumber(row.itemID)==itemID and row.slotIndex==slot and
+        if tonumber(row.itemID)==tonumber(itemID) and
            (row.status=="AWARD_REQUESTED" or
             row.status=="AWARD_OUTCOME_UNKNOWN" or
             row.status=="LOOT_SLOT_CLEARED") then
-            -- Even a manually CLOSED_NO_RETRY investigation stays locked.
+            -- Loot slot positions are not physical identity. Fail CLOSED
+            -- across item-ID matches; do not silently auto-propose old
+            -- winner attempts merely because the item moved to a new slot.
             return true
         end
     end
@@ -64,10 +66,10 @@ function P:Build()
             elseif NLL.GuildLootTransfer and
                    NLL.GuildLootTransfer:WasAttempted(source.itemID,source.slotIndex) then
                 decision="HOLD_PREVIOUS_ATTEMPT"
-                reason="This item/slot has a permanent guild Master Loot attempt lock"
+                reason="This item ID has a prior guild attempt; slot changes cannot prove a new corpse"
             elseif PriorWinnerAttempt(source.itemID,source.slotIndex) then
                 decision="HOLD_PREVIOUS_ATTEMPT"
-                reason="This item/slot has a previous winner Master Loot attempt"
+                reason="This item ID has a prior winner attempt; physical copy identity is unverified"
             else
                 decision="PROPOSE_TO_LEADER"
                 reason="No SAVED reservation found; guild/other clients must verify first"

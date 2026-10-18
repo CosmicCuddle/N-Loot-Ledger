@@ -3,10 +3,19 @@
 **Raid loot planning, wishlists, post-drop ticket lotteries, and award tracking for World of Warcraft 3.3.5a (Wrath of the Lich King) on AzerothCore.**
 
 **Latest published version:** `v0.1.0.28` (stable-core release, 13 October 2026)  
-**Current development:** Need Before Greed draft PR #8 was installed/tested by the owner but remains unmerged/unreleased. A separate stacked review branch `dev/nll-gear-plan-import-export` now proposes safe Playerbot plan copy/paste; it is **not installed or released**.  
+**Current owner raid installation:** `0.1.0.29-rc.1-hf2` — preserve this working build and its SavedVariables until the owner approves testing.  
+**Current development:** Stacked draft PRs #10, #12–#17 and #22–#25; latest experimental draft `dev/nll-duplicate-drop-safety` is `0.1.0.29-rc.1-dev7` (41 Lua modules). These new features are **not installed, merged or released**.  
 **Status:** Direct Master Loot remains **experimental, unverified and OFF by default**. Live boss loot and bot inventory delivery are not certified.
 
 **Historical release sequence:** PRs #2, #3 and #6 have been merged into `main`, and v0.1.0.28 was published. The new Need Before Greed branch does not alter that release or activate real awarding.
+
+## Development tracker and test plan
+
+- [Rolling development tracker](docs/DEVELOPMENT_TRACKER.md) — stage-by-stage status, automated checks, pending work, and owner action items.
+- [Integrated WoW acceptance checklist](docs/INTEGRATED_RAID_TEST_CHECKLIST.md) — live raid, Playerbot reservations, cross-client receipt and backup/rollback steps.
+- [Reconciliation interface acceptance](docs/TESTING_RECONCILIATION_UI_DRAFT.md) — no-retry modal behaviour and separate receipt proofs.
+
+Development branches are *not* installation instructions. Follow the approved release guide for the published version only; do not replace your installed HF2 with these drafts.
 
 ## Features
 

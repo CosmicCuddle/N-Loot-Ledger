@@ -211,7 +211,7 @@ current draft addon has been installed.
       record screenshots for long names/font overflow and tooltips.
 - [ ] Mark merge/release only after separate owner approval.
 
-**NLL-030 — WoW 3.3.5a corpse-source diagnostics; draft PR #30**
+**NLL-030 — WoW 3.3.5a corpse-source diagnostics; [draft PR #30](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/30)**
 - [x] Research version boundaries: GetLootSourceInfo appeared in 5.0.4
       and is not part of 3.3.5a. Full evidence/limitations:
       [RESEARCH_WOTLK_LOOT_SOURCE_IDENTITY.md](RESEARCH_WOTLK_LOOT_SOURCE_IDENTITY.md).
@@ -224,7 +224,8 @@ current draft addon has been installed.
       permanent NO RETRY attempt locks may change.
 - [x] Add deterministic Lua 5.1 tests: changed target, slot reorder,
       simultaneous identical items, fake/closed context and no modern API.
-- [ ] Open draft #30 and verify dedicated/full exact-head CI.
+- [x] Open stacked draft PR #30, preserving the older PR #29 branch.
+- [ ] Verify latest exact-head dedicated safety and full Lua 5.1 CI.
 - [ ] Record owner-approved in-game text/screenshots and baseline
       SavedVariables comparison; not yet a usable per-corpse solution.
 

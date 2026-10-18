@@ -1,0 +1,70 @@
+name: NLL Read-Only Import Conflicts (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-import-conflict-comparison
+  pull_request:
+    branches:
+      - dev/nll-per-item-role-review
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lua 5.1 / 604-plan comparisons / no overwrite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact stacked draft
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce scope, version, saved-data and loot award safety
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=f71639dee0db0682f76f4afae5f2093c9f7d9091
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/Core/GearPlanTransfer.lua|NaxxLootLottery/UI/GearPlanConflictFrame.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_gear_plan_conflict_comparison.lua|tests/test_gear_plan_transfer_ui.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|README.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/TESTING_GEAR_PLAN_CONFLICT_COMPARISON.md|.github/workflows/nll-import-conflict-comparison.yml) ;;
+              *) echo "::error::Unexpected file outside conflict comparison scope: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev16' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'function T:CompareConflict(' NaxxLootLottery/Core/GearPlanTransfer.lua
+          grep -Fq 'replaceAuthorized=false' NaxxLootLottery/Core/GearPlanTransfer.lua
+          grep -Fq 'compareButton:Enable()' NaxxLootLottery/UI/WishlistFrame.lua
+          grep -Fq 'function UI:ShowGearPlanConflictDialog(' NaxxLootLottery/UI/GearPlanConflictFrame.lua
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          if git diff "$BASE" HEAD -- NaxxLootLottery/Core/GearNeeds.lua NaxxLootLottery/Storage/Database.lua NaxxLootLottery/Core/GearPlanReview.lua NaxxLootLottery/Core/AwardWorkflow.lua NaxxLootLottery/Core/GuildLootTransfer.lua | grep -q '^[+-][^+-]'; then
+            echo "::error::Changed saved-data/receipt/global-role/physical-award path"; exit 1
+          fi
+          if grep -v '^[[:space:]]*--' NaxxLootLottery/UI/GearPlanConflictFrame.lua | grep -Eq '(GiveMasterLoot|RandomRoll|AddNeed|SetRoleAssignment|:Apply)[[:space:]]*\('; then
+            echo "::error::Read-only conflict UI cannot award, edit, import or apply"; exit 1
+          fi
+      - name: Install WoW 3.3.5a compatible Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse all Lua module/test syntax
+        run: find NaxxLootLottery tests -name '*.lua' -type f -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Run ALL historic and new Lua 5.1 regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in tests/test_*.lua; do
+            echo "Running $f"
+            lua5.1 "$f"
+          done
+      - name: Master development checklist continuity
+        run: python3 tests/test_master_checklist.py
+      - name: Deterministic no-release developer candidate packaging
+        run: python3 tests/test_release_packaging.py
+      - name: Declare non-deployment
+        run: echo "No loot awarded, no SavedVariables overwritten, no install, merge or release."

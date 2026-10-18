@@ -221,6 +221,7 @@ function T:Commit()
     local row={
         itemID=fresh.itemID,itemLink=fresh.link,quantity=fresh.quantity,
         slotIndex=fresh.slot,recipient=fresh.leader,
+        requestedBy=UnitName and UnitName("player") or "Unknown",
         candidateIndex=fresh.candidate,
         status="AWARD_OUTCOME_UNKNOWN",
         note="Request attempt; no recipient receipt verified",

@@ -12,6 +12,12 @@ local function Key(name)
     return string.lower((tostring(name or ""):match("^([^%-]+)") or ""))
 end
 local function Active()
+    -- Do not rely solely on the import/loot guard implementation: a
+    -- simulator cannot certify the real actor's receipt or inventory.
+    if NLL.DebugSimulator and NLL.DebugSimulator.IsActive and
+       NLL.DebugSimulator:IsActive() then
+        return false,"Stop the Debug Lab before changing real Gear Plans."
+    end
     if not NLL.db or type(NLL.db.gearNeeds)~="table" then
         return false,"Gear Plans database unavailable."
     end

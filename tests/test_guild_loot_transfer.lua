@@ -61,7 +61,9 @@ assert(loadfile("NaxxLootLottery/Storage/Database.lua"))()
 N.Database:Initialize()
 assert(loadfile("NaxxLootLottery/Core/GuildLootReview.lua"))()
 assert(loadfile("NaxxLootLottery/Core/GuildLootTransfer.lua"))()
+assert(loadfile("NaxxLootLottery/Core/GuildLootReconciliation.lua"))()
 local T=N.GuildLootTransfer
+local R=N.GuildLootReconciliation
 local guild=N.GuildLootReview
 local reference=N.db
 local oldGear=N.db.gearNeeds
@@ -198,7 +200,18 @@ ok(rankAtCall.status=="LOOT_SLOT_CLEARED" and
 N.db.settings.directMasterLootEnabled=true
 T:SetEnabled(true)
 sent,msg=T:Review(target)
-ok(not sent and msg:find("already requested"),"same item/slot blocked even after reload")
+ok(not sent and msg:find("unresolved"),
+    "cleared slot still unverified and stops further transfers")
+local confirmable,reason=R:Arm(1)
+ok(confirmable and #given==1,
+    "intended raid leader reviews own inventory with zero additional awards")
+local reconciled,statement=R:Confirm(1)
+ok(reconciled and rankAtCall.status=="RECIPIENT_CONFIRMED" and
+   rankAtCall.evidence=="RECIPIENT_CHECKED_OWN_INVENTORY",
+   "two-click recipient attestation resolves outstanding request only")
+sent,msg=T:Review(target)
+ok(not sent and msg:find("already requested"),
+    "reconciliation never unlocks retry of original item/slot")
 local target2={slotIndex=rows[2].slotIndex,itemID=rows[2].itemID,
     itemLink=rows[2].itemLink,quantity=rows[2].quantity}
 LootFrame.selectedSlot=2

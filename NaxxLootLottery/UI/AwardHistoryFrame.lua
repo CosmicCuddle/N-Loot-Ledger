@@ -165,7 +165,10 @@ end
 function UI:RefreshAwardHistory()
     if not self.awardHistoryContent then return end
     local rows=NLL.RaidHistoryView and
-        NLL.RaidHistoryView:Build(self.awardHistoryShowAll) or {}
+        NLL.RaidHistoryView:Build(self.awardHistoryShowAll) or
+        ((NLL.db and NLL.db.lootAwardHistory) or {})
+    -- Preserve the original 3.3.5a Award History caller contract if a
+    -- partial addon load or isolated historical test omits the new module.
     local totalPages=math.max(1,math.ceil(#rows/PAGE_ROWS))
     local page=math.min(math.max(1,self.awardHistoryPage or 1),totalPages)
     self.awardHistoryPage=page

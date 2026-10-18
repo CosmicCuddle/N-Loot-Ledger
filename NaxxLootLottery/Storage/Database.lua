@@ -43,6 +43,11 @@ function Database:Initialize()
     if type(db.awardAttemptLocks)~="table" then
         db.awardAttemptLocks={}
     end
+    -- Independent recipient-owned human inventory statements. NEVER
+    -- overwrite guild transfer history or treat these as server receipts.
+    if type(db.guildRecipientReceiptAudit)~="table" then
+        db.guildRecipientReceiptAudit={}
+    end
     -- Raid announcements/countdown are separate, non-awarding opt-ins.
     if type(db.settings.raidAnnouncementsEnabled)~="boolean" then
         db.settings.raidAnnouncementsEnabled=false

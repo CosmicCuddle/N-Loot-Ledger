@@ -15,6 +15,7 @@ local function frame()
     function f:GetScript(k)return self.events[k] end
     function f:CreateFontString()return frame()end
     function f:SetJustifyH()end
+    function f:SetJustifyV()end
     function f:SetFrameStrata()end
     function f:SetMovable()end
     function f:SetClampedToScreen()end
@@ -79,6 +80,7 @@ local N=NaxxLootLottery
 assert(loadfile("NaxxLootLottery/Core/GearNeeds.lua"))()
 assert(loadfile("NaxxLootLottery/Core/GearPlanTransfer.lua"))()
 assert(loadfile("NaxxLootLottery/UI/WishlistFrame.lua"))()
+assert(loadfile("NaxxLootLottery/UI/GearPlanConflictFrame.lua"))()
 local UI=N.UI
 function UI:RegisterSkinnedFrame()end
 function UI:CreateTextButton(_,label,width)
@@ -238,4 +240,68 @@ ok(N.db.gearNeeds==refs.gear and N.db.gearNeeds[key]==refs.original and
     N.db.lootAwardHistory==refs.awards and
     N.db.lotteryHistory==refs.lotteries,
     "604-row UI batch navigation preserves original saved-table identities")
+-- C11: conflicts are separately compared; no stale preview or overwrite.
+UI.gearTransferImport.events.OnClick()
+local conflicts="NLL-GEARPLANS-1\n"..
+    "Druzz|PLAYERBOT|MAIN_TANK|MOLTEN_CORE|19147|BOT_GEAR_PLAN|GREED|1\n"..
+    "Eiga|PLAYERBOT|MAIN_TANK|MOLTEN_CORE|19147|BOT_GEAR_PLAN|NEEDED|1\n"..
+    "Freshbot|PLAYERBOT|CASTER_DPS|MOLTEN_CORE|19147|BOT_GEAR_PLAN|NEEDED|1"
+UI.gearTransferTextBox:SetText(conflicts)
+UI.gearTransferPreview.events.OnClick()
+ok(not UI.gearTransferConfirm.enabled and UI.gearTransferCompare.enabled and
+   UI.gearTransferStatus.text:find("CONFLICTS",1,true),
+   "conflicting import blocks Confirm ADD but enables read-only Compare")
+local initialRows=N.GearNeeds:GetCount()
+UI.gearTransferCompare.events.OnClick()
+ok(UI.gearPlanConflictDialog and UI.gearPlanConflictDialog.visible and
+   UI.gearPlanConflictReport.text:find("Druzz",1,true) and
+   UI.gearPlanConflictReport.text:find("SAVED",1,true) and
+   UI.gearPlanConflictReport.text:find("PASTED",1,true) and
+   not UI.gearTransferConfirm.enabled,
+   "comparison modal visibly names exact saved vs pasted fields; NO import")
+ok(not UI.gearPlanConflictPrev.enabled and
+   UI.gearPlanConflictNext.enabled,
+   "two conflicts use bounded Prev/Next")
+UI.gearPlanConflictNext.events.OnClick()
+ok(UI.gearPlanConflictReport.text:find("Eiga",1,true) and
+   UI.gearPlanConflictPrev.enabled and
+   not UI.gearPlanConflictNext.enabled,
+   "second conflict displays separate item/bot without touching pasted text")
+UI.gearPlanConflictNext.events.OnClick()
+ok(UI.gearPlanConflictReport.text:find("Eiga",1,true),
+   "forced Next at last comparison never advances out of bounds")
+UI.gearPlanConflictPrev.events.OnClick()
+ok(UI.gearPlanConflictReport.text:find("Druzz",1,true),
+   "Prev restores exactly original first diff")
+UI.gearPlanConflictClose.events.OnClick()
+ok(not UI.gearPlanConflictDialog.visible and
+   N.GearNeeds:GetCount()==initialRows and
+   not UI.gearTransferConfirm.enabled,
+   "closing comparison is non-mutating and does not arm import")
+UI.gearTransferCompare.events.OnClick()
+ok(UI.gearPlanConflictDialog.visible,"reopen same valid read-only diff")
+UI.gearTransferTextBox:SetText(conflicts.."\n")
+ok(not UI.gearPlanConflictDialog.visible and
+   not UI.gearTransferCompare.enabled and
+   not UI.gearTransferConfirm.enabled,
+   "editing even a trailing newline cancels comparison and consent")
+UI.gearTransferPreview.events.OnClick()
+ok(UI.gearTransferCompare.enabled and not UI.gearTransferConfirm.enabled,
+   "only a NEW preview may restore compare control")
+UI.gearTransferImport.events.OnClick()
+ok(not UI.gearTransferCompare.enabled and
+   not UI.gearTransferConfirm.enabled,
+   "reentering import mode invalidates stale comparison")
+UI.gearTransferExport.events.OnClick()
+ok(not UI.gearTransferCompare.enabled and
+   not UI.gearTransferConfirm.enabled,
+   "export mode never allows conflict comparison or a saved-data write")
+ok(N.db.gearNeeds==refs.gear and N.db.gearNeeds[key]==refs.original and
+   N.db.roleAssignments==refs.roles and
+   N.db.localWishlists.Owner.MOLTEN_CORE==refs.wishlist and
+   N.db.lootAwardHistory==refs.awards and
+   N.db.lotteryHistory==refs.lotteries and
+   N.GearNeeds:GetCount()==initialRows,
+   "604 saved Gear Plans, histories, roles and wishlist stay intact")
+
 print("PASS: "..checks.." transfer UI export, paste, preview/confirm assertions")

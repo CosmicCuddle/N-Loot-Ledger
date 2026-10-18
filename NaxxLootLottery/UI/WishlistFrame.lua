@@ -2179,8 +2179,24 @@ function UI:CreateGearPlanTransfer()
     status:SetJustifyH("LEFT")
     status:SetText("No changes made. Export is read-only; Import requires a preview and confirmation.")
 
+    -- Batch navigator lives BELOW the text well, never above the
+    -- six-row Gear Plans grid. Every button only changes read-only text.
+    local prevBatch=self:CreateTextButton(panel,"Prev Batch",102)
+    prevBatch:SetPoint("BOTTOMLEFT",panel,"BOTTOMLEFT",16,58)
+    local nextBatch=self:CreateTextButton(panel,"Next Batch",102)
+    nextBatch:SetPoint("LEFT",prevBatch,"RIGHT",8,0)
+    local batchLabel=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    batchLabel:SetPoint("LEFT",nextBatch,"RIGHT",12,0)
+    batchLabel:SetWidth(445)
+    batchLabel:SetJustifyH("LEFT")
+    batchLabel:SetText("Export batches: no saved data changed.")
+    prevBatch:Disable()
+    nextBatch:Disable()
+
     local preview=nil
     local mode="EXPORT"
+    local exportPage=1
+    local exportPages=1
     confirmButton:Disable()
     previewButton:Disable()
 
@@ -2198,7 +2214,40 @@ function UI:CreateGearPlanTransfer()
             previewButton:Disable()
         else
             previewButton:Enable()
+            prevBatch:Disable()
+            nextBatch:Disable()
+            batchLabel:SetText("Import mode: batch paging is unavailable.")
         end
+    end
+    local function DisplayExportPage(page)
+        if mode~="EXPORT" then
+            SetStatus("Choose Export Bot Plans to view read-only batches.")
+            return
+        end
+        -- ExportChunk validates ALL saved bot plans before returning a
+        -- bounded, deterministic batch. Failed exports do not leave a
+        -- stale text block that might be mistaken for a complete backup.
+        local data,count,pages,total=NLL.GearPlanTransfer:ExportChunk(page)
+        if not data then
+            edit:SetText("")
+            prevBatch:Disable()
+            nextBatch:Disable()
+            batchLabel:SetText("Export unavailable — no plans were changed.")
+            SetStatus("EXPORT BLOCKED: "..tostring(count))
+            return
+        end
+        exportPage=page
+        exportPages=pages
+        edit:SetText(data)
+        edit:SetFocus()
+        edit:HighlightText()
+        if page>1 then prevBatch:Enable() else prevBatch:Disable() end
+        if page<pages then nextBatch:Enable() else nextBatch:Disable() end
+        batchLabel:SetText("Batch "..page.."/"..pages.." — "..
+            count.." of "..total.." bot plans on this page.")
+        SetStatus("Read-only export batch "..page.."/"..pages..
+            ". Press Ctrl+C and SAVE this batch separately; use Next Batch "..
+            "until all "..pages.." batches are copied. NOTHING was modified.")
     end
 
     edit:SetScript("OnTextChanged",function(box)
@@ -2214,15 +2263,16 @@ function UI:CreateGearPlanTransfer()
 
     exportButton:SetScript("OnClick",function()
         SetMode("EXPORT")
-        local data,number=NLL.GearPlanTransfer:Export()
-        if not data then
-            SetStatus("EXPORT BLOCKED: "..tostring(number))
-            return
-        end
-        edit:SetText(data)
-        edit:SetFocus()
-        edit:HighlightText()
-        SetStatus("Read-only export of "..number.." bot plan(s). Press Ctrl+C. Nothing was saved or changed.")
+        exportPage=1
+        DisplayExportPage(exportPage)
+    end)
+    prevBatch:SetScript("OnClick",function()
+        if mode~="EXPORT" or exportPage<=1 then return end
+        DisplayExportPage(exportPage-1)
+    end)
+    nextBatch:SetScript("OnClick",function()
+        if mode~="EXPORT" or exportPage>=exportPages then return end
+        DisplayExportPage(exportPage+1)
     end)
 
     importButton:SetScript("OnClick",function()
@@ -2289,6 +2339,9 @@ function UI:CreateGearPlanTransfer()
     self.gearTransferStatus=status
     self.gearTransferExport=exportButton
     self.gearTransferImport=importButton
+    self.gearTransferPrevBatch=prevBatch
+    self.gearTransferNextBatch=nextBatch
+    self.gearTransferBatchLabel=batchLabel
     panel:Hide()
 end
 

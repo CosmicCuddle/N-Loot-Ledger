@@ -263,7 +263,9 @@ current draft addon has been installed.
 - [x] Add [controlled in-game acceptance guide](TESTING_GUARDED_GEARPLAN_REVIEWS_DRAFT.md)
       and 604-row Lua 5.1 mocked data/UI regression tests.
 - [x] Open stacked draft PR #32 after #31.
-- [ ] Verify dedicated/full Lua 5.1 CI at final exact head.
+- [x] Dedicated no-release review and complete Lua 5.1 regression CI
+      passed on audited head; exact final-head evidence in PR #32.
+- [ ] Recheck exact-head CI if future commits change this draft.
 - [ ] Separate owner-approved actual WoW test, not part of development.
 
 ## D. Parallel draft work that must NOT be forgotten

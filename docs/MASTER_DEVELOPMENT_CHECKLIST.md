@@ -9,7 +9,7 @@ Do not delete historical work just because another feature takes priority.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
 **Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
--> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 (modal layout).
+-> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 (source diagnostics).
 **Shared baseline:** 604 imported Gear Plans across 38 Playerbots
 (469 NEED, 135 GREED). These are **real owner data**, not development fixtures.
 **Public release baseline:** v0.1.0.28 on main, separate from the above.
@@ -211,6 +211,23 @@ current draft addon has been installed.
       record screenshots for long names/font overflow and tooltips.
 - [ ] Mark merge/release only after separate owner approval.
 
+**NLL-030 — WoW 3.3.5a corpse-source diagnostics; draft PR #30**
+- [x] Research version boundaries: GetLootSourceInfo appeared in 5.0.4
+      and is not part of 3.3.5a. Full evidence/limitations:
+      [RESEARCH_WOTLK_LOOT_SOURCE_IDENTITY.md](RESEARCH_WOTLK_LOOT_SOURCE_IDENTITY.md).
+- [x] Built: /nll lootsource read-only diagnostic counts prior
+      item-ID attempt holds and repeated same-ID live loot slots.
+- [x] Built: UnitGUID('target') is labelled only a target hint,
+      NEVER a verified loot/corpse source or authorisation.
+- [x] Built: all results are sourceVerified=false/canUnlock=false;
+      no saved histories, Need/Greed plans, settings, item transfers or
+      permanent NO RETRY attempt locks may change.
+- [x] Add deterministic Lua 5.1 tests: changed target, slot reorder,
+      simultaneous identical items, fake/closed context and no modern API.
+- [ ] Open draft #30 and verify dedicated/full exact-head CI.
+- [ ] Record owner-approved in-game text/screenshots and baseline
+      SavedVariables comparison; not yet a usable per-corpse solution.
+
 ## D. Parallel draft work that must NOT be forgotten
 
 **IMPORTANT:** The PRs below are **not** ancestors of #25/#26.
@@ -252,7 +269,12 @@ mean their code is included in the current stack.
       overwriting human wishlist or bot sources.
 
 **NLL-F03 — Safer repeated corpses / materials**
-- [ ] Investigate reliable identity methods supported by 3.3.5a.
+- [x] Completed client API limitation study: no GetLootSourceInfo
+      before 5.0.4; UnitGUID('target') cannot prove loot source.
+      See [source research](RESEARCH_WOTLK_LOOT_SOURCE_IDENTITY.md).
+- [ ] Investigate whether a separately reviewed, authenticated
+      AzerothCore server-side per-source/item receipt bridge is viable.
+      Research does NOT authorise modifying AzerothCore or deployment.
 - [ ] Preserve no-retry locks and original winners across reloads.
 - [ ] Never use a loot slot alone as proof of new physical item.
 - [ ] No unapproved auto-transfer until identity and receipt proof

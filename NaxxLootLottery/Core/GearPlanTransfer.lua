@@ -185,7 +185,10 @@ function T:IsBlocked()
     end
     return false
 end
-function T:Export()
+-- Collect and validate ALL bot records before exposing any export batch.
+-- This prevents a later invalid record from being silently hidden when
+-- only the first of several 250-record export sections is visible.
+local function CollectExportRows()
     local gear,errorText=Existing()
     if not gear then return nil,errorText end
     local rows={}
@@ -217,22 +220,58 @@ function T:Export()
             rows[#rows+1]=row
         end
     end
-    if #rows>self.MAX_ROWS then
-        return nil,"Too many bot plans to export in one chunk ("..
-            #rows.." / "..self.MAX_ROWS..")."
-    end
     table.sort(rows,SortRows)
-    local out={self.HEADER}
-    for _,row in ipairs(rows) do
+    return rows
+end
+
+local function EncodeExportRows(rows,from,to,header)
+    local out={header}
+    for i=from,to do
+        local row=rows[i]
         out[#out+1]=table.concat({
             row.character,row.characterType,row.role,row.raidKey,
             tostring(row.itemID),row.source,row.status,row.copyIndex},"|")
     end
-    local text=table.concat(out,"\n")
+    return table.concat(out,"\n")
+end
+
+-- Preserve the old caller contract: Export() must refuse an oversized
+-- single paste, rather than truncating data and claiming a full backup.
+function T:Export()
+    local rows,errorText=CollectExportRows()
+    if not rows then return nil,errorText end
+    if #rows>self.MAX_ROWS then
+        return nil,"Too many bot plans to export in one chunk ("..
+            #rows.." / "..self.MAX_ROWS.."). Use paged export."
+    end
+    local text=EncodeExportRows(rows,1,#rows,self.HEADER)
     if #text>self.MAX_BYTES then
         return nil,"Export exceeds the text-size limit; split into batches."
     end
     return text,#rows
+end
+
+-- Read-only page export. Each page retains the original V1 import header
+-- and never exceeds the existing 250-row / 48-kB paste limits. This does
+-- NOT alter how importing works or save any marker to SavedVariables.
+function T:ExportChunk(page)
+    if type(page)~="number" or page%1~=0 or page<1 then
+        return nil,"Choose a valid export batch number."
+    end
+    local rows,errorText=CollectExportRows()
+    if not rows then return nil,errorText end
+    local total=#rows
+    local pages=math.max(1,math.ceil(total/self.MAX_ROWS))
+    if page>pages then
+        return nil,"Batch "..page.." is outside 1-"..pages.."."
+    end
+    local first=(page-1)*self.MAX_ROWS+1
+    local last=math.min(total,page*self.MAX_ROWS)
+    local text=EncodeExportRows(rows,first,last,self.HEADER)
+    if #text>self.MAX_BYTES then
+        return nil,"Export batch exceeds 48,000 bytes; nothing was truncated."
+    end
+    return text,math.max(0,last-first+1),pages,total
 end
 function T:Parse(text)
     if type(text)~="string" or #text>self.MAX_BYTES then

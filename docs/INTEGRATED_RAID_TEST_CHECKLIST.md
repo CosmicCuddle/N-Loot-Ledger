@@ -249,6 +249,22 @@ Do not merge, publish or change the live server/SavedVariables.
 - [ ] Verify long role names and inline Edit buttons at actual UI scale,
       and preserve original files and screenshots for review.
 
+## F7 — Gear Plan import conflict comparison (draft #34)
+
+- [ ] Back up full client addon and account SavedVariables; record
+      604 / 38 / 469 NEED / 135 GREED before any dev installation.
+- [ ] In controlled test context, Preview valid V1 paste differing from
+      an existing plan in role/status. Confirm ADD must remain disabled.
+- [ ] Compare Conflicts shows the exact SAVED and PASTED values, with
+      clear count X/Y, Previous/Next and Close.
+- [ ] Include a pasted NEW row alongside a CONFLICT: none are imported.
+- [ ] Casefolded UTF-8 character aliases are identified, not duplicated.
+- [ ] Close, alter paste, switch mode or change saved data; all stale
+      comparisons must fail closed and show no old approval.
+- [ ] Verify actual UI dimensions, font wrapping, keyboard/mouse
+      accessibility, zero receipt/loot history/role changes and no
+      mutation to the 604 stored real plans.
+
 ## Release gates (require separate owner approval)
 
 - [ ] Full Lua 5.1 CI passes at the exact stacked final SHA.

@@ -4,7 +4,7 @@
 
 **Latest published version:** `v0.1.0.28` (stable-core release, 13 October 2026)  
 **Current owner raid installation:** `0.1.0.29-rc.1-hf2` — preserve this working build and its SavedVariables until the owner approves testing.  
-**Current development:** Stacked draft PRs #10, #12–#17 and #22–#32; latest experimental draft `dev/nll-guarded-gearplan-reviews` is `0.1.0.29-rc.1-dev14` (46 Lua modules). These new features are **not installed, merged or released**.  
+**Current development:** Stacked draft PRs #10, #12–#17 and #22–#33; latest experimental draft `dev/nll-per-item-role-review` is `0.1.0.29-rc.1-dev15` (46 Lua modules). These new features are **not installed, merged or released**.  
 **Status:** Direct Master Loot remains **experimental, unverified and OFF by default**. Live boss loot and bot inventory delivery are not certified.
 
 **Historical release sequence:** PRs #2, #3 and #6 have been merged into `main`, and v0.1.0.28 was published. The new Need Before Greed branch does not alter that release or activate real awarding.

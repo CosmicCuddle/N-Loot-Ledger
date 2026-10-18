@@ -70,7 +70,8 @@ a special admin override, or an automatic material allocation feature.
 - [x] No Gear Plan, stored loot history, winner receipt or durable
       item-attempt lock is mutated.
 - [x] Neither physical item transfer nor rolling API is invoked.
-- [ ] Dedicated and full exact-head GitHub CI confirmation on PR #30.
+- [x] Dedicated and full Lua 5.1 GitHub CI passed; exact-head
+      proof links are retained on PR #30.
 - [ ] Owner-approved in-game checks on an actual 3.3.5a client.
 
 ## Future solution research (no implementation or authorisation)

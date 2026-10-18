@@ -114,7 +114,7 @@ db.lootAwardHistory[1]={
 }
 ok(not R:Arm(first.key,"ROLE","MAIN_TANK"),
    "NO RETRY never allows changing a pending winner's Gear Plan role")
-db.lootAwardHistory={}
+for k in pairs(db.lootAwardHistory) do db.lootAwardHistory[k]=nil end
 local fake=true
 N.DebugSimulator.IsActive=function()return fake end
 ok(not R:Arm(first.key,"ROLE","MAIN_TANK"),"debug raid refuses changes")

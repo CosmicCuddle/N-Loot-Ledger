@@ -15,7 +15,7 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 | #22 | Write-ahead persistent lock / NO-RETRY audit | Passed on 497fe3be04d1 | Pending | Draft only |
 | #23 | Optional all-slot dry-run guild allocation | Passed on 14dd65ff24f0 | Pending | Draft only |
 | #24 | UI for reconciliation list, paging, arm/confirm | Passed on 60e28ad81eae | Pending | Draft only |
-| #25 | Duplicate item ID across slots / full test checklist | Pending latest exact-head CI | Pending | Draft only |
+| #25 | Duplicate item ID across slots / full test checklist | Passed 1eef2d902506 (prior exact head; docs-only updates follow) | Pending | Draft only |
 
 ## Hard safety rules
 

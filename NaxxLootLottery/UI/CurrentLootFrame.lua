@@ -814,7 +814,9 @@ function UI:CreateGuildLootDialog()
     -- The Review button above is read-only; neither of these controls
     -- can ever send an item without the player's two extra clicks.
     local arm=self:CreateTextButton(f,"Arm Leader Transfer",181)
-    arm:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",24,53)
+    -- Leave a readable gutter between the last loot row and both
+    -- action rows (before: only 2px above this 22px button).
+    arm:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",24,49)
     arm:SetScript("OnClick",function()
         local ok,msg=NLL.GuildLootTransfer:Arm()
         NLL:Print(msg)

@@ -12,7 +12,7 @@
 local NLL = NaxxLootLottery
 local UI = NLL.UI
 
-local LOCAL_ROWS = 8
+local LOCAL_ROWS = 7
 -- Six 42px rows leave a real footer gap at WoW 3.3.5a UI scales.
 -- Seven overlapped pagination in the owner's 19-entry Gear Plans screenshot.
 local PLAN_ROWS = 6
@@ -116,12 +116,13 @@ function UI:CreateLocalWishlistContent(parent)
         "GameFontHighlightSmall"
     )
     status:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -2)
-    status:SetWidth(382)
+    status:SetWidth(380)
     status:SetJustifyH("LEFT")
+    status:SetHeight(19)
     self.localWishlistStatus = status
 
-    -- Compact category controls share the existing status row,
-    -- leaving the eight wishlist rows and bottom pager untouched.
+    -- Compact single-line status and seven rows reserve enough space
+    -- for the page controls and status text at the owner's large font.
     local recipesButton = self:CreateTextButton(
         content, "Recipes", 88
     )
@@ -238,7 +239,7 @@ function UI:CreateLocalWishlistContent(parent)
             "GameFontHighlightSmall"
         )
         bossText:SetPoint("LEFT", row, "LEFT", 375, 0)
-        bossText:SetWidth(190) -- reserve space for full OBTAINED label
+        bossText:SetWidth(225) -- shortened boss label; protect footer
         bossText:SetJustifyH("LEFT")
 
         local interest=self:CreateTextButton(row,"NEED",102)
@@ -348,14 +349,13 @@ function UI:CreateLocalWishlistContent(parent)
         )
 
     submitStatus:SetPoint(
-        "RIGHT",
-        submitButton,
-        "LEFT",
-        -10,
-        0
+        "BOTTOMRIGHT", content, "BOTTOMRIGHT", -2, 30
     )
 
-    submitStatus:SetWidth(300)
+    -- Reserve a separate lower status strip; never share the footer
+    -- baseline with Previous / Next / Page at large game font scales.
+    submitStatus:SetWidth(245)
+    submitStatus:SetHeight(24)
     submitStatus:SetJustifyH("RIGHT")
 
     self.localSubmitStatus = submitStatus
@@ -419,10 +419,8 @@ function UI:RefreshLocalWishlist()
     end
 
     self.localWishlistStatus:SetText(
-        "My Molten Core wishlist: |cffffffff" ..
-        tostring(totalCount) .. "|r total (" ..
-        tostring(#gearItems) .. " items, " ..
-        tostring(#recipes) .. " recipes)."
+        "MC Wishlist: |cffffffff"..tostring(totalCount)..
+        "|r ("..#gearItems.." gear, "..#recipes.." recipes)"
     )
 
     if self.localSubmitStatus then
@@ -441,9 +439,11 @@ function UI:RefreshLocalWishlist()
 
         if item then
             row.itemText:SetText(item.name)
-            row.bossText:SetText(
-                NLL.Data.MoltenCore:GetBossText(item)
-            )
+            local boss=NLL.Data.MoltenCore:GetBossText(item) or ""
+            -- A long MC boss list can otherwise wrap to 3+ lines,
+            -- overlapping the next wishlist row in large-font WoW.
+            if #boss>39 then boss=boss:sub(1,36).."..." end
+            row.bossText:SetText(boss)
             row.remove.itemID = item.itemID
             row.interest.itemID = item.itemID
             local choice=NLL.Database.GetLocalInterest and

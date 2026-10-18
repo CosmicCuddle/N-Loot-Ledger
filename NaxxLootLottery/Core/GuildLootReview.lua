@@ -39,7 +39,7 @@ end
 function G:GetReservationSummary(itemID)
     local db=NLL.db
     local summary={need=0,greed=0,unknown=0,localCount=0,
-        incoming=0,activeNames={}}
+        incoming=0,receiptPending=0,activeNames={}}
     if not db or type(db.gearNeeds)~="table" or
        type(db.localWishlists)~="table" or
        type(db.submissionInbox)~="table" then
@@ -69,13 +69,40 @@ function G:GetReservationSummary(itemID)
     table.sort(summary.activeNames,function(a,b)
         return string.lower(a)<string.lower(b)
     end)
-    -- An unsubmitted local wishlist is not proof of a reservation
-    -- accepted by the raid leader, but MUST block automatic routing.
-    for _,raids in pairs(db.localWishlists) do
+    -- The live Gear Plan may disappear or be changed AFTER a real
+    -- winner is recorded. Persistent receipt rows, not just current
+    -- plans, must hold the next copy until physical delivery is checked.
+    -- A leader-side human OBTAINED requires the REMOTE player's own ACK.
+    -- Reading these ledgers MUST NOT create local wishlist tables.
+    for _,receipt in pairs(db.lootReceiptTracker or {}) do
+        if type(receipt)=="table" and
+           tonumber(receipt.itemID)==tonumber(itemID) then
+            local status=receipt.status
+            local remote=receipt.remoteSyncStatus
+            local awaitingReceipt=status~="OBTAINED"
+            local awaitingPlayer=status=="OBTAINED" and
+                remote~=nil and remote~="" and remote~="ACKNOWLEDGED"
+            if awaitingReceipt or awaitingPlayer then
+                summary.receiptPending=summary.receiptPending+1
+            end
+        end
+    end
+    -- Keep the existing historical local wishlist boolean. Confirmed
+    -- OBTAINED status is not an active local reservation, but missing
+    -- status data MUST fail closed. Consult saved tables read-only.
+    for character,raids in pairs(db.localWishlists) do
         if type(raids)=="table" then
             local mc=raids.MOLTEN_CORE
             if type(mc)=="table" and mc[itemID]==true then
-                summary.localCount=summary.localCount+1
+                local statuses=db.localWishlistObtained and
+                    db.localWishlistObtained[character]
+                local obtained=type(statuses)=="table" and
+                    statuses.MOLTEN_CORE
+                local received=type(obtained)=="table" and
+                    obtained[itemID]==true
+                if not received then
+                    summary.localCount=summary.localCount+1
+                end
             end
         end
     end
@@ -166,9 +193,13 @@ function G:Scan()
             elseif summary.need>0 or summary.greed>0 then
                 status="RESERVED"
                 reason=summary.need.." NEED, "..summary.greed.." GREED (including absent bots/players)"
-            elseif summary.unknown>0 or summary.localCount>0 or summary.incoming>0 then
+            elseif summary.unknown>0 or summary.localCount>0 or
+                   summary.incoming>0 or summary.receiptPending>0 then
                 status="UNRESOLVED"
-                reason="Unknown records/local wishlist/pending Inbox - do not auto-route"
+                reason=summary.receiptPending>0 and
+                    ("Pending winner receipt/player ACK ("..
+                    summary.receiptPending..") - NEVER auto-route") or
+                    "Unknown records/local wishlist/pending Inbox - do not auto-route"
             elseif category=="INFORMATION_MISSING" then
                 status="UNRESOLVED"
             else
@@ -182,6 +213,7 @@ function G:Scan()
                 reason=reason or "Manual review",leader=leader,
                 need=summary.need,greed=summary.greed,
                 localCount=summary.localCount,pending=summary.incoming,
+                receiptPending=summary.receiptPending,
                 -- Candidate verification and item delivery are NOT performed.
                 recipientVerified=false,transferAuthorized=false,
             }

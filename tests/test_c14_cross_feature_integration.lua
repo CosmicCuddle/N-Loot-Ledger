@@ -160,8 +160,7 @@ ok(UI.lastNav=="roles" and
     not transfer.visible and
     UI.gearPlanRoleKey==nil and UI.gearConflictPreview==nil and
     canceled==1,
-    "full addon navigation disarms role, item review, stale conflict,
-     recipe review and old transfer authorization")
+    "full navigation disarms item reviews, imports and recipe audits")
 ok(not N.GearPlanReview:Confirm() and first.role=="CASTER_DPS",
     "navigation alone cannot commit an earlier pending Gear Plan")
 ok(N.GearPlanReview:Arm(firstKey,"STATUS","GREED"),
@@ -186,12 +185,6 @@ ok(N.GearPlanReview:Confirm() and first.status=="GREED",
 local modified=0
 for key,row in pairs(byKey) do
     ok(db.gearNeeds[key]==row,"all 604 saved row objects preserved")
-    if row.role~="CASTER_DPS" or
-       (row.status~=(key==firstKey and "GREED" or
-        ((row.character=="BotAA" or row.character=="BotAB") and "NEEDED" or row.status))) then
-        -- Explicit comparison below detects any unexpected row changes
-        -- without judging later fixture bot naming patterns.
-    end
     if key==firstKey and row.role=="HEALER" and row.status=="GREED" then
         modified=modified+1
     else

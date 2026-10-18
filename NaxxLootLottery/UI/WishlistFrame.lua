@@ -820,7 +820,7 @@ function UI:CreateGearPlansContent(parent)
         4,
         -58
     )
-    filterLabel:SetText("Filter character")
+    filterLabel:SetText("Filter character (exact)")
 
     local filterBox = CreateFrame(
         "EditBox",
@@ -859,18 +859,27 @@ function UI:CreateGearPlansContent(parent)
         0
     )
 
-    filterButton:SetScript("OnClick", function()
-        UI.gearPlanFilter =
-            filterBox:GetText() or ""
-
-        UI.gearPlansPage = 1
+    local function ApplyCharacterFilter()
+        -- Filtering is a VIEW operation. Never edit, remove, re-import or
+        -- otherwise mutate stored Gear Plans while searching for a bot.
+        UI.gearPlanFilter=filterBox:GetText() or ""
+        UI.gearPlansPage=1
         UI:RefreshGearPlans()
+    end
+    filterBox:SetScript("OnTextChanged", ApplyCharacterFilter)
+    filterBox:SetScript("OnEnterPressed", function(box)
+        ApplyCharacterFilter()
+        if box.ClearFocus then box:ClearFocus() end
     end)
+    -- Retain Apply for familiar mouse interaction and accessibility.
+    filterButton:SetScript("OnClick", ApplyCharacterFilter)
 
     clearFilter:SetScript("OnClick", function()
         filterBox:SetText("")
-        UI.gearPlanFilter = ""
-        UI.gearPlansPage = 1
+        -- OnTextChanged should normally handle this automatically, but
+        -- refresh explicitly for test fixtures and non-standard clients.
+        UI.gearPlanFilter=""
+        UI.gearPlansPage=1
         UI:RefreshGearPlans()
     end)
 
@@ -1202,9 +1211,11 @@ function UI:RefreshGearPlans()
         self.gearPlansPage = totalPages
     end
 
+    local filter=NLL.GearNeeds:Trim(self.gearPlanFilter)
     self.gearPlansStatus:SetText(
-        tostring(count) ..
-        " saved Gear Need(s)"
+        tostring(count).." saved Gear Need(s)"..
+        (filter~="" and (" for "..filter..
+            (count==0 and " (no exact match)" or "")) or "")
     )
 
     local firstIndex =

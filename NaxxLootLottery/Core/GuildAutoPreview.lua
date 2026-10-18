@@ -5,6 +5,26 @@
 local NLL=NaxxLootLottery
 NLL.GuildAutoPreview=NLL.GuildAutoPreview or {}
 local P=NLL.GuildAutoPreview
+local function Key(name)
+    return string.lower((tostring(name or ""):match("^([^%-]+)") or ""))
+end
+local function LiveMasterLooter()
+    if type(GetLootMethod)~="function" or
+       type(GetRaidRosterInfo)~="function" or
+       type(UnitName)~="function" then return false end
+    local method,_,raidIndex=GetLootMethod()
+    if method~="master" or type(raidIndex)~="number" or
+       raidIndex<1 then return false end
+    local designated=GetRaidRosterInfo(raidIndex)
+    return Key(designated)~="" and
+        Key(designated)==Key(UnitName("player"))
+end
+local function ActiveLottery()
+    local current=NLL.TicketLottery and NLL.TicketLottery.active
+    return current and current.status~="COMPLETE" and
+        current.status~="CANCELLED" and
+        current.status~="INVALIDATED"
+end
 local function PriorWinnerAttempt(itemID,slot)
     for _,row in ipairs(NLL.db and NLL.db.lootAwardHistory or {}) do
         if tonumber(row.itemID)==tonumber(itemID) and
@@ -57,6 +77,8 @@ function P:Build()
     end
     local unresolved=NLL.GuildLootTransfer and
         NLL.GuildLootTransfer:IsUnresolved()
+    local lotteryBusy=ActiveLottery()
+    local masterOK=LiveMasterLooter()
     for _,source in ipairs(scanned) do
         local decision,reason="HOLD",source.reason
         if source.status=="GUILD_REVIEW" then
@@ -70,6 +92,12 @@ function P:Build()
             elseif PriorWinnerAttempt(source.itemID,source.slotIndex) then
                 decision="HOLD_PREVIOUS_ATTEMPT"
                 reason="This item ID has a prior winner attempt; physical copy identity is unverified"
+            elseif lotteryBusy then
+                decision="HOLD_ACTIVE_ROLL"
+                reason="A ticket lottery is pending; no guild allocation proposal"
+            elseif not masterOK then
+                decision="HOLD_MASTER_LOOT"
+                reason="The acting character is not the verified WoW Master Looter"
             else
                 decision="PROPOSE_TO_LEADER"
                 reason="No SAVED reservation found; guild/other clients must verify first"
@@ -93,6 +121,7 @@ function P:Build()
             leader=source.leader,proposedRecipient=proposed and source.leader or nil,
             sourceStatus=source.status,decision=decision,reason=reason,
             need=source.need,greed=source.greed,
+            receiptPending=source.receiptPending or 0,
             -- NEVER produce an auto-allocation instruction in this stage.
             autoEligible=false,transferAuthorized=false,
             leaderCandidateVerified=false,physicalReceiptVerified=false,

@@ -1,0 +1,67 @@
+name: NLL Pending Receipt Holds Safety (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-pending-receipt-holds
+  pull_request:
+    branches:
+      - dev/nll-master-checklist-character-filter
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safe-receipts:
+    name: Lua 5.1 / recipient ACK / slot-clear / no auto award
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact stacked draft commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Confirm base, limited scope and transfer defaults
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=51d7d2f1f86fcd16473af5bfa863a39b357f6934
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/Core/GuildLootReview.lua|NaxxLootLottery/Core/GuildAutoPreview.lua|NaxxLootLottery/Core/GuildLootTransfer.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_pending_receipt_holds.lua|tests/test_guild_auto_preview.lua|tests/test_guild_loot_transfer.lua|tests/test_duplicate_physical_items.lua|tests/test_release_packaging.py|tests/test_master_checklist.py|scripts/build_release_zip.py|README.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/REVIEW_PARALLEL_DRAFTS.md|.github/workflows/nll-pending-receipt-safety-review.yml) ;;
+              *) echo "::error::Unexpected change outside receipt-safety review: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev9' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'remote~="ACKNOWLEDGED"' NaxxLootLottery/Core/GuildLootReview.lua
+          grep -Fq 'status=="LOOT_SLOT_CLEARED"' NaxxLootLottery/Core/GuildLootTransfer.lua
+          grep -Fq 'HOLD_MASTER_LOOT' NaxxLootLottery/Core/GuildAutoPreview.lua
+          grep -Fq 'HOLD_ACTIVE_ROLL' NaxxLootLottery/Core/GuildAutoPreview.lua
+          if grep -Eq '^[[:space:]]*(GiveMasterLoot|RandomRoll)[[:space:]]*\(' NaxxLootLottery/Core/GuildLootReview.lua NaxxLootLottery/Core/GuildAutoPreview.lua; then
+            echo "::error::Read-only modules must never request physical loot or rolls"; exit 1
+          fi
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Lua 5.1 parse check
+        run: find NaxxLootLottery tests -name '*.lua' -type f -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Full historical and receipt safety Lua regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test_file in tests/test_*.lua; do
+            echo "Running $test_file"
+            lua5.1 "$test_file"
+          done
+      - name: Master checklist never loses previous tasks
+        run: python3 tests/test_master_checklist.py
+      - name: Development package smoke test without publishing
+        run: python3 tests/test_release_packaging.py
+      - name: No merge, install, physical awards or SavedVariables edits
+        run: echo "Draft safety changes only; real item transfers remain OFF."

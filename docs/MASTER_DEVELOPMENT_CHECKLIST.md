@@ -9,7 +9,7 @@ Do not delete historical work just because another feature takes priority.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
 **Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
--> #17 -> #22 -> #23 -> #24 -> #25 -> #26 (filter/checklist).
+-> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 (receipt safety).
 **Shared baseline:** 604 imported Gear Plans across 38 Playerbots
 (469 NEED, 135 GREED). These are **real owner data**, not development fixtures.
 **Public release baseline:** v0.1.0.28 on main, separate from the above.
@@ -162,27 +162,44 @@ current draft addon has been installed.
       is NOT proof of the installed client's UI behaviour.
 - [ ] Owner verifies filter in the WoW client at their chosen test stage.
 
+**NLL-027 — Outstanding winner receipts / master-looter preview guards; [draft PR #27](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/27)**
+- [x] Compare alternative #18–#21 and record source-level decisions in
+      [REVIEW_PARALLEL_DRAFTS.md](REVIEW_PARALLEL_DRAFTS.md).
+- [x] Built: orphaned winner and missing remote human ACK stay HELD,
+      regardless of removed old Gear Plans.
+- [x] Built: unreviewed loot-slot-cleared attempts stay globally uncertain;
+      no slot clear implies delivery or grants a reissue.
+- [x] Built: active roll, missing or wrong Master Looter blocks dry-run
+      proposals; recorded guild operator is audit metadata only.
+- [x] Built: local OBTAINED wishlist status is checked read-only.
+- [x] Open stacked draft PR #27; automated head verification is tracked in PR checks.
+- [x] Dedicated and full Lua 5.1 GitHub Actions checks passed at
+      audited dev9 head (exact-head links retained in draft PR #27).
+- [ ] Repeat the CI status check if any new code commits are added.
+- [ ] Owner-approved in-client and remote-human receipt testing.
+
 ## D. Parallel draft work that must NOT be forgotten
 
 **IMPORTANT:** The PRs below are **not** ancestors of #25/#26.
 They are alternative development branches. Their existence does not
 mean their code is included in the current stack.
 
-- [ ] **NLL-018 — [PR #18](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/18)** Guild transfer operator identity,
+- [x] **NLL-018 — [PR #18](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/18)** Guild transfer operator identity,
       receipt reconciliation, audit and hold UI. Compare safe recipient
       attestation against #22–#24. Keep unique findings; do not blindly merge.
-- [ ] **NLL-019 — [PR #19](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/19)** More detailed guild auto-preview
+- [x] **NLL-019 — [PR #19](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/19)** More detailed guild auto-preview
       including Master Looter/active roll state and all-slot proposal rows.
       Compare to #23; preserve valuable conservative review gates.
-- [ ] **NLL-020 — [PR #20](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/20)** Recipient-self guild confirmation
+- [x] **NLL-020 — [PR #20](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/20)** Recipient-self guild confirmation
       and conservative winner receipt tracking. Compare to current
       ledger and document human vs server-verified limitations.
-- [ ] **NLL-021 — [PR #21](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/21)** Pending winner-receipt and human
+- [x] **NLL-021 — [PR #21](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/21)** Pending winner-receipt and human
       ACK holds even after Gear Plan changes. **Safety-relevant**:
       review for an eventual separate hardening patch against #23/#25.
-- [ ] For each alternative: review exact current head and CI, document
-      what is **already covered**, what is **missing**, and whether to
-      forward-port the unique safe changes. Leave them draft until then.
+- [x] For #18–#21: compare source, review recorded exact heads and CI,
+      identify existing/missing guards and decisions. See
+      [comparison](REVIEW_PARALLEL_DRAFTS.md). **Leave alternatives draft.**
+- [ ] Revisit later if upstream changes add any new unique safeguards.
 - [ ] Resolve any future conflicting branch choices by PR review and
       explicit decisions; do not claim parallel PRs were merged.
 
@@ -218,6 +235,14 @@ mean their code is included in the current stack.
 - [ ] Verify reconciliation modal and dry-run buttons do not overlap.
 - [ ] Preserve optional mouse/keyboard controls for fatiguing hands.
 - [ ] Log repeatable UI defects with screenshots and matching regressions.
+
+**NLL-F07 — Recipient-self guild receipt attestation**
+- [ ] Design separately from NO-RETRY closure: a verified intended
+      recipient may explicitly attest their own inventory.
+- [ ] Require source actor, item, quantity and audit-row consistency;
+      compare #18 and #20 approaches before changing any data schemas.
+- [ ] Record self-attestation as human evidence, not API/server proof.
+- [ ] Never unlock an original physical item or send a repeat grant.
 
 **NLL-F06 — Eventual automatic guild allocation**
 - [x] Read-only proposal mode developed in #23.

@@ -101,6 +101,23 @@ Do not merge, publish or change the live server/SavedVariables.
       forged sender, duplicate replay are all handled conservatively.
 - [ ] Test a bot receipt separately from an ordinary player receipt.
 
+## D2 — Pending recipient receipts and Master Looter dry-run gates
+
+- [ ] Confirm a recorded winner with WON_AWAITING_ITEM is HELD even
+      if the original Gear Plan was replaced, removed or marked obtained.
+- [ ] Confirm a leader-side human OBTAINED with pending, failed or
+      unacknowledged remote player message stays HELD for guild review.
+- [ ] Confirm the human client's ACKNOWLEDGED state lifts ONLY this
+      extra receipt hold and never unlocks a historic item request.
+- [ ] Confirm LOOT_SLOT_CLEARED without independent inventory review
+      remains an unresolved global hold on unrelated new proposals.
+- [ ] Explicit no-retry closure lifts only that global hold; original
+      item stays locked and historical receipt remains unchanged.
+- [ ] Dry Run ON with an active lottery, Group Loot or a different
+      designated Master Looter returns HOLD, never PROPOSE_TO_LEADER.
+- [ ] Test that historic local OBTAINED wishlist entries are not counted
+      as active interest without a new SavedVariables table being created.
+
 ## E — Guild materials and future automation safety
 
 - [ ] Guild Loot displays non-database materials, reagents, recipes

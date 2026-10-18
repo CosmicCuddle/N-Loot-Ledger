@@ -30,7 +30,7 @@ jobs:
           git merge-base --is-ancestor "$BASE" HEAD
           while IFS= read -r file; do
             case "$file" in
-              NaxxLootLottery/UI/MainFrame.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/UI/GearPlanReviewFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_c14_cross_feature_integration.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|README.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/C14_INTEGRATION_RELEASE_READINESS.md|.github/workflows/nll-c14-integrated-safety.yml) ;;
+              NaxxLootLottery/UI/MainFrame.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/UI/GearPlanReviewFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_c14_cross_feature_integration.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|README.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/C14_INTEGRATION_RELEASE_READINESS.md|docs/OWNER_TEST_ONLY_HANDOFF.md|.github/workflows/nll-c14-integrated-safety.yml|.github/workflows/nll-owner-test-zip.yml) ;;
               *) echo "::error::Unexpected C14 change outside safe integration scope: $file"; exit 1 ;;
             esac
           done < <(git diff --name-only "$BASE" HEAD)

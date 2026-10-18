@@ -24,6 +24,7 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 | #28 | Intended recipient own-bag statement, separate no-retry audit and paged UI | Dedicated no-release + full Lua 5.1 suite PASSED (PR #28) | Pending in-game | Draft only |
 | #29 | UI footer geometry + recipient-only My Bags entry | Dedicated + full Lua 5.1 CI passed (PR #29) | Pending visual screenshots | Draft only |
 | #30 | 3.3.5a loot-source API research + non-awarding /nll lootsource | Dedicated no-release + full Lua 5.1 CI passed (PR #30) | Pending source-hint diagnostic check | Draft only |
+| #31 | Read-only 604-plan export 250/250/104 with batch pager | CI pending | Pending clipboard and GUI acceptance | Draft only |
 
 **Parallel, separately stacked drafts #18–#21** are inventoried in the master checklist; see [review decisions](REVIEW_PARALLEL_DRAFTS.md) for the safe findings forwarded into #27. The alternative reconciliation branches remain separate drafts.
 
@@ -39,8 +40,10 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 - Same-item-ID guild loot transfers stay blocked across slot changes:
   this conservative hold awaits reliable independent corpse identity.
 
-## Next work (after current draft #30)
+## Next work (after current draft #31)
 
+- [ ] Controlled test evidence for all 604-bot-plan batch exports,
+      including Ctrl+C, labels, import preview and SavedVariables backup.
 - [ ] Visual test evidence for the reconciliation window, dry-run
       allocations, overlapping buttons and long item names.
 - [x] Confirm GetLootSourceInfo is unavailable in 3.3.5a and target

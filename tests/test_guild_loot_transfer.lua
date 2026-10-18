@@ -126,10 +126,36 @@ wantReview,why=T:Review(target)
 ok(not wantReview and why:find("winner review"),
     "unfinished winner award review prevents a competing transfer")
 N.AwardWorkflow.verification=nil
-N.db.lootAwardHistory={{status="AWARD_OUTCOME_UNKNOWN",itemID=17011}}
+N.db.lootAwardHistory={{
+    status="AWARD_OUTCOME_UNKNOWN",itemID=17011,
+    dropUID="L5:1:17011",winner="Pikeotter"
+}}
 wantReview,why=T:Review(target)
 ok(not wantReview and why:find("unresolved"),
     "old winner transfer uncertainty survives into guild routing guard")
+N.LootReceiptTracker={Get=function(_,uid)
+    if uid=="L5:1:17011" then
+        return {status="WON_AWAITING_ITEM",itemID=17011,
+            character="Pikeotter"}
+    end
+end}
+wantReview=T:Review(target)
+ok(not wantReview,"winner without recipient receipt remains unresolved")
+N.LootReceiptTracker.Get=function(_,uid)
+    if uid=="L5:1:17011" then
+        return {status="OBTAINED",itemID=17011,
+            character="Pikeotter",evidence="LEADER_CONFIRMED_RECIPIENT_INVENTORY"}
+    end
+end
+ok(T:IsUnresolved()==false,
+    "exact leader-confirmed winner receipt resolves a global pending-award lock")
+N.LootReceiptTracker.Get=function()
+    return {status="OBTAINED",itemID=17011,
+        character="Impostor",evidence="LEADER_CONFIRMED_RECIPIENT_INVENTORY"}
+end
+ok(T:IsUnresolved(),
+    "different recipient cannot clear someone else's uncertain award")
+N.LootReceiptTracker=nil
 N.db.lootAwardHistory={}
 local okReview,reviewMessage=T:Review(target)
 ok(okReview and reviewMessage:find("ARM") and #given==0,

@@ -81,7 +81,7 @@ function R:Arm(kind,identifier)
         return false,"Real raid authority is required; fake raids are blocked."
     end
     local row=self:Get(kind,identifier)
-    if not row or tonumber(row.itemID)==nil or row.itemID<1 then
+    if not row or not tonumber(row.itemID) or tonumber(row.itemID)<1 then
         return false,"No unique, recorded uncertain award with that identifier."
     end
     if row.reconciliationStatus=="CLOSED_NO_RETRY" then

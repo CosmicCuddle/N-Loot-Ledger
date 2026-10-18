@@ -234,6 +234,21 @@ Do not merge, publish or change the live server/SavedVariables.
 - [ ] No edited record or other 603 rows are accidentally overwritten.
 - [ ] Record real UI screenshots, including long bot names.
 
+## F6 — Individual bot Gear Plan item-role editing (draft #33)
+
+- [ ] Back up all client SavedVariables and addon folder; confirm
+      604 plans, 38 bots, 469 NEED, 135 GREED baseline.
+- [ ] Click Edit in Role column for a safe NON-OBTAINED plan; full
+      six-role choice screen opens with no immediate saved change.
+- [ ] Select role, cancel in confirmation window, then verify no edit.
+- [ ] Expire confirmation (>15 sec), switch pages/character filters,
+      and test stale data; pending review must never save.
+- [ ] Explicit Confirm changes **ONE plan row.role only**; compare
+      account db.roleAssignments (unchanged) and all other rows.
+- [ ] OBTAINED and pending winner/remote ACK roles cannot be changed.
+- [ ] Verify long role names and inline Edit buttons at actual UI scale,
+      and preserve original files and screenshots for review.
+
 ## Release gates (require separate owner approval)
 
 - [ ] Full Lua 5.1 CI passes at the exact stacked final SHA.

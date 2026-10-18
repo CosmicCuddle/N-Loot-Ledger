@@ -34,6 +34,13 @@ function Database:Initialize()
     if type(db.guildLootTransferAudit)~="table" then
         db.guildLootTransferAudit={}
     end
+    -- Append-only manual review decisions. These do not unlock award attempts.
+    if type(db.lootReconciliationAudit)~="table" then
+        db.lootReconciliationAudit={}
+    end
+    if type(db.awardAttemptLocks)~="table" then
+        db.awardAttemptLocks={}
+    end
     -- Raid announcements/countdown are separate, non-awarding opt-ins.
     if type(db.settings.raidAnnouncementsEnabled)~="boolean" then
         db.settings.raidAnnouncementsEnabled=false

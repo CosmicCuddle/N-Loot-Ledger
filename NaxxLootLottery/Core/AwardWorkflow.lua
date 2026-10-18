@@ -74,6 +74,24 @@ function A:ValidateLiveContext(entry, winner)
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
         return false, 'Simulation active: real awards are blocked.'
     end
+    -- Durable locks survive a reload, a swallowed WoW API exception and
+    -- history trimming. A manually reconciled attempt stays locked forever.
+    local locks=NLL.db and NLL.db.awardAttemptLocks or {}
+    if locks[entry.dropUID] then
+        return false, 'This drop already had a Master Loot attempt. Never retry it.'
+    end
+    for _,history in ipairs(NLL.db and NLL.db.lootAwardHistory or {}) do
+        if history.dropUID==entry.dropUID and
+           (history.status=='AWARD_REQUESTED' or
+            history.status=='AWARD_OUTCOME_UNKNOWN' or
+            history.status=='LOOT_SLOT_CLEARED') then
+            return false, 'Previous Master Loot attempt recorded for this exact drop.'
+        end
+    end
+    if NLL.GuildLootTransfer and
+       NLL.GuildLootTransfer:WasAttempted(entry.itemID,entry.slotIndex) then
+        return false, 'Guild transfer attempted for this same item/slot; review manually.'
+    end
     local identity=NLL.LootIdentity and NLL.LootIdentity:GetRow(entry.dropUID)
     if identity and identity.awardContextClosed then
         return false, 'Winner restored from closed loot window: use WoW manual award. Direct award is not safe after reopen/reload.'
@@ -270,18 +288,39 @@ function A:CommitDirectAward(entry)
         self:Cancel()
         return false, 'GiveMasterLoot is unavailable in this client.'
     end
-    -- Explicit user click only. This call can move REAL items, and is
-    -- deliberately never invoked by timers, OnShow, or fake-raid modes.
-    local transferOK, transferError = pcall(GiveMasterLoot, fresh.slot, fresh.candidateIndex)
-    self:Cancel()
-    if not transferOK then
-        return false, 'WoW refused the request: ' .. tostring(transferError)
+    -- WRITE AHEAD: an API exception is NOT evidence that the award failed.
+    -- Persist both the audit and immutable drop lock BEFORE calling WoW.
+    -- Never turn a caught error into a fresh, retryable lottery winner.
+    NLL.db.awardAttemptLocks=NLL.db.awardAttemptLocks or {}
+    local locks=NLL.db.awardAttemptLocks
+    if locks[entry.dropUID] then
+        self:Cancel()
+        return false, 'A previous attempt already locked this drop.'
     end
-    -- The API returns no delivery receipt. Do NOT mark Gear Plan OBTAINED.
-    result.awardStatus = 'AWARD_REQUESTED'
-    if NLL.LootIdentity then NLL.LootIdentity:MarkAward(entry.dropUID,result.awardStatus) end
-    local history = Audit(HistoryRow(entry, result, 'AWARD_REQUESTED',
-        'GiveMasterLoot invoked after explicit double confirmation; delivery unverified', fresh))
+    locks[entry.dropUID]={itemID=fresh.itemID,winner=fresh.winner,
+        status='AWARD_OUTCOME_UNKNOWN'}
+    local history=Audit(HistoryRow(entry,result,'AWARD_OUTCOME_UNKNOWN',
+        'Attempt persisted BEFORE GiveMasterLoot; physical outcome unknown',fresh))
+    result.awardStatus='AWARD_OUTCOME_UNKNOWN'
+    if NLL.LootIdentity then
+        NLL.LootIdentity:MarkAward(entry.dropUID,result.awardStatus)
+    end
+    self:Cancel() -- No second-click retry, including if the WoW call throws.
+    local transferOK,transferError=pcall(GiveMasterLoot,fresh.slot,fresh.candidateIndex)
+    if not transferOK then
+        history.note='GiveMasterLoot error: '..tostring(transferError)..
+            '; outcome UNKNOWN; never retry this physical drop'
+        RefreshUI()
+        return false,'WoW Master Loot error; outcome UNKNOWN and locked. Do not retry.'
+    end
+    -- A successful API invocation is NOT a recipient receipt.
+    history.status='AWARD_REQUESTED'
+    history.note='GiveMasterLoot invoked; physical recipient delivery NOT verified'
+    locks[entry.dropUID].status='AWARD_REQUESTED'
+    result.awardStatus='AWARD_REQUESTED'
+    if NLL.LootIdentity then
+        NLL.LootIdentity:MarkAward(entry.dropUID,result.awardStatus)
+    end
     self.liveRequests[entry.dropUID] = {
         slot = fresh.slot, history = history, result = result
     }

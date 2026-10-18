@@ -1,0 +1,65 @@
+name: Pending receipt prevents guild routing (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - review/nll-pending-receipt-holds
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nll-pending-receipt-guild-review
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Entire Lua 5.1 suite and no-award receipt classification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Exact-base and minimal change allowlist
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=ebb38e717f6f4318640864687a447b76cf136eaf
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/Core/GuildLootReview.lua|tests/test_guild_pending_receipts.lua|docs/REVIEW_PENDING_RECEIPT_HOLDS.md|.github/workflows/nll-pending-receipt-holds-review.yml) ;;
+              *) echo "::error::Unexpected source change: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          test "$(git diff --name-only "$BASE" "$GITHUB_SHA" | grep -c '^NaxxLootLottery/Core/GuildLootReview.lua$')" -eq 1
+          grep -Fq 'receipt.status=="WON_AWAITING_ITEM"' NaxxLootLottery/Core/GuildLootReview.lua
+          grep -Fq 'remote~="ACKNOWLEDGED"' NaxxLootLottery/Core/GuildLootReview.lua
+          if grep -Eiq '^ *GiveMasterLoot\s*\(|^ *RandomRoll\s*\(' NaxxLootLottery/Core/GuildLootReview.lua; then
+            echo "::error::No real item grant or server roll in read-only review"; exit 1
+          fi
+
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+
+      - name: Parse all addon/test files as Lua 5.1
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+
+      - name: Execute all regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test_file in tests/test_*.lua; do
+            echo "Running $test_file"
+            lua5.1 "$test_file"
+          done
+
+      - name: Reproducible package check and award defaults
+        run: python3 tests/test_release_packaging.py
+
+      - name: Deliberately do not publish, install, merge or award
+        run: echo "Review-only validation passed. No addon ZIP, release, tag or merge."

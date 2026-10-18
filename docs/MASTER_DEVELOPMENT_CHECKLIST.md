@@ -499,6 +499,28 @@ mean their code is included in the current stack.
 
 ## F. Integrated testing, backup and release gate
 
+**NLL-TEST-001 — Owner-controlled test-only build and Phase 1 smoke gate**
+- [x] Add [phase-1 owner test handoff](OWNER_TEST_ONLY_HANDOFF.md):
+      separate full HF2 addon backup and matched `.lua` / `.lua.bak`
+      before WoW launch, on every client where testing occurs.
+- [x] Add `nll-owner-test-zip.yml` TEST-ONLY workflow: full Lua 5.1
+      suite and 604-plan C14 regression, deterministic ZIP with 50
+      modules, SHA256SUMS, BUILD_INFO/commit provenance, 14-day
+      GitHub Actions artifact retention, no tag/release/install.
+- [ ] Verify the exact-head Actions ZIP artifact exists with a
+      successful workflow and SHA256 before telling owner it is ready.
+- [ ] Owner chooses to back up and manually replace ONE test client
+      addon folder; owner SavedVariables are never bundled.
+- [ ] Complete NON-DESTRUCTIVE Phase 1: /nll version, /nll status,
+      604/38/469/135 baseline, 250/250/104 export only, no imports,
+      recipe review, navigation/Escape and CLOSED loot /nll copyaudit.
+- [ ] Pause after Phase 1 for screenshots/error log and saved-data
+      preservation check. No loot grants, resets or raid use.
+- [ ] Separate owner permission for Phase 2 physical/raid tests and
+      any future release; mocked CI is not live WoW acceptance.
+
+
+
 - [ ] Owner chooses a controlled in-game testing session.
 - [ ] Back up Interface/AddOns/NaxxLootLottery/ as a complete directory.
 - [ ] Back up WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua

@@ -805,6 +805,12 @@ function UI:CreateGuildLootDialog()
     page:SetPoint("LEFT",nextB,"RIGHT",12,0)
     page:SetWidth(125)
     self.guildLootPageText=page
+    local investigate=self:CreateTextButton(f,"Investigate",134)
+    investigate:SetPoint("LEFT",page,"RIGHT",10,0)
+    investigate:SetScript("OnClick",function()
+        if UI.OpenReconciliationDialog then UI:OpenReconciliationDialog() end
+    end)
+    self.guildLootInvestigate=investigate
     -- The Review button above is read-only; neither of these controls
     -- can ever send an item without the player's two extra clicks.
     local arm=self:CreateTextButton(f,"Arm Leader Transfer",181)

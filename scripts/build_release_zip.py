@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ADDON = ROOT / "NaxxLootLottery"
 TOC = ADDON / "NaxxLootLottery.toc"
 CORE = ADDON / "Core" / "Core.lua"
-EXPECTED_VERSION = "0.1.0.29-rc.1-dev5"
+EXPECTED_VERSION = "0.1.0.29-rc.1-dev6"
 EXPECTED_INTERFACE = "30300"
 
 
@@ -39,7 +39,7 @@ def addon_entries():
         assert rel.suffix.lower() == ".lua", "Unexpected TOC dependency"
         assert rel.parts and rel.parts[0] != "NaxxLootLottery", "Nested addon path"
         modules.append(ADDON / rel)
-    assert len(modules) == 40, f"Expected 40 Lua modules, found {len(modules)}"
+    assert len(modules) == 41, f"Expected 41 Lua modules, found {len(modules)}"
     assert len(set(modules)) == len(modules), "Duplicate TOC dependency"
     for module in modules:
         assert module.is_file() and not module.is_symlink(), f"Missing/unsafe {module}"

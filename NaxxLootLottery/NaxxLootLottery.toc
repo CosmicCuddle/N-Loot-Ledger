@@ -2,7 +2,7 @@
 ## Title: Naxxramas Loot Ledger
 ## Notes: Guild raid loot wishlist and post-drop ticket lottery system.
 ## Author: Cosmic
-## Version: 0.1.0.29-rc.1-dev5
+## Version: 0.1.0.29-rc.1-dev6
 ## SavedVariables: NaxxLootLotteryDB
 
 Core\Core.lua
@@ -43,5 +43,6 @@ UI\CandidateReviewFrame.lua
 UI\PriorityFrame.lua
 UI\DebugLabFrame.lua
 UI\AwardHistoryFrame.lua
+UI\ReconciliationFrame.lua
 UI\AwardSettingsFrame.lua
 UI\SettingsFrame.lua

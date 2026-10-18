@@ -67,4 +67,5 @@ jobs:
       - name: Reproducible candidate packaging only - NO RELEASE
         run: python3 tests/test_release_packaging.py
       - name: Record non-deployment status
-        run: echo "Dev-only: no SavedVariables, physical loot, SQL/core, release or installed addon modified."
+        run: |
+          echo "Dev-only: no SavedVariables, physical loot, SQL/core, release or installed addon modified."

@@ -833,7 +833,7 @@ function UI:CreateGuildLootDialog()
         local P=NLL.GuildAutoPreview
         if not P then return end
         local ok,note=P:SetEnabled(not P:IsEnabled())
-        UI.guildLootLastMessage=note
+        UI.guildLootLastMessage=nil
         NLL:Print(note)
         UI:RefreshGuildLootDialog()
     end)

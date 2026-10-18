@@ -15,6 +15,12 @@
 4. Extract this outer artifact to a new folder **outside WoW**. Verify SHA-256 of the inner `Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev19.zip` against `SHA256SUMS.txt` before using it.
 5. **Do not install from a screenshot, old branch, unverified source ZIP, published v0.1.0.28 release, or unmatched run.** No checksum match means STOP.
 
+**Expected SHA-256 of the *inner addon ZIP* (not the outer GitHub Actions artifact):**
+
+`ab1298c7a61887161f1bcbf98bd8ddc068b9be1affc5c40f602b7d4933f57ac4`
+
+This digest is for dev19's unchanged 50 Lua modules. If a later draft modifies addon code, regenerate this checksum and do not reuse this guide's digest without rechecking.
+
 Windows PowerShell checksum (point to the inner ZIP):
 
 ```powershell

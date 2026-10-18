@@ -1,0 +1,68 @@
+name: NLL Guarded Gear Plan Reviews (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-guarded-gearplan-reviews
+  pull_request:
+    branches:
+      - dev/nll-batched-gear-plan-export
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  review-safety:
+    name: Lua 5.1 / exact bot status / no immediate delete
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact draft
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify stack scope and live award consents OFF
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=5bab3b4cab1f9a14b2c293e744d9cb99c5a23e5f
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/Core/GearPlanReview.lua|NaxxLootLottery/UI/GearPlanReviewFrame.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_guarded_gearplan_reviews.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|README.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/TESTING_GUARDED_GEARPLAN_REVIEWS_DRAFT.md|.github/workflows/nll-guarded-gearplan-reviews.yml) ;;
+              *) echo "::error::Unexpected change outside Gear Plan review scope: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev14' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'function R:Confirm()' NaxxLootLottery/Core/GearPlanReview.lua
+          grep -Fq 'newStatus~="OBTAINED"' NaxxLootLottery/Core/GearPlanReview.lua || grep -Fq 'Manual OBTAINED is forbidden' NaxxLootLottery/Core/GearPlanReview.lua
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          if grep -E '^[[:space:]]*[^-].*(GiveMasterLoot|RandomRoll|SendAddonMessage)[[:space:]]*\(' NaxxLootLottery/Core/GearPlanReview.lua NaxxLootLottery/UI/GearPlanReviewFrame.lua; then
+            echo "::error::Gear Plan editor may not award loot or send messages"; exit 1
+          fi
+          if git diff "$BASE" HEAD -- NaxxLootLottery/Core/AwardWorkflow.lua NaxxLootLottery/Core/GuildLootTransfer.lua NaxxLootLottery/Storage/Database.lua | grep -q '^[+-][^+-]'; then
+            echo "::error::Historical award/database code is out of scope"; exit 1
+          fi
+      - name: Install Wrath compatible Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: All Lua 5.1 syntax
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: All Lua 5.1 regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test_file in tests/test_*.lua; do
+            echo "Running $test_file"
+            lua5.1 "$test_file"
+          done
+      - name: Master checklist continuity
+        run: python3 tests/test_master_checklist.py
+      - name: Deterministic draft-only package
+        run: python3 tests/test_release_packaging.py
+      - name: Declare no release
+        run: echo "No installation, live SavedVariables, permissions, merger or physical loot changed."

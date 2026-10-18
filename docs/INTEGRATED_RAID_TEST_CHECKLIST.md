@@ -218,6 +218,22 @@ Do not merge, publish or change the live server/SavedVariables.
 - [ ] Confirm original roles/wishlists/history/SavedVariables unchanged.
       This partial Gear Plan text export never replaces full WTF backup.
 
+## F5 — Existing Playerbot Gear Plan edit safety (draft #32)
+
+- [ ] Verify original 604/38/469/135 with full paired backups.
+- [ ] Status change or X first opens explicit exact-bot/item review,
+      not an immediate SavedVariables mutation.
+- [ ] Cancel, page/filter switch, different actor, 15-second expiry
+      or /reload disarms review with no saved-row change.
+- [ ] Confirm one safe test-row NEED/GREED/DISABLED change updates
+      ONLY that exact bot plan; no global role/type assignment rewrite.
+- [ ] OBTAINED is blocked unless existing recipient receipt process
+      updates it. Pending winner / player ACK holds protect records.
+- [ ] X removal requires its own review; do not delete a valuable
+      saved reservation just to demonstrate the button.
+- [ ] No edited record or other 603 rows are accidentally overwritten.
+- [ ] Record real UI screenshots, including long bot names.
+
 ## Release gates (require separate owner approval)
 
 - [ ] Full Lua 5.1 CI passes at the exact stacked final SHA.

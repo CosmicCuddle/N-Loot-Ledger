@@ -162,7 +162,7 @@ current draft addon has been installed.
       is NOT proof of the installed client's UI behaviour.
 - [ ] Owner verifies filter in the WoW client at their chosen test stage.
 
-**NLL-027 — Outstanding winner receipts / master-looter preview guards; draft PR**
+**NLL-027 — Outstanding winner receipts / master-looter preview guards; [draft PR #27](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/27)**
 - [x] Compare alternative #18–#21 and record source-level decisions in
       [REVIEW_PARALLEL_DRAFTS.md](REVIEW_PARALLEL_DRAFTS.md).
 - [x] Built: orphaned winner and missing remote human ACK stay HELD,
@@ -172,7 +172,8 @@ current draft addon has been installed.
 - [x] Built: active roll, missing or wrong Master Looter blocks dry-run
       proposals; recorded guild operator is audit metadata only.
 - [x] Built: local OBTAINED wishlist status is checked read-only.
-- [ ] Record PR number and exact-head dedicated/full CI after opening.
+- [x] Open stacked draft PR #27; automated head verification is tracked in PR checks.
+- [ ] Confirm latest exact-head dedicated and full GitHub Actions results.
 - [ ] Owner-approved in-client and remote-human receipt testing.
 
 ## D. Parallel draft work that must NOT be forgotten

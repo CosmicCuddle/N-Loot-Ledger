@@ -11,6 +11,7 @@
 
 ## Development tracker and test plan
 
+- [Owner-controlled TEST-ONLY ZIP / Phase 1 WoW handoff](docs/OWNER_TEST_ONLY_HANDOFF.md) — requires a green checksum-verified [GitHub Actions TEST-ONLY artifact](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/workflows/nll-owner-test-zip.yml) and complete backups BEFORE manually testing on one client; never a GitHub Release.
 - [C14 combined integration and release-readiness gate](docs/C14_INTEGRATION_RELEASE_READINESS.md) — closes stale review/import modals across navigation and Escape; development tests do NOT authorise installing or releasing.
 - [Duplicate loot-copy audit and trusted source evidence blueprint](docs/BLUEPRINT_VERIFIED_LOOT_COPY_BRIDGE.md) — `/nll copyaudit` is read-only and NEVER unlocks an older physical attempt.
 - [Molten Core profession recipe review and eligibility caveats](docs/TESTING_PROFESSION_RECIPE_REVIEW_DRAFT.md) — ten manually reviewed recipes, skill 300 and saved interests are **not** verified recipient professions or a physical award.

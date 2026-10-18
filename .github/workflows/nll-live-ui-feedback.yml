@@ -30,7 +30,7 @@ jobs:
           git merge-base --is-ancestor "$BASE" HEAD
           while IFS= read -r file; do
             case "$file" in
-              NaxxLootLottery/Core/RaidHistoryView.lua|NaxxLootLottery/Core/Communication.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/UI/AwardHistoryFrame.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/UI/MainFrame.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_live_feedback_archive_history.lua|tests/test_inbox_layout.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|docs/C15_LIVE_FEEDBACK_UI_ACCEPTANCE.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|README.md|.github/workflows/nll-live-ui-feedback.yml) ;;
+              NaxxLootLottery/Core/RaidHistoryView.lua|NaxxLootLottery/Core/Communication.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/UI/AwardHistoryFrame.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/UI/MainFrame.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_live_feedback_archive_history.lua|tests/test_inbox_layout.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|docs/C15_LIVE_FEEDBACK_UI_ACCEPTANCE.md|docs/C15_OWNER_RETEST_HANDOFF.md|.github/workflows/nll-c15-owner-test-zip.yml|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|README.md|.github/workflows/nll-live-ui-feedback.yml) ;;
               *) echo "::error::Changed unrelated file: $file"; exit 1 ;;
             esac
           done < <(git diff --name-only "$BASE" HEAD)

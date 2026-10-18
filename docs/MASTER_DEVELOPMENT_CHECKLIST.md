@@ -515,7 +515,10 @@ mean their code is included in the current stack.
       eight to seven and reserve outgoing message/footer room.
 - [x] Add 636 synthetic-row Lua 5.1 safety fixture plus Inbox UI
       archive/pager tests, no Master Loot / real receipt changes.
-- [ ] Dedicated/full exact-head GitHub CI and TEST-ONLY ZIP.
+- [x] Dedicated/read-only archive and winner-history Lua 5.1 tests,
+      complete historical regressions and checksum-verified TEST-ONLY ZIP
+      workflow passed; exact final-head proof retained on draft PR #38.
+- [ ] Repeat final-head CI if future source changes.
 - [ ] Backup-first owner's second controlled client screenshot test;
       no real award or automatic live release.
 - [ ] Verify whether 32 additional saved Gear Plans are intended.

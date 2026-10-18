@@ -1,0 +1,95 @@
+name: NLL Owner Test ZIP (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-c14-integration-hardening
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  owner-test-only:
+    name: Gate and upload checked 3.3.5a test ZIP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact draft source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Confirm test-only branch and immutable installation boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/dev/nll-c14-integration-hardening"
+          grep -Fxq '## Interface: 30300' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fxq '## SavedVariables: NaxxLootLotteryDB' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev19' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          test ! -f dist/Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev19.zip
+          echo 'Test artifact only; real SavedVariables, SQL, server, releases and physical item awards are out of scope.'
+
+      - name: Install Wrath-compatible Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+
+      - name: Syntax-check ALL addons and tests with Lua 5.1
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+
+      - name: Run C14 shared 604 Gear Plan integration
+        run: lua5.1 tests/test_c14_cross_feature_integration.lua
+
+      - name: Run every historical and current Lua 5.1 test
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test_file in tests/test_*.lua; do
+            echo "Running $test_file"
+            lua5.1 "$test_file"
+          done
+
+      - name: Verify all historical and parallel tracker entries
+        run: python3 tests/test_master_checklist.py
+
+      - name: Validate deterministic no-release ZIP builder
+        run: python3 tests/test_release_packaging.py
+
+      - name: Build owner TEST-ONLY addon ZIP and produce checksum/provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/build_release_zip.py --output dist/Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev19.zip
+          (
+            cd dist
+            sha256sum Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev19.zip > SHA256SUMS.txt
+          )
+          {
+            echo 'NLL TEST-ONLY / NO RELEASE / NEVER AUTOMATICALLY INSTALL'
+            echo "Commit SHA: $GITHUB_SHA"
+            echo 'Branch: dev/nll-c14-integration-hardening'
+            echo 'Version: 0.1.0.29-rc.1-dev19'
+            echo 'Interface: 30300 / Lua: 5.1'
+            echo 'Expected addon files: one .toc plus 50 .lua (51 entries)'
+            echo 'Back up complete HF2 addon directory and matched SavedVariables before any manually approved test.'
+            echo 'No source/corpse/recipient delivery proof; old CLOSED_NO_RETRY records are NEVER safe to retry.'
+            echo 'Owner test guide: docs/OWNER_TEST_ONLY_HANDOFF.md'
+          } > dist/BUILD_INFO.txt
+          echo 'TEST-ONLY ZIP CHECKSUM:'
+          cat dist/SHA256SUMS.txt
+
+      - name: Upload test ZIP (not a GitHub Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NLL-TEST-ONLY-dev19-${{ github.run_number }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            dist/Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev19.zip
+            dist/SHA256SUMS.txt
+            dist/BUILD_INFO.txt
+            docs/OWNER_TEST_ONLY_HANDOFF.md

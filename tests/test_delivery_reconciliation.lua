@@ -145,11 +145,19 @@ ok(g.status=="AWARD_OUTCOME_UNKNOWN" and
 ok(sent==1,"reconciliation never calls GiveMasterLoot")
 -- Confirmed receipts are not ambiguous. They cannot be overwritten by review.
 local confirmed={dropUID="L3:1:16800",itemID=16800,winner="Pikeotter",
-    status="LOOT_SLOT_CLEARED"}
+    status="AWARD_OUTCOME_UNKNOWN"}
 N.db.lootAwardHistory[2]=confirmed
-N.db.lootReceiptTracker[confirmed.dropUID]={status="OBTAINED"}
+N.db.lootReceiptTracker[confirmed.dropUID]={
+    status="OBTAINED",itemID=16800,character="Pikeotter"}
+ok(not T:IsUnresolved(),
+    "matching leader-confirmed receipt clears unrelated global block")
 ok(not R:Arm("WINNER",confirmed.dropUID),
     "OBTAINED receipt cannot be relabelled as unknown")
+N.db.lootReceiptTracker[confirmed.dropUID].character="Another"
+ok(T:IsUnresolved(),
+    "receipt for a different winner NEVER resolves unknown delivery")
+N.db.lootReceiptTracker[confirmed.dropUID].character="Pikeotter"
+ok(not T:IsUnresolved(),"restored exact match removes only global block")
 -- No recreated module should reset original mutable histories.
 ok(oldPlan==N.db.gearNeeds and
    N.db.lootAwardHistory[1]==oldRecord and #N.db.lootReconciliationAudit==2,

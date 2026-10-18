@@ -338,6 +338,22 @@ function NLL:HandleSlashCommand(message)
         return
     end
 
+    if command=="guildreceipts" then
+        self.UI:ShowMainFrame("currentloot")
+        self.UI:OpenGuildReconciliationReview()
+        return
+    end
+    if command=="guildpreview" then
+        local result=self.GuildLootAutoPreview:Build()
+        local c=result.counts
+        self:Print("Guild dry run: "..c.candidates.." candidates, "..
+            c.reserved.." reserved, "..c.held.." on hold, "..
+            c.blocked.." past-request blocks. ZERO transfers.")
+        if #result.rows==0 then
+            self:Print(result.message or "No real loot window.")
+        end
+        return
+    end
     if command=="guildgive" then
         local option=string.lower(arguments or "")
         local T=self.GuildLootTransfer
@@ -652,6 +668,8 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll receiptinbox - Review my pending award confirmations.")
         self:Print("/nll receiptsync <dropUID> - Resend a previously verified human receipt.")
         self:Print("/nll guildloot - Read-only review of ALL visible item slots, including materials.")
+        self:Print("/nll guildreceipts - Review uncertain guild transfers after the raid.")
+        self:Print("/nll guildpreview - DRY RUN only; zero guild item transfers.")
         self:Print("/nll guildgive on|off - Separate login-only consent for manual guild transfers.")
         self:Print("/nll awardhistory - Show manual, requested and observed awards.")
         self:Print("/nll directaward off - Immediately disable live direct awarding.")

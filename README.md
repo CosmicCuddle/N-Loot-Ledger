@@ -11,6 +11,7 @@
 
 ## Development tracker and test plan
 
+- [Recipient self-attestation test blueprint](docs/TESTING_GUILD_RECIPIENT_ATTESTATION_DRAFT.md) — independent human bag evidence without changing NO RETRY or awarding anything.
 - [Comparison of parallel PRs #18–#21](docs/REVIEW_PARALLEL_DRAFTS.md) — safety work imported into the main draft path versus deferred recipient-attestation design.
 - **[MASTER DEVELOPMENT CHECKLIST](docs/MASTER_DEVELOPMENT_CHECKLIST.md)** — the authoritative stage-by-stage record of every past, current, parallel and planned NLL feature, plus completed CI, unfinished WoW testing and future actions.
 

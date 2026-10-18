@@ -194,7 +194,7 @@ current draft addon has been installed.
 - [ ] Real client and paired human-client acceptance; still not a
       certified delivery receipt or automatic allocation authority.
 
-**NLL-029 — Modal geometry and exact-recipient navigation; draft PR**
+**NLL-029 — Modal geometry and exact-recipient navigation; [draft PR #29](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/29)**
 - [x] Built: increase last Guild Loot row / action-row gap from 2px
       to 6px without moving dangerous physical-award controls closer.
 - [x] Built: My Bag Receipt entry point requires actual intended

@@ -46,6 +46,13 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 - Same-item-ID guild loot transfers stay blocked across slot changes:
   this conservative hold awaits reliable independent corpse identity.
 
+**Owner Phase 1 packaging handoff (PR #37, unmerged):** dedicated TEST-ONLY
+Actions workflow prepares a checksum-verified dev19 addon archive and
+[backup-first non-destructive test instructions](OWNER_TEST_ONLY_HANDOFF.md).
+An artifact is eligible for owner testing only after exact-commit build and
+entire Lua 5.1 regressions pass; no automated installation or release.
+Actual WoW UI screenshots and saved-data preservation remain outstanding.
+
 ## Next work (after current draft #37 — owner-approved in-client acceptance gate)
 
 - [ ] Controlled test evidence for all 604-bot-plan batch exports,

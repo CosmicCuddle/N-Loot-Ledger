@@ -1211,7 +1211,7 @@ function UI:RefreshGearPlans()
         self.gearPlansPage = totalPages
     end
 
-    local filter=NLL.GearNeeds:Trim(self.gearPlanFilter)
+    local filter=tostring(self.gearPlanFilter or ""):match("^%s*(.-)%s*$") or ""
     self.gearPlansStatus:SetText(
         tostring(count).." saved Gear Need(s)"..
         (filter~="" and (" for "..filter..

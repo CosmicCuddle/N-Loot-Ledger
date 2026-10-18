@@ -1,0 +1,60 @@
+name: NLL Duplicate-Corpse Safety (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-duplicate-drop-safety
+  pull_request:
+    branches:
+      - dev/nll-reconciliation-ui
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: WoW 3.3.5a Lua 5.1 / exact-item identity safety
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact draft head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scope and no-physical-transfer guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=60e28ad81eaeb8c030acb08f4be32ff8ed28a7eb
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          while IFS= read -r path; do
+            case "$path" in
+              NaxxLootLottery/Core/GuildLootTransfer.lua|NaxxLootLottery/Core/GuildAutoPreview.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_duplicate_physical_items.lua|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|.github/workflows/nll-duplicate-drop-safety-review.yml) ;;
+              *) echo "::error::Unexpected file in identity safety draft: $path"; exit 1;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          grep -Fqx '## Version: 0.1.0.29-rc.1-dev7' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'tonumber(row.itemID)==tonumber(itemID)' NaxxLootLottery/Core/GuildLootTransfer.lua
+          grep -Fq 'tonumber(row.itemID)==tonumber(itemID)' NaxxLootLottery/Core/GuildAutoPreview.lua
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Syntax check all addon and test Lua
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Execute full historical and cross-slot regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in tests/test_*.lua; do
+            echo "Running $file"
+            lua5.1 "$file"
+          done
+      - name: Deterministic offline package smoke test
+        run: python3 tests/test_release_packaging.py
+      - name: No release, merge or live item award
+        run: echo "Draft-only test; no game installation or actual item delivery."

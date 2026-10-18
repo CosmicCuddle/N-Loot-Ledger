@@ -1,5 +1,7 @@
 # Naxxramas Loot Ledger — Development Roadmap
 
+> **Historical roadmap preserved.** For the latest master stage/PR tracker (including unmerged #18–#21 alternatives and the owner-installed HF2), consult [MASTER_DEVELOPMENT_CHECKLIST.md](MASTER_DEVELOPMENT_CHECKLIST.md). Older entries below retain the original evidence and dates; they are not the latest development status.
+
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger  
 **Published baseline:** `v0.1.0.28` (stable-core), `main` `6125fa94f19b1e532f39a881e16c6d1ba666f829`  
 **Last reviewed:** 16 October 2026  

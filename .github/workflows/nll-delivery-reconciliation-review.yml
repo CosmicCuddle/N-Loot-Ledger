@@ -5,6 +5,8 @@ on:
     branches:
       - dev/nll-delivery-reconciliation
   pull_request:
+    branches:
+      - dev/nll-remote-receipt-sync
   workflow_dispatch:
 
 permissions:

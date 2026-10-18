@@ -368,7 +368,10 @@ current draft addon has been installed.
       (C14_INTEGRATION_RELEASE_READINESS.md) and combined Lua 5.1
       regression covering existing C8–C13 core paths.
 - [x] Open stacked draft PR #37 after #36.
-- [ ] Verify dedicated/full Lua 5.1 regression CI on final exact head.
+- [x] Dedicated C14 integration/NO RELEASE and complete historical
+      Lua 5.1 regression CI passed; final exact-head links are
+      recorded in draft PR #37.
+- [ ] Recheck exact-head CI for any future changes to this draft.
 - [ ] Owner-approved backup-first in-client WoW 3.3.5a accessibility,
       multi-client and release-review gate. NOT complete.
 - [ ] Compare alternative PRs #18–#21 at eventual merge decision;

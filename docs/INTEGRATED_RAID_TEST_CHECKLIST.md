@@ -324,6 +324,30 @@ Do not merge, publish or change the live server/SavedVariables.
 - [ ] Compare SavedVariables and restore original matched pair only
       when owner authorises; use C14_INTEGRATION_RELEASE_READINESS.md.
 
+## F11 — dev19 owner screenshots / dev20 corrections (draft #38)
+
+- [ ] Preserve matching currently installed dev19 addon directory and
+      current SavedVariables .lua + .lua.bak BEFORE any dev20 install.
+      Keep the older HF2 backups as independent rollback evidence.
+- [ ] Verify 636 saved plans in game, not stale 604, 106 six-row pages.
+      Count exact current NEED/GREED and unique bot names separately;
+      do NOT delete 32 extra records.
+- [ ] Check My Wishlist heading displays on one line, seven visible
+      rows with all items accessible through paging, no bottom submit
+      status collisions, readable truncated long boss text.
+- [ ] Check Inbox 6 saved entries and top Newer/Older page 1/2 and
+      2/2, independent per-submission 4-item paging.
+- [ ] Archive one old reviewed entry by two clicks, check Archived
+      tab, restore, and verify itemIDs/status/interests all preserved.
+      Never use automatic destructive purge/delete.
+- [ ] Review lottery WINNER entries separately from physical attempt
+      records and actual verified receipts; simulated draws excluded.
+- [ ] Test New Run View two-step confirmation and All History toggle
+      with no real active loot window. Original audit remains intact.
+- [ ] Check all protected award/receipt/corpse NO RETRY history,
+      default physical settings OFF, no real item grants.
+- [ ] Capture remaining overlaps at actual owner's font/scale.
+
 ## Release gates (require separate owner approval)
 
 - [ ] Full Lua 5.1 CI passes at the exact stacked final SHA.

@@ -61,10 +61,12 @@ NaxxLootLottery={
 local N=NaxxLootLottery
 local UI=N.UI
 function UI:RegisterSkinnedFrame()end
+local buttons={}
 function UI:CreateTextButton(_,title,width)
     local b=frame()
     b.label=frame()
     b.label:SetText(title)
+    buttons[title]=b
     return b
 end
 assert(loadfile("NaxxLootLottery/Core/GearNeeds.lua"))()
@@ -122,14 +124,15 @@ ok(UI.gearPlanRows[1].characterText.text=="Gorakhan",
 UI.gearFilterBox:SetText("unknown")
 ok(not UI.gearPlanRows[1].visible and UI.gearPlansTotalPages==1,
    "no-match state has no leftover results and safe pager")
-local allButton
-local applyButton
--- Access control script via named geometry: the UI fixture captures all
--- buttons using its exported labels in the next test revision.
-local oldCreate=UI.CreateTextButton
--- Apply UI callback can still be used after creating the frame.
--- Trigger All from the actual control captured by UI below.
-input:SetText("")
+ok(buttons["Apply"] and buttons["All"],
+   "legacy Apply and All buttons remain accessible")
+input:SetText("Gorakalt")
+buttons["Apply"].events.OnClick()
+ok(UI.gearPlanRows[1].characterText.text=="Gorakalt",
+   "Apply still works for mouse-only users")
+buttons["All"].events.OnClick()
+ok(input:GetText()=="" and UI.gearPlanFilter=="",
+   "All button clears the search without deleting any Gear Plans")
 ok(UI.gearPlansTotalPages==101 and UI.gearPlanRows[1].visible and
    UI.gearPlansStatus.text=="604 saved Gear Need(s)",
    "clearing text instantly restores all saved plans")

@@ -39,7 +39,7 @@ def addon_entries():
         assert rel.suffix.lower() == ".lua", "Unexpected TOC dependency"
         assert rel.parts and rel.parts[0] != "NaxxLootLottery", "Nested addon path"
         modules.append(ADDON / rel)
-    assert len(modules) == 38, f"Expected 38 Lua modules, found {len(modules)}"
+    assert len(modules) == 41, f"Expected 41 Lua modules, found {len(modules)}"
     assert len(set(modules)) == len(modules), "Duplicate TOC dependency"
     for module in modules:
         assert module.is_file() and not module.is_symlink(), f"Missing/unsafe {module}"

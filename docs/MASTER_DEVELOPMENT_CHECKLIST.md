@@ -151,11 +151,12 @@ current draft addon has been installed.
 - [ ] Find reliable different-corpse identity for repeated guild mats:
       currently legitimate distinct copies can remain deliberately held.
 
-**NLL-026 — Exact live character filter; new draft PR**
+**NLL-026 — Exact live character filter; [PR #26](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/26)**
 - [x] Built: matching by trimmed full character name only, ignoring case.
 - [x] Built: typing updates immediately; Enter, Apply and All work.
 - [x] Built: only the display is filtered, no status or saved row edits.
-- [ ] Record final exact-head CI / PR number once PR is created.
+- [x] Draft PR #26 opened on top of #25; the prior stack remains unchanged.
+- [ ] Record final exact-head CI results once green.
 - [ ] Owner verifies filter in the WoW client at their chosen test stage.
 
 ## D. Parallel draft work that must NOT be forgotten

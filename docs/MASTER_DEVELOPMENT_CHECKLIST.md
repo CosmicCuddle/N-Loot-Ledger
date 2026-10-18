@@ -69,14 +69,14 @@ is deliberate, not evidence that the checklist is unfinished.
 
 ## B. Older active draft lane (NOT merged into the new stack)
 
-**NLL-008 — NEED before GREED; draft [#8](../pull/8)**
+**NLL-008 — NEED before GREED; draft [#8](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/8)**
 - [x] Built: NEED Tier 1-3 precede equal GREED stage.
 - [x] Built: Gear Plans statuses NEEDED/GREED/OBTAINED/DISABLED.
 - [x] Built: 40-bot simulation and six-row Gear Plans page to prevent overlap.
 - [x] Owner previously checked selected UI/simulator behaviour.
 - [ ] Fully integrated real-raid acceptance and merge approval.
 
-**NLL-009 — Safe Playerbot Gear Plan import/export; draft [#9](../pull/9)**
+**NLL-009 — Safe Playerbot Gear Plan import/export; draft [#9](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/9)**
 - [x] Built: add-only export, preview and explicit import confirmation.
 - [x] Built: refuse clashes instead of overwriting existing Gear Plans.
 - [ ] Validate full installed-client import/export and 604-row scenario.
@@ -88,61 +88,61 @@ current draft addon has been installed.
 
 ## C. Main current development stack (all PRs draft/unmerged)
 
-**NLL-010 — New Drop and HF2 GUI; draft [#10](../pull/10)**
+**NLL-010 — New Drop and HF2 GUI; draft [#10](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/10)**
 - [x] Built: New Drop -> Confirm Drop with duplicate identity locks.
 - [x] Owner visually confirmed installed HF2 no longer overlaps controls.
 - [ ] Cross-corpse identity stress tests in game, not just Lua mocks.
 
-**NLL-012 — Personal NEED/GREED and RAID messages; [#12](../pull/12)**
+**NLL-012 — Personal NEED/GREED and RAID messages; [#12](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/12)**
 - [x] Built and prior CI: personal interest, RAID chat and optional
       five-second roll countdown.
 - [ ] Integrated multiple-recipient RAID chat and countdown acceptance.
 
-**NLL-013 — Manual Award Winner; [#13](../pull/13)**
+**NLL-013 — Manual Award Winner; [#13](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/13)**
 - [x] Built and prior CI: guarded exact-slot WoW Master Loot candidate
       review, explicit arm/confirm and write audit.
 - [ ] Real safe physical delivery / recipient inventory acceptance.
 
-**NLL-014 — All-slot guild loot review; [#14](../pull/14)**
+**NLL-014 — All-slot guild loot review; [#14](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/14)**
 - [x] Built and prior CI: materials, reagents, recipes, gear and BoE
       in conservative read-only status categories.
 - [ ] Confirm full live loot/corpse UI with unreserved materials.
 
-**NLL-015 — Manual guild Master Loot; [#15](../pull/15)**
+**NLL-015 — Manual guild Master Loot; [#15](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/15)**
 - [x] Built and prior CI: separate consent, exact slot and candidate,
       request audit before WoW call, double confirmation.
 - [ ] Real controlled in-game test. Direct transfer consent remains OFF.
 
-**NLL-016 — Winner -> recipient-confirmed OBTAINED; [#16](../pull/16)**
+**NLL-016 — Winner -> recipient-confirmed OBTAINED; [#16](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/16)**
 - [x] Built and prior CI: NEED/GREED is not converted on lottery win,
       API request or slot clear.
 - [x] Built and prior CI: after independent recipient inventory review,
       corresponding leader-side bot/player plans may become OBTAINED.
 - [ ] Confirm player and Playerbot physical receipts separately in-game.
 
-**NLL-017 — Remote human receipt ACK; [#17](../pull/17)**
+**NLL-017 — Remote human receipt ACK; [#17](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/17)**
 - [x] Built and prior CI: two-client offer/accept/ACK, isolated client data.
 - [ ] Test with multiple real WoW client accounts and altered leadership.
 - [ ] Verify missing ACK, same-item replays and reconnect behaviour.
 
-**NLL-022 — Write-ahead attempted award/no-retry; [#22](../pull/22)**
+**NLL-022 — Write-ahead attempted award/no-retry; [#22](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/22)**
 - [x] Built; exact-head Lua 5.1 safety CI passed.
 - [x] Durable attempted drop UID lock recorded before GiveMasterLoot.
 - [x] Explicit NO-RETRY reconciliation is not equivalent to delivery.
 - [ ] In-game review of unknown and loot-slot-cleared records.
 
-**NLL-023 — Guild allocation dry-run; [#23](../pull/23)**
+**NLL-023 — Guild allocation dry-run; [#23](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/23)**
 - [x] Built; exact-head Lua 5.1 safety CI passed.
 - [x] Only locally unreserved known items are *proposed* to leader.
 - [x] Preview has no automatic Master Loot transfer authority.
 - [ ] Cross-client reservation-completeness proof remains unavailable.
 
-**NLL-024 — Reconciliation modal; [#24](../pull/24)**
+**NLL-024 — Reconciliation modal; [#24](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/24)**
 - [x] Built; exact-head Lua 5.1 safety CI passed.
 - [x] Paged window, select/arm/confirm, expiry and cancel paths tested.
 - [ ] In-game visual/font-size/layout and interaction acceptance.
 
-**NLL-025 — Duplicate item ID cross-slot protection; [#25](../pull/25)**
+**NLL-025 — Duplicate item ID cross-slot protection; [#25](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/25)**
 - [x] Built; exact-head Lua 5.1 safety CI passed.
 - [x] Same-ID material across changed slots is held, including
       previously CLOSED_NO_RETRY cases.
@@ -164,16 +164,16 @@ current draft addon has been installed.
 They are alternative development branches. Their existence does not
 mean their code is included in the current stack.
 
-- [ ] **NLL-018 — [PR #18](../pull/18)** Guild transfer operator identity,
+- [ ] **NLL-018 — [PR #18](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/18)** Guild transfer operator identity,
       receipt reconciliation, audit and hold UI. Compare safe recipient
       attestation against #22–#24. Keep unique findings; do not blindly merge.
-- [ ] **NLL-019 — [PR #19](../pull/19)** More detailed guild auto-preview
+- [ ] **NLL-019 — [PR #19](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/19)** More detailed guild auto-preview
       including Master Looter/active roll state and all-slot proposal rows.
       Compare to #23; preserve valuable conservative review gates.
-- [ ] **NLL-020 — [PR #20](../pull/20)** Recipient-self guild confirmation
+- [ ] **NLL-020 — [PR #20](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/20)** Recipient-self guild confirmation
       and conservative winner receipt tracking. Compare to current
       ledger and document human vs server-verified limitations.
-- [ ] **NLL-021 — [PR #21](../pull/21)** Pending winner-receipt and human
+- [ ] **NLL-021 — [PR #21](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/21)** Pending winner-receipt and human
       ACK holds even after Gear Plan changes. **Safety-relevant**:
       review for an eventual separate hardening patch against #23/#25.
 - [ ] For each alternative: review exact current head and CI, document

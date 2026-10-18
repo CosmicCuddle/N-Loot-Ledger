@@ -65,6 +65,7 @@ assert(loadfile("NaxxLootLottery/Core/LootCopyAudit.lua"))()
 local IDs={18291,16800,16805,16829,16837,16859,16863,18870,
     17109,19145,19146,18872,18875,18861,18879,19147}
 local byKey={}
+local originalStatuses={}
 local needCount,greedCount=0,0
 for i=1,604 do
     local index=math.floor((i-1)/16)
@@ -79,6 +80,7 @@ for i=1,604 do
         source="BOT_GEAR_PLAN"}
     db.gearNeeds[key]=row
     byKey[key]=row
+    originalStatuses[key]=row.status
     if row.status=="NEEDED" then needCount=needCount+1
     else greedCount=greedCount+1 end
 end
@@ -193,13 +195,16 @@ ok(N.GearPlanReview:Confirm() and first.status=="GREED",
 local modified=0
 for key,row in pairs(byKey) do
     ok(db.gearNeeds[key]==row,"all 604 saved row objects preserved")
+    ok(row.status==(key==firstKey and "GREED" or originalStatuses[key]),
+       "other 603 original NEED/GREED statuses remain byte-for-byte unchanged")
     if key==firstKey and row.role=="HEALER" and row.status=="GREED" then
         modified=modified+1
     else
         ok(row.role=="CASTER_DPS","unrelated item role unchanged")
     end
 end
-ok(modified==1,"only chosen row received intended role/status changes")
+ok(modified==1 and N.GearNeeds:GetCount()==604,
+   "only selected item changed; no stored Gear Plan gained or disappeared")
 local after=N.ProfessionRecipeReview:Build(18291)
 ok(after and #after.candidates==38 and
     after.need==before.need-1 and after.greed==before.greed+1 and

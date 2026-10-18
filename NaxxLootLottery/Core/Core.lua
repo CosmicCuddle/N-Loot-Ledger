@@ -761,6 +761,10 @@ function NLL:Initialize()
         self.GuildLootReconciliation
     )
     RequireModule(
+        "Core/GuildLootAutoPreview.lua",
+        self.GuildLootAutoPreview
+    )
+    RequireModule(
         "Core/LootReceiptTracker.lua",
         self.LootReceiptTracker
     )

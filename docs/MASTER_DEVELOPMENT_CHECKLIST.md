@@ -9,9 +9,13 @@ Do not delete historical work just because another feature takes priority.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
 **Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
--> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 -> #33 -> #34 -> #35 -> #36 -> #37 (integration hardening).
-**Shared baseline:** 604 imported Gear Plans across 38 Playerbots
-(469 NEED, 135 GREED). These are **real owner data**, not development fixtures.
+-> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 -> #33 -> #34 -> #35 -> #36 -> #37 -> #38 (owner UI feedback).
+**Historic audited baseline:** 604 imported Gear Plans across 38 Playerbots
+(469 NEED, 135 GREED). These were **real owner data** at an earlier stage.
+**Latest in-game screenshot (18 Oct):** **636 SAVED GEAR NEED(S)** on
+installed dev19, 106 pages of six. Do NOT roll back or reduce this to 604.
+Current NEED/GREED split and bot count require verification from current
+SavedVariables. Keep old 604 synthetic regression tests as historical tests.
 **Public release baseline:** v0.1.0.28 on main, separate from the above.
 **Compatibility:** WoW 3.3.5a, Interface 30300, Lua 5.1, AzerothCore,
 Individual Progression and Playerbots.
@@ -497,6 +501,28 @@ mean their code is included in the current stack.
 - [ ] Build a separate, explicitly approved feature proposal
       before any unattended physical transfer. OFF by default.
 
+**NLL-038 — First owner in-game UI defects / draft PR #38**
+- [x] Reviewed dev19 screenshots: 636 Gear Plans (NOT historic 604),
+      Inbox six saved / four shown, empty physical-only Award History,
+      wrapped Wishlist heading and overlapping bottom footer text.
+- [x] Add read-only combined real-roll WINNER and physical award
+      attempt history. A completed roll is never proof of delivery.
+- [x] Add two-step NEW RUN VIEW and All History toggle; underlying
+      lottery, physical attempts, receipts and immutable locks retained.
+- [x] Add reversible Inbox Archive / Restore, optional Archived view,
+      and top saved-submission pager so 5th/6th entries remain visible.
+- [x] Make the Wishlist count single-line; reduce visible rows from
+      eight to seven and reserve outgoing message/footer room.
+- [x] Add 636 synthetic-row Lua 5.1 safety fixture plus Inbox UI
+      archive/pager tests, no Master Loot / real receipt changes.
+- [ ] Dedicated/full exact-head GitHub CI and TEST-ONLY ZIP.
+- [ ] Backup-first owner's second controlled client screenshot test;
+      no real award or automatic live release.
+- [ ] Verify whether 32 additional saved Gear Plans are intended.
+      No migration/delete, and no assumption that 469/135 are current.
+
+See [C15 screenshot findings and test plan](C15_LIVE_FEEDBACK_UI_ACCEPTANCE.md).
+
 ## F. Integrated testing, backup and release gate
 
 **NLL-TEST-001 — Owner-controlled test-only build and Phase 1 smoke gate**
@@ -528,8 +554,10 @@ mean their code is included in the current stack.
 - [ ] Back up WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua
       AND NaxxLootLottery.lua.bak (if it exists), including other
       human clients in remote ACK tests.
-- [ ] Check baseline of **604 bot records / 38 bots / 469 NEED / 135 GREED**
-      and preserve roles, winners, lottery history and wishlists.
+- [ ] Check the **CURRENT 636-record in-game screenshot baseline**;
+      determine the new NEED/GREED and bot counts without assuming
+      the historical 604 / 38 / 469 / 135 are still current. Preserve
+      full roles, winners, lottery history, immutable locks and wishlists.
 - [ ] Follow the [integrated raid testing checklist](INTEGRATED_RAID_TEST_CHECKLIST.md)
       on a controlled build, with representative Playerbots and players.
 - [ ] Correct in-game issues in further **draft** patches, repeating CI.
@@ -538,8 +566,9 @@ mean their code is included in the current stack.
 - [ ] Owner authorises installation. No existing saved data is reset.
 - [ ] Only then mark the released version and actual client acceptance.
 
-**Owner action today: NONE.** Continue using installed HF2 until a separate
-test/install approval is requested. These checkboxes are planning records,
+**Owner action today: NONE until a separately approved dev20 TEST-ONLY
+artifact exists and new matched backups are made.** The owner has already
+tested dev19 in game; do not assume installed HF2 is still current. These checkboxes are planning records,
 not authorisations for a live server change or actual item award.
 
 ## Next-development handover rule

@@ -4,13 +4,14 @@
 
 **Latest published version:** `v0.1.0.28` (stable-core release, 13 October 2026)  
 **Current owner raid installation:** `0.1.0.29-rc.1-hf2` — preserve this working build and its SavedVariables until the owner approves testing.  
-**Current development:** Stacked draft PRs #10, #12–#17 and #22–#25; latest experimental draft `dev/nll-modal-layout-safety` is `0.1.0.29-rc.1-dev11` (41 Lua modules). These new features are **not installed, merged or released**.  
+**Current development:** Stacked draft PRs #10, #12–#17 and #22–#30; latest experimental draft `dev/nll-loot-source-diagnostics` is `0.1.0.29-rc.1-dev12` (44 Lua modules). These new features are **not installed, merged or released**.  
 **Status:** Direct Master Loot remains **experimental, unverified and OFF by default**. Live boss loot and bot inventory delivery are not certified.
 
 **Historical release sequence:** PRs #2, #3 and #6 have been merged into `main`, and v0.1.0.28 was published. The new Need Before Greed branch does not alter that release or activate real awarding.
 
 ## Development tracker and test plan
 
+- [Wrath 3.3.5a source identity research](docs/RESEARCH_WOTLK_LOOT_SOURCE_IDENTITY.md) — shows why changing targets/loot slots cannot safely unlock repeated materials; /nll lootsource is diagnostic only.
 - [Recipient self-attestation test blueprint](docs/TESTING_GUILD_RECIPIENT_ATTESTATION_DRAFT.md) — independent human bag evidence without changing NO RETRY or awarding anything.
 - [Comparison of parallel PRs #18–#21](docs/REVIEW_PARALLEL_DRAFTS.md) — safety work imported into the main draft path versus deferred recipient-attestation design.
 - **[MASTER DEVELOPMENT CHECKLIST](docs/MASTER_DEVELOPMENT_CHECKLIST.md)** — the authoritative stage-by-stage record of every past, current, parallel and planned NLL feature, plus completed CI, unfinished WoW testing and future actions.

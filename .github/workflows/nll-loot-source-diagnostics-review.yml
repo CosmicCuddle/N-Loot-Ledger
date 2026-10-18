@@ -1,0 +1,71 @@
+name: NLL Wrath Loot Source Diagnostics (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-loot-source-diagnostics
+  pull_request:
+    branches:
+      - dev/nll-modal-layout-safety
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lua 5.1 / source hints cannot unlock items / all regressions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact stacked draft
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate base, scope, unchanged physical consent
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=89dc0e9706d34f271ef7454d15a510a321bd3396
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/Core/LootSourceDiagnostics.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_loot_source_diagnostics.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|README.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/RESEARCH_WOTLK_LOOT_SOURCE_IDENTITY.md|.github/workflows/nll-loot-source-diagnostics-review.yml) ;;
+              *) echo "::error::Unexpected file outside source diagnostic scope: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev12' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'sourceVerified=false,canUnlock=false' NaxxLootLottery/Core/LootSourceDiagnostics.lua
+          grep -Fq 'targetGUIDHint' NaxxLootLottery/Core/LootSourceDiagnostics.lua
+          grep -Fq '/nll lootsource' NaxxLootLottery/Core/Core.lua
+          # Reject executable calls; comments mentioning unavailable
+          # APIs are documentation, not permission to invoke them.
+          if grep -Ev '^[[:space:]]*--' NaxxLootLottery/Core/LootSourceDiagnostics.lua | grep -Eq '(GiveMasterLoot|RandomRoll|GetLootSourceInfo)[[:space:]]*\('; then
+            echo "::error::Read-only source diagnostic must not award/roll/call 5.0.4 APIs"; exit 1
+          fi
+          if git diff "$BASE" HEAD -- NaxxLootLottery/Core/GuildLootTransfer.lua NaxxLootLottery/Core/AwardWorkflow.lua NaxxLootLottery/Core/GuildAutoPreview.lua NaxxLootLottery/Core/LootIdentity.lua | grep -q '^[+-][^+-]'; then
+            echo "::error::Permanent no-retry guards must not change"; exit 1
+          fi
+      - name: Install WoW-compatible Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse all Lua addon modules and tests
+        run: find NaxxLootLottery tests -name '*.lua' -type f -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Execute all historical and new Lua 5.1 regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test_file in tests/test_*.lua; do
+            echo "Running $test_file"
+            lua5.1 "$test_file"
+          done
+      - name: Master project checklist continuity
+        run: python3 tests/test_master_checklist.py
+      - name: Reproducible offline development package smoke-check
+        run: python3 tests/test_release_packaging.py
+      - name: No deployment or source-proof claim
+        run: echo "NO RELEASE. GUID hints do not establish a corpse source. No item retry permitted."

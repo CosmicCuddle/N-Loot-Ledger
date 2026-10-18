@@ -184,6 +184,22 @@ Do not merge, publish or change the live server/SavedVariables.
 - [ ] Record screenshots; geometry mock tests alone are not proof of
       pixel-perfect in-client appearance.
 
+## F3 — Corpse source diagnostics (draft #30)
+
+- [ ] On a controlled dev client open one REAL corpse's loot window
+      and run /nll lootsource. Record slot summary and target GUID hint.
+- [ ] Change the current target and repeat WITHOUT changing the corpse.
+      Different UnitGUID target must NEVER claim a different loot source.
+- [ ] Reopen same corpse or compare a separate corpse with the same
+      crafting material. Previous physical attempt must remain locked.
+- [ ] Repeat without current target; confirm no source is invented.
+- [ ] Use Debug Simulator and closed loot: zero live source rows.
+- [ ] No GetLootSourceInfo (5.0.4+) dependency, no new delivery proof,
+      no bypass for guild materials or repeated winner rolls.
+- [ ] Compare backup with saved Gear Plans, winners and receipts; running
+      diagnostic should not append records or change settings.
+- [ ] Record in-game screenshots, not just Lua geometry/mock evidence.
+
 ## Release gates (require separate owner approval)
 
 - [ ] Full Lua 5.1 CI passes at the exact stacked final SHA.

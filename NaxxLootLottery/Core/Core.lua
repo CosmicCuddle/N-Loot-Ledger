@@ -9,7 +9,7 @@ local NLL = NaxxLootLottery
 
 NLL.name = "Naxxramas Loot Ledger"
 NLL.shortName = "NLL"
-NLL.version = "0.1.0.29-rc.1-dev11"
+NLL.version = "0.1.0.29-rc.1-dev12"
 NLL.databaseVersion = 1
 NLL.initialized = false
 NLL.initializeAttempted = false
@@ -272,6 +272,18 @@ function NLL:HandleSlashCommand(message)
             ok, message = self.LootIdentity:PrepareReset()
         end
         self:Print(message)
+        return
+    end
+    if command=="lootsource" then
+        -- 3.3.5a provides a current TARGET GUID, not a proven corpse
+        -- source. This diagnostic never unlocks an item or transfers loot.
+        if self.LootSourceDiagnostics then
+            for _,line in ipairs(self.LootSourceDiagnostics:Report()) do
+                self:Print(line)
+            end
+        else
+            self:Print("Loot source diagnostics unavailable; no retry allowed.")
+        end
         return
     end
     if command == "lootidentity" then
@@ -729,6 +741,7 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll testdrop <id> - Debug-only fake drop.")
         self:Print("/nll clearloot - Clear detected loot (not the roll history).")
         self:Print("/nll lootidentity - Show current and archived loot group counts.")
+        self:Print("/nll lootsource - Read-only source-hint/duplicate-lock diagnosis; NO RETRY.")
         self:Print("/nll botcheck [name] - Read-only real Playerbot roster/loot preflight.")
         self:Print("/nll newloot - Confirm a DIFFERENT corpse when loot overlaps.")
         self:Print("/nll newloot confirm - Confirm new corpse within 20 seconds.")

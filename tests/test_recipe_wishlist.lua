@@ -149,6 +149,14 @@ check(personalInterests[16802]==nil and
     "clicking Greed returns to Need without a migration")
 
 UI.localWishlistRecipesButton.scripts.OnClick()
+check(UI.localWishlistProfessionButton.shown and
+    UI.localWishlistInterestHeader.shown==false,
+    "profession review entry replaces only recipe Interest header")
+local reviewOpens=0
+UI.ShowProfessionRecipeReview=function()reviewOpens=reviewOpens+1 end
+UI.localWishlistProfessionButton.scripts.OnClick()
+check(reviewOpens==1,
+    "recipe category has a discoverable read-only profession review")
 check(UI.localWishlistCategory == "recipes"
     and UI.localWishlistPage == 1, "recipes tab resets pagination")
 check(UI.localWishlistRecipesButton.state == "active"
@@ -159,6 +167,9 @@ check(UI.localWishlistRows[1].interest.enabled==false,
     "guild/manual recipes cannot be toggled into lottery Greed")
 check(UI.localWishlistRows[3].shown == false, "only two reserved recipes listed")
 UI.localWishlistItemsButton.scripts.OnClick()
+check(not UI.localWishlistProfessionButton.shown and
+    UI.localWishlistInterestHeader.shown,
+    "item category restores original Interest header and hides recipe review")
 check(UI.localWishlistRows[1].itemText.text == "Arcanist Belt",
     "returning to Gear / Items restores the same saved gear")
 

@@ -134,6 +134,7 @@ function UI:CreateLocalWishlistContent(parent)
     )
 
     itemsButton:SetScript("OnClick", function()
+        if UI.CloseProfessionRecipeReview then UI:CloseProfessionRecipeReview() end
         UI.localWishlistCategory = "items"
         UI.localWishlistPage = 1
         UI:RefreshLocalWishlist()
@@ -180,7 +181,22 @@ function UI:CreateLocalWishlistContent(parent)
 
     HeaderText("Item", 10, 360)
     HeaderText("Boss / Source", 375, 215)
-    HeaderText("Interest", 648, 76)
+    local interestHeader=header:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+    interestHeader:SetPoint("LEFT",header,"LEFT",648,0)
+    interestHeader:SetWidth(76)
+    interestHeader:SetJustifyH("LEFT")
+    interestHeader:SetText("Interest")
+    -- Reuse the Interest *header* only when the Recipes tab is active.
+    -- Never overlap the existing eight item rows or bottom pager.
+    local professionButton=self:CreateTextButton(header,"Prof. Review",125)
+    professionButton:SetPoint("RIGHT",header,"RIGHT",-3,0)
+    professionButton:SetScript("OnClick",function()
+        if UI.localWishlistCategory~="recipes" then return end
+        if UI.ShowProfessionRecipeReview then UI:ShowProfessionRecipeReview() end
+    end)
+    professionButton:Hide()
+    self.localWishlistProfessionButton=professionButton
+    self.localWishlistInterestHeader=interestHeader
 
     self.localWishlistRows = {}
 
@@ -354,6 +370,15 @@ function UI:RefreshLocalWishlist()
     local category = self.localWishlistCategory == "recipes"
         and "recipes" or "items"
     self.localWishlistCategory = category
+    if self.localWishlistProfessionButton then
+        if category=="recipes" then
+            self.localWishlistProfessionButton:Show()
+            self.localWishlistInterestHeader:Hide()
+        else
+            self.localWishlistProfessionButton:Hide()
+            self.localWishlistInterestHeader:Show()
+        end
+    end
 
     if self.localReceiptInboxButton and NLL.ReceiptSync then
         local pending=NLL.ReceiptSync:GetPendingForLocal()

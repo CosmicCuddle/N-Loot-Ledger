@@ -1383,15 +1383,15 @@ function UI:CreateInboxContent(parent)
     -- The top Inbox list used to show ONLY four submissions even when
     -- six or more were saved. Both lists must have independent pagers.
     local older=self:CreateTextButton(content,"Older",67)
-    older:SetPoint("TOPRIGHT",content,"TOPRIGHT",-175,-2)
     local newer=self:CreateTextButton(content,"Newer",70)
-    newer:SetPoint("LEFT",older,"RIGHT",5,0)
-    local pageLabel=content:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-    pageLabel:SetPoint("RIGHT",content,"RIGHT",-81,197)
-    pageLabel:SetWidth(76)
-    pageLabel:SetJustifyH("RIGHT")
     local archived=self:CreateTextButton(content,"Archived",84)
-    archived:SetPoint("TOPRIGHT",content,"TOPRIGHT",0,-2)
+    archived:SetPoint("TOPRIGHT",content,"TOPRIGHT",-2,-2)
+    newer:SetPoint("RIGHT",archived,"LEFT",-5,0)
+    older:SetPoint("RIGHT",newer,"LEFT",-5,0)
+    local pageLabel=content:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    pageLabel:SetPoint("RIGHT",older,"LEFT",-5,0)
+    pageLabel:SetWidth(58)
+    pageLabel:SetJustifyH("RIGHT")
     older:SetScript("OnClick",function()
         if UI.inboxPage<(UI.inboxTotalPages or 1) then
             UI.inboxPage=UI.inboxPage+1
@@ -1892,8 +1892,9 @@ function UI:RefreshInbox()
     self.inboxPage=math.max(1,math.min(self.inboxPage or 1,pages))
     local first=(self.inboxPage-1)*4
     self.inboxStatus:SetText(
-        count..(self.inboxShowArchived and " archived submission(s)" or
-        " active submission(s)"))
+        count..(self.inboxShowArchived and " archived" or " active")..
+        (NLL.Communication:IsSelfRaidLeader() and " (raid leader)" or
+        " (not raid leader)"))
     if self.inboxTopPageLabel then
         self.inboxTopPageLabel:SetText(self.inboxPage.."/"..pages)
         if self.inboxPage>=pages then self.inboxOlder:Disable()
@@ -1988,14 +1989,9 @@ function UI:RefreshInbox()
             GetConflictCount(selected)
 
     self.inboxSelectedTitle:SetText(
-        selected.player ..
-        " - " ..
-        tostring(
-            #(selected.itemIDs or {})
-        ) ..
-        " submitted item(s), " ..
-        tostring(conflicts) ..
-        " existing manual/bot conflict(s)."
+        tostring(selected.player or "Unknown")..": "..
+        tostring(#(selected.itemIDs or {}))..
+        " items, "..tostring(conflicts).." plan conflicts"
     )
 
     local totalItems =

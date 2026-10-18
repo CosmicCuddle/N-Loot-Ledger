@@ -231,7 +231,7 @@ current draft addon has been installed.
 - [ ] Record owner-approved in-game text/screenshots and baseline
       SavedVariables comparison; not yet a usable per-corpse solution.
 
-**NLL-031 — Full-roster batched Playerbot Gear Plan export; draft PR #31**
+**NLL-031 — Full-roster batched Playerbot Gear Plan export; [draft PR #31](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/31)**
 - [x] Built: deterministic, fully validated 250-row read-only export
       batches with the original NLL-GEARPLANS-1 format.
 - [x] Built: 604 records produce 250/250/104, each below 48 KB,
@@ -243,7 +243,8 @@ current draft addon has been installed.
 - [x] Added Lua 5.1 604-row fixtures with 469 NEED / 135 GREED and
       import-compatible roundtrip tests preserving old table identity.
 - [x] Added [future copy, backup and game-client test plan](TESTING_BATCHED_GEAR_EXPORT_DRAFT.md).
-- [ ] Open stacked PR #31; record exact-head dedicated and full CI.
+- [x] Open stacked draft PR #31, preserving PR #30.
+- [ ] Record exact-head dedicated and full CI pass/fail on PR #31.
 - [ ] Owner-approved WoW clipboard, paging, full SavedVariables
       comparison and readability checks (not yet tested or installed).
 

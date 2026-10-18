@@ -188,7 +188,9 @@ current draft addon has been installed.
 - [x] Add WoW 3.3.5a Lua 5.1 mock UI/backend regressions and
       [acceptance plan](TESTING_GUILD_RECIPIENT_ATTESTATION_DRAFT.md).
 - [x] Open stacked draft PR #28 after #27.
-- [ ] Verify latest exact-head dedicated and full GitHub Actions CI.
+- [x] Dedicated and full Lua 5.1 GitHub Actions passed; exact current
+      head evidence is maintained in PR #28 review comments.
+- [ ] Revalidate exact-head checks if later code commits change this draft.
 - [ ] Real client and paired human-client acceptance; still not a
       certified delivery receipt or automatic allocation authority.
 

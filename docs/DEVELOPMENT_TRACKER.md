@@ -28,7 +28,7 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 | #32 | Two-click per-bot Gear Plan status/deletion review; protect OBTAINED and pending awards | Dedicated no-release + all Lua 5.1 tests passed (PR #32) | Pending full-roster client acceptance | Draft only |
 | #33 | Item-only bot role picker + 15-second two-click review, zero shared-role writes | Dedicated no-release + complete Lua 5.1 CI passed (PR #33) | Pending client role/picker visual acceptance | Draft only |
 | #34 | Read-only V1 import conflict comparisons incl. UTF-8 aliases, paged SAVED/PASTED UI | Dedicated no-release + complete Lua 5.1 CI passed (PR #34) | Pending clipboard/UI acceptance | Draft only |
-| #35 | Ten MC recipe professions + unverified Gear Plan candidates; manual-only paged review | CI pending | Pending profession evidence/UI acceptance | Draft only |
+| #35 | Ten MC recipe professions + unverified Gear Plan candidates; manual-only paged review | Dedicated no-release + full Lua 5.1 CI passed (PR #35) | Pending profession evidence/UI acceptance | Draft only |
 
 **Parallel, separately stacked drafts #18–#21** are inventoried in the master checklist; see [review decisions](REVIEW_PARALLEL_DRAFTS.md) for the safe findings forwarded into #27. The alternative reconciliation branches remain separate drafts.
 

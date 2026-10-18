@@ -178,7 +178,7 @@ current draft addon has been installed.
 - [ ] Repeat the CI status check if any new code commits are added.
 - [ ] Owner-approved in-client and remote-human receipt testing.
 
-**NLL-028 — Intended-recipient own-bag statement; draft PR**
+**NLL-028 — Intended-recipient own-bag statement; [PR #28](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/28)**
 - [x] Implement a separate, strictly recipient-owned two-click
       own-bag attestation ledger and window. It never edits old guild
       audit status, NO RETRY closure, item locks or Gear Plans.
@@ -187,7 +187,8 @@ current draft addon has been installed.
       source proof is asserted.
 - [x] Add WoW 3.3.5a Lua 5.1 mock UI/backend regressions and
       [acceptance plan](TESTING_GUILD_RECIPIENT_ATTESTATION_DRAFT.md).
-- [ ] Open stacked PR #28 and verify exact-head CI.
+- [x] Open stacked draft PR #28 after #27.
+- [ ] Verify latest exact-head dedicated and full GitHub Actions CI.
 - [ ] Real client and paired human-client acceptance; still not a
       certified delivery receipt or automatic allocation authority.
 

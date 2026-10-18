@@ -287,7 +287,7 @@ current draft addon has been installed.
 - [ ] Real 3.3.5a UI/font/clipboard acceptance and matched backups
       still require separate owner approval.
 
-**NLL-034 — Read-only saved-vs-pasted import conflicts; draft PR #34**
+**NLL-034 — Read-only saved-vs-pasted import conflicts; [draft PR #34](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/34)**
 - [x] Built: comparison of conflicting existing Playerbot plans to
       validated NLL-GEARPLANS-1 import candidates: exact saved value
       vs pasted value for Character, Type, Role, Raid, Item, Source
@@ -301,7 +301,8 @@ current draft addon has been installed.
 - [x] Built: 604+alias Lua 5.1 fixtures, unchanged account data tests,
       UI paging and disarm checks. Owner acceptance blueprint:
       [TESTING_GEAR_PLAN_CONFLICT_COMPARISON.md](TESTING_GEAR_PLAN_CONFLICT_COMPARISON.md).
-- [ ] Open stacked PR #34 and verify dedicated/full Lua 5.1 CI.
+- [x] Open stacked draft PR #34 after PR #33.
+- [ ] Verify latest exact-head dedicated and full Lua 5.1 CI.
 - [ ] Actual WoW clipboard/multiline/modal acceptance with backups.
 
 **Estimated remaining development stages (not a promise):**

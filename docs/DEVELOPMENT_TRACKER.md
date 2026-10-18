@@ -25,7 +25,7 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 | #29 | UI footer geometry + recipient-only My Bags entry | Dedicated + full Lua 5.1 CI passed (PR #29) | Pending visual screenshots | Draft only |
 | #30 | 3.3.5a loot-source API research + non-awarding /nll lootsource | Dedicated no-release + full Lua 5.1 CI passed (PR #30) | Pending source-hint diagnostic check | Draft only |
 | #31 | Read-only 604-plan export 250/250/104 with batch pager | Dedicated no-release + complete Lua 5.1 tests passed (PR #31) | Pending clipboard and GUI acceptance | Draft only |
-| #32 | Two-click per-bot Gear Plan status/deletion review; protect OBTAINED and pending awards | CI pending | Pending full-roster client acceptance | Draft only |
+| #32 | Two-click per-bot Gear Plan status/deletion review; protect OBTAINED and pending awards | Dedicated no-release + all Lua 5.1 tests passed (PR #32) | Pending full-roster client acceptance | Draft only |
 
 **Parallel, separately stacked drafts #18–#21** are inventoried in the master checklist; see [review decisions](REVIEW_PARALLEL_DRAFTS.md) for the safe findings forwarded into #27. The alternative reconciliation branches remain separate drafts.
 

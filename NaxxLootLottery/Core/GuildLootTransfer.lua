@@ -68,11 +68,15 @@ function T:IsUnresolved()
 end
 
 function T:WasAttempted(itemID,slot)
+    -- WoW 3.3.5a cannot prove the original corpse identity for guild
+    -- materials. Slot numbers can change on re-open and two corpses may
+    -- drop identical items. A matching ITEM ID is therefore an enduring
+    -- NO-RETRY guard, even if the later slot number is different and
+    -- even after an investigation was CLOSED_NO_RETRY. Until a trusted
+    -- per-corpse identity is available, never mistake a changed slot
+    -- for proof of a new physical copy.
     for _,row in ipairs(NLL.db and NLL.db.guildLootTransferAudit or {}) do
-        if row.itemID==itemID and row.slotIndex==slot then
-            -- Client 3.3.5 offers no reliable physical corpse GUID.
-            -- No repeat physical item/slot on this account without an
-            -- independently reviewed reconciliation mechanism.
+        if tonumber(row.itemID)==tonumber(itemID) then
             return true
         end
     end

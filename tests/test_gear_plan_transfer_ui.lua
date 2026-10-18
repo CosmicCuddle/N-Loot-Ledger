@@ -169,4 +169,73 @@ ok(UI.gearTransferDialog.visible and
     "reopened export shows newly imported bot plan")
 ok(not UI.gearTransferConfirm.enabled,
     "reopen always clears any prior confirmation")
+-- Scale the same owned fixture to the real roster size without touching
+-- saved history/roles. Export must move among read-only V1 batches.
+N.Data.MoltenCore.GetItem=function(_,id)
+    if id==19147 or (id>=10001 and id<=10602) then
+        return {itemID=id}
+    end
+end
+for i=1,602 do
+    local idx=math.floor((i-1)/16)
+    local bot="Bot"..string.char(65+math.floor(idx/26))..
+        string.char(65+(idx%26))
+    local id=10000+i
+    local k=N.GearNeeds:MakeKey(bot,"MOLTEN_CORE",id,"BOT_GEAR_PLAN")
+    N.db.gearNeeds[k]={key=k,character=bot,
+        itemID=id,raidKey="MOLTEN_CORE",role="CASTER_DPS",
+        status=i<=467 and "NEEDED" or "GREED",
+        source="BOT_GEAR_PLAN",characterType="PLAYERBOT"}
+end
+ok(N.GearNeeds:GetCount()==604,"test UI now has 604 bot Gear Plans")
+UI:ShowGearPlanTransfer()
+ok(UI.gearTransferBatchLabel.text:find("Batch 1/3",1,true) and
+    UI.gearTransferTextBox.text:find("NLL-GEARPLANS-1",1,true) and
+    not UI.gearTransferPrevBatch.enabled and UI.gearTransferNextBatch.enabled,
+    "604 plans open in page 1/3 with Next enabled")
+local page1=UI.gearTransferTextBox.text
+UI.gearTransferNextBatch.events.OnClick()
+ok(UI.gearTransferBatchLabel.text:find("Batch 2/3",1,true) and
+    UI.gearTransferPrevBatch.enabled and UI.gearTransferNextBatch.enabled,
+    "second 250-row export section is independently selectable")
+local page2=UI.gearTransferTextBox.text
+ok(page2~=page1 and N.GearPlanTransfer:Parse(page2),
+    "export page 2 differs but remains valid V1 text")
+UI.gearTransferNextBatch.events.OnClick()
+local page3=UI.gearTransferTextBox.text
+ok(UI.gearTransferBatchLabel.text:find("Batch 3/3",1,true) and
+    UI.gearTransferPrevBatch.enabled and not UI.gearTransferNextBatch.enabled and
+    N.GearPlanTransfer:Parse(page3),
+    "final 104-row batch is exportable without losing other rows")
+UI.gearTransferNextBatch.events.OnClick()
+ok(UI.gearTransferTextBox.text==page3,
+    "forced Next click at last batch cannot leak outside bounds")
+UI.gearTransferPrevBatch.events.OnClick()
+ok(UI.gearTransferTextBox.text==page2 and
+    UI.gearTransferBatchLabel.text:find("Batch 2/3",1,true),
+    "Prev returns the exact same page without changing data")
+ok(UI.gearTransferConfirm.enabled==false and
+   UI.gearTransferPreview.enabled==false and refresh==1,
+   "paging exports never enables import confirmation or edits saved plans")
+UI.gearTransferImport.events.OnClick()
+ok(not UI.gearTransferPrevBatch.enabled and
+   not UI.gearTransferNextBatch.enabled and
+   UI.gearTransferTextBox.text=="" and
+   UI.gearTransferBatchLabel.text:find("Import mode",1,true),
+   "switch to import disables paging and starts with an empty paste")
+UI.gearTransferPrevBatch.events.OnClick()
+UI.gearTransferNextBatch.events.OnClick()
+ok(UI.gearTransferTextBox.text=="" and
+   not UI.gearTransferConfirm.enabled,
+   "forced disabled export-page clicks cannot change import text or arm Add")
+UI.gearTransferExport.events.OnClick()
+ok(UI.gearTransferTextBox.text==page1 and
+   UI.gearTransferBatchLabel.text:find("Batch 1/3",1,true),
+   "explicit Export restores first batch without mutating records")
+ok(N.db.gearNeeds==refs.gear and N.db.gearNeeds[key]==refs.original and
+    N.db.roleAssignments==refs.roles and
+    N.db.localWishlists.Owner.MOLTEN_CORE==refs.wishlist and
+    N.db.lootAwardHistory==refs.awards and
+    N.db.lotteryHistory==refs.lotteries,
+    "604-row UI batch navigation preserves original saved-table identities")
 print("PASS: "..checks.." transfer UI export, paste, preview/confirm assertions")

@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ADDON = ROOT / "NaxxLootLottery"
 TOC = ADDON / "NaxxLootLottery.toc"
 CORE = ADDON / "Core" / "Core.lua"
-EXPECTED_VERSION = "0.1.0.29-rc.1-dev12"
+EXPECTED_VERSION = "0.1.0.29-rc.1-dev13"
 EXPECTED_INTERFACE = "30300"
 
 

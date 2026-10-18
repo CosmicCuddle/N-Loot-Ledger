@@ -200,6 +200,24 @@ Do not merge, publish or change the live server/SavedVariables.
       diagnostic should not append records or change settings.
 - [ ] Record in-game screenshots, not just Lua geometry/mock evidence.
 
+## F4 — Read-only full Playerbot Gear Plan export (draft #31)
+
+- [ ] Before controlled dev build installation, back up addon folder
+      and NaxxLootLottery.lua / .lua.bak on all participating clients.
+- [ ] Verify 604 / 38 bots / 469 NEED / 135 GREED.
+- [ ] Open Import / Export; check Batch 1/3, 2/3, 3/3, with
+      250/250/104 complete, ordered and copyable plan rows.
+- [ ] Copy EACH batch with Ctrl+C into individually labelled .txt files.
+      Each batch must start with NLL-GEARPLANS-1.
+- [ ] Confirm export does not enable Preview Changes or Confirm ADD.
+- [ ] Verify Import disables Prev/Next; previously pasted text is not
+      silently overwritten by disabled batch navigation.
+- [ ] Preview each exported batch, on matching test data ONLY:
+      no new plans, no conflicts and no save changes.
+- [ ] Test invalid late record to ensure ALL export pages fail closed.
+- [ ] Confirm original roles/wishlists/history/SavedVariables unchanged.
+      This partial Gear Plan text export never replaces full WTF backup.
+
 ## Release gates (require separate owner approval)
 
 - [ ] Full Lua 5.1 CI passes at the exact stacked final SHA.

@@ -9,7 +9,7 @@ Do not delete historical work just because another feature takes priority.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
 **Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
--> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 (source diagnostics).
+-> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 (Gear Plans export batches).
 **Shared baseline:** 604 imported Gear Plans across 38 Playerbots
 (469 NEED, 135 GREED). These are **real owner data**, not development fixtures.
 **Public release baseline:** v0.1.0.28 on main, separate from the above.
@@ -231,6 +231,25 @@ current draft addon has been installed.
 - [ ] Record owner-approved in-game text/screenshots and baseline
       SavedVariables comparison; not yet a usable per-corpse solution.
 
+**NLL-031 — Full-roster batched Playerbot Gear Plan export; [draft PR #31](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/31)**
+- [x] Built: deterministic, fully validated 250-row read-only export
+      batches with the original NLL-GEARPLANS-1 format.
+- [x] Built: 604 records produce 250/250/104, each below 48 KB,
+      with Prev/Next and Batch X/Y controls.
+- [x] Built: import cannot activate batch controls, exporting cannot
+      enable Confirm ADD, and the importer/add-only workflow is unchanged.
+- [x] Built: an invalid plan anywhere blocks all batches; no
+      incomplete export is mistaken for a full SavedVariables backup.
+- [x] Added Lua 5.1 604-row fixtures with 469 NEED / 135 GREED and
+      import-compatible roundtrip tests preserving old table identity.
+- [x] Added [future copy, backup and game-client test plan](TESTING_BATCHED_GEAR_EXPORT_DRAFT.md).
+- [x] Open stacked draft PR #31, preserving PR #30.
+- [x] Dedicated 604-plan export/no-release checks and complete Lua 5.1
+      regression suite passed; exact-head links recorded on draft PR #31.
+- [ ] Repeat the checks after any new development commits.
+- [ ] Owner-approved WoW clipboard, paging, full SavedVariables
+      comparison and readability checks (not yet tested or installed).
+
 ## D. Parallel draft work that must NOT be forgotten
 
 **IMPORTANT:** The PRs below are **not** ancestors of #25/#26.
@@ -267,7 +286,9 @@ mean their code is included in the current stack.
 **NLL-F02 — Gear Plan maintenance**
 - [ ] Guarded per-record edits/import conflict resolution with
       before/after preview and explicit consent.
-- [ ] Support large exports (>250) without replacing saved 604 rows.
+- [x] Draft #31 implements all-roster read-only batched export
+      (>250 plans) without replacing stored 604 rows.
+- [ ] Owner verifies Ctrl+C / multi-batch clipboard behaviour in WoW.
 - [ ] Consider more convenient bulk inspection/search without
       overwriting human wishlist or bot sources.
 

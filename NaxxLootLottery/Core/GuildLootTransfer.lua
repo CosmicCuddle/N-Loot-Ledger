@@ -34,22 +34,25 @@ function T:IsUnresolved()
     local audit=NLL.db and NLL.db.guildLootTransferAudit or {}
     -- Never retry silently after an uncertain outcome, even after /reload.
     for _,row in ipairs(audit) do
-        if row.status=="AWARD_REQUESTED" or
-           row.status=="AWARD_OUTCOME_UNKNOWN" then
+        if row.reconciliationStatus~="CLOSED_NO_RETRY" and
+           (row.status=="AWARD_REQUESTED" or
+            row.status=="AWARD_OUTCOME_UNKNOWN") then
             return true
         end
     end
     -- Also include persisted winner-award attempts, not just live
     -- references that vanish at /reload. Missing receipts fail closed.
     for _,row in ipairs(NLL.db and NLL.db.lootAwardHistory or {}) do
-        if row.status=="AWARD_REQUESTED" or
-           row.status=="AWARD_OUTCOME_UNKNOWN" then
+        if row.reconciliationStatus~="CLOSED_NO_RETRY" and
+           (row.status=="AWARD_REQUESTED" or
+            row.status=="AWARD_OUTCOME_UNKNOWN") then
             return true
         end
     end
     if NLL.AwardWorkflow then
         for _,v in pairs(NLL.AwardWorkflow.liveRequests or {}) do
-            if v.history and v.history.status=="AWARD_REQUESTED" then
+            if v.history and v.history.status=="AWARD_REQUESTED" and
+               v.history.reconciliationStatus~="CLOSED_NO_RETRY" then
                 return true
             end
         end

@@ -7,11 +7,13 @@ NLL.GuildAutoPreview=NLL.GuildAutoPreview or {}
 local P=NLL.GuildAutoPreview
 local function PriorWinnerAttempt(itemID,slot)
     for _,row in ipairs(NLL.db and NLL.db.lootAwardHistory or {}) do
-        if tonumber(row.itemID)==itemID and row.slotIndex==slot and
+        if tonumber(row.itemID)==tonumber(itemID) and
            (row.status=="AWARD_REQUESTED" or
             row.status=="AWARD_OUTCOME_UNKNOWN" or
             row.status=="LOOT_SLOT_CLEARED") then
-            -- Even a manually CLOSED_NO_RETRY investigation stays locked.
+            -- Loot slot positions are not physical identity. Fail CLOSED
+            -- across item-ID matches; do not silently auto-propose old
+            -- winner attempts merely because the item moved to a new slot.
             return true
         end
     end

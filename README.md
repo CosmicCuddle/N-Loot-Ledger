@@ -11,6 +11,7 @@
 
 ## Development tracker and test plan
 
+- [Single-item role editing acceptance](docs/TESTING_PER_ITEM_ROLE_REVIEWS_DRAFT.md) — choose one bot item's new role, then explicitly confirm; never alter a global raid-role assignment.
 - [Guarded existing Gear Plan editing tests](docs/TESTING_GUARDED_GEARPLAN_REVIEWS_DRAFT.md) — status and X now require explicit review; no manual OBTAINED.
 - [604-plan read-only export batch testing](docs/TESTING_BATCHED_GEAR_EXPORT_DRAFT.md) — copyable 250/250/104 sections; full SavedVariables backup is still mandatory.
 - [Wrath 3.3.5a source identity research](docs/RESEARCH_WOTLK_LOOT_SOURCE_IDENTITY.md) — shows why changing targets/loot slots cannot safely unlock repeated materials; /nll lootsource is diagnostic only.

@@ -75,18 +75,18 @@ ok(not result.canUnlock and not result.canReroll and
    not result.receiptVerified and not result.multiCopyPlanSupported and
    not result.uniqueEquippedVerified,
    "no condition can authorize retry, ticket, extra wishlist copy or award")
-local core=result.items[3]
+local core=result.items[2]
 ok(core.itemID==17010 and core.visibleSlots==2 and
    core.visibleStackUnits==6 and core.maxStackInOneSlot==5 and
    core.hasPreviousAttempt and core.priorGuildAttempt and
    core.status=="PRIOR_ATTEMPT_HELD",
    "two moved material slots and stack quantity preserve old guild hold")
-local lava=result.items[4]
+local lava=result.items[3]
 ok(lava.itemID==17011 and lava.visibleSlots==1 and
    lava.visibleStackUnits==20 and lava.status=="STACK_QUANTITY_UNVERIFIED" and
    not lava.priorGuildAttempt and not lava.canAward,
    "single 20-unit stack is NOT 20 uniquely grantable new copies")
-local ring=result.items[2]
+local ring=result.items[4]
 ok(ring.itemID==19147 and not ring.uniqueEquippedVerified and
    ring.allowedAdditionalWishCopies==0 and
    not ring.physicalCopyVerified,
@@ -102,7 +102,7 @@ ok(#lines>=4 and lines[1]:find("NO RETRY",1,true) and
 guid="CURRENT_TARGET_B"
 links[1],links[2]=links[2],links[1]
 local retarget=A:Inspect()
-ok(retarget.heldItemIDs==2 and retarget.items[3].canRetry==false,
+ok(retarget.heldItemIDs==2 and retarget.items[2].canRetry==false,
    "moving slots/changing current target NEVER changes old item ID locks")
 links={"|Hitem:17010:0|h[Fiery Core]|h"}
 GetNumLootItems=function()return 1 end

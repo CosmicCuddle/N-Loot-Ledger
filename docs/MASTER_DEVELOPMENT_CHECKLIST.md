@@ -9,7 +9,7 @@ Do not delete historical work just because another feature takes priority.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
 **Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
--> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 -> #33 (per-item role).
+-> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 -> #33 -> #34 (import comparison).
 **Shared baseline:** 604 imported Gear Plans across 38 Playerbots
 (469 NEED, 135 GREED). These are **real owner data**, not development fixtures.
 **Public release baseline:** v0.1.0.28 on main, separate from the above.
@@ -287,8 +287,26 @@ current draft addon has been installed.
 - [ ] Real 3.3.5a UI/font/clipboard acceptance and matched backups
       still require separate owner approval.
 
+**NLL-034 — Read-only saved-vs-pasted import conflicts; draft PR #34**
+- [x] Built: comparison of conflicting existing Playerbot plans to
+      validated NLL-GEARPLANS-1 import candidates: exact saved value
+      vs pasted value for Character, Type, Role, Raid, Item, Source
+      and Interest/Status, only showing changed fields.
+- [x] Built: explicit saved-key versus Latin-1 UTF-8 case alias
+      distinction, with NO automatic duplicate identity or overwrite.
+- [x] Built: read-only paged Compare Conflicts modal with Prev/Next,
+      Close, import blocked on ANY conflict and no "Resolve/Apply" control.
+- [x] Built: stale text, database change, fake raid, closed/active
+      import context and bad index fail closed; add-only import untouched.
+- [x] Built: 604+alias Lua 5.1 fixtures, unchanged account data tests,
+      UI paging and disarm checks. Owner acceptance blueprint:
+      [TESTING_GEAR_PLAN_CONFLICT_COMPARISON.md](TESTING_GEAR_PLAN_CONFLICT_COMPARISON.md).
+- [ ] Open stacked PR #34 and verify dedicated/full Lua 5.1 CI.
+- [ ] Actual WoW clipboard/multiline/modal acceptance with backups.
+
 **Estimated remaining development stages (not a promise):**
-- **C11:** Read-only import conflict comparison; no overwritten saved rows.
+- [x] **C11:** Read-only import conflict comparison in draft #34;
+  existing saved plans cannot be replaced via import.
 - **C12:** Profession/specialisation-aware recipe eligibility and manual review.
 - **C13:** Duplicate-copy/loot-source evidence research and fail-closed design,
   not an automatic material retry.
@@ -337,8 +355,10 @@ mean their code is included in the current stack.
       its character-wide role assignment.
 - [x] Draft #32 adds guarded *existing bot row* status/deletion edits
       with before/after preview and explicit owner click.
-- [ ] Design import conflict resolution and shared role editing
-      separately; item-only role changes in #33 don't do either.
+- [x] Draft #34 adds read-only import conflict COMPARISON; existing
+      rows are never overwritten and direct resolution is not enabled.
+- [ ] Shared/global role editing or conflict replacement require a
+      separate reviewed design; #33 and #34 do not provide those.
 - [x] Draft #31 implements all-roster read-only batched export
       (>250 plans) without replacing stored 604 rows.
 - [ ] Owner verifies Ctrl+C / multi-batch clipboard behaviour in WoW.

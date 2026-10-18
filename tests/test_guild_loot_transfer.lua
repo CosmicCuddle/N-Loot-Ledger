@@ -198,8 +198,8 @@ ok(rankAtCall.status=="LOOT_SLOT_CLEARED" and
 N.db.settings.directMasterLootEnabled=true
 T:SetEnabled(true)
 sent,msg=T:Review(target)
-ok(not sent and msg:find("previous request") and T:WasAttempted(17010,17),
-    "same item ID blocked after reload even if the physical loot slot changed")
+ok(not sent and msg:find("unresolved") and T:WasAttempted(17010,17),
+    "unverified cleared slot globally holds and same ID remains permanently locked")
 local target2={slotIndex=rows[2].slotIndex,itemID=rows[2].itemID,
     itemLink=rows[2].itemLink,quantity=rows[2].quantity}
 LootFrame.selectedSlot=2

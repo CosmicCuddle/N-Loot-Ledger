@@ -39,7 +39,7 @@ end
 function G:GetReservationSummary(itemID)
     local db=NLL.db
     local summary={need=0,greed=0,unknown=0,localCount=0,
-        incoming=0,activeNames={}}
+        incoming=0,receiptPending=0,activeNames={}}
     if not db or type(db.gearNeeds)~="table" or
        type(db.localWishlists)~="table" or
        type(db.submissionInbox)~="table" then
@@ -69,6 +69,25 @@ function G:GetReservationSummary(itemID)
     table.sort(summary.activeNames,function(a,b)
         return string.lower(a)<string.lower(b)
     end)
+    -- A real winning roll is NOT proof of receipt. A player-submitted
+    -- reservation might have been replaced since the roll, so checking
+    -- only the current gearNeeds table can falsely suggest guild loot.
+    -- Likewise a leader-confirmed human award still needs that player's
+    -- own ACK before another copy of the item can be called unreserved.
+    -- This is a HOLD, never an automatic restoration of a reservation.
+    for _,receipt in pairs(db.lootReceiptTracker or {}) do
+        if type(receipt)=="table" and
+           tonumber(receipt.itemID)==itemID then
+            local incomplete=receipt.status=="WON_AWAITING_ITEM"
+            local remote=receipt.remoteSyncStatus
+            local awaitingPlayer=receipt.status=="OBTAINED" and
+                type(remote)=="string" and remote~="" and
+                remote~="ACKNOWLEDGED"
+            if incomplete or awaitingPlayer then
+                summary.receiptPending=summary.receiptPending+1
+            end
+        end
+    end
     -- An unsubmitted local wishlist is not proof of a reservation
     -- accepted by the raid leader, but MUST block automatic routing.
     for character,raids in pairs(db.localWishlists) do
@@ -175,9 +194,13 @@ function G:Scan()
             elseif summary.need>0 or summary.greed>0 then
                 status="RESERVED"
                 reason=summary.need.." NEED, "..summary.greed.." GREED (including absent bots/players)"
-            elseif summary.unknown>0 or summary.localCount>0 or summary.incoming>0 then
+            elseif summary.unknown>0 or summary.localCount>0 or
+                summary.incoming>0 or summary.receiptPending>0 then
                 status="UNRESOLVED"
-                reason="Unknown records/local wishlist/pending Inbox - do not auto-route"
+                reason=summary.receiptPending>0 and
+                    ("Pending winner receipt/player ACK ("..
+                    summary.receiptPending..") - NEVER auto-route") or
+                    "Unknown records/local wishlist/pending Inbox - do not auto-route"
             elseif category=="INFORMATION_MISSING" then
                 status="UNRESOLVED"
             else
@@ -191,6 +214,7 @@ function G:Scan()
                 reason=reason or "Manual review",leader=leader,
                 need=summary.need,greed=summary.greed,
                 localCount=summary.localCount,pending=summary.incoming,
+                receiptPending=summary.receiptPending,
                 -- Candidate verification and item delivery are NOT performed.
                 recipientVerified=false,transferAuthorized=false,
             }

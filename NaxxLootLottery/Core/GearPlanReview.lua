@@ -23,6 +23,9 @@ local function Active()
     if type(Now())~="number" then
         return false,"WoW monotonic clock unavailable."
     end
+    if type(Actor())~="string" or Actor()=="" then
+        return false,"Verified acting player unavailable."
+    end
     return true
 end
 local function Outstanding(row)

@@ -44,7 +44,8 @@ This stage edits **only the selected existing BOT_GEAR_PLAN row's role**.
 ## Verification gates
 
 - [x] Added Lua 5.1 604-plan fixture, all six roles, actor/expiry/fingerprint checks, pending receipts, no-retry and UI picker/confirm tests.
-- [ ] Dedicated and full historical regressions must PASS at current exact GitHub head.
+- [x] Dedicated no-release and all historical Lua 5.1 regressions
+      passed; exact-head evidence linked in draft PR #33.
 - [ ] Real WoW 3.3.5a testing and any merge/install require the owner's separate approval.
 
 **Draft-only. No SQL/server module change, installation, real item award, SavedVariables modification or release.**

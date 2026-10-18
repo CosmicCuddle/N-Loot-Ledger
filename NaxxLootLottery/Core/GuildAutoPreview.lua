@@ -69,7 +69,7 @@ function P:Build()
                 reason="This item ID has a prior guild attempt; slot changes cannot prove a new corpse"
             elseif PriorWinnerAttempt(source.itemID,source.slotIndex) then
                 decision="HOLD_PREVIOUS_ATTEMPT"
-                reason="This item/slot has a previous winner Master Loot attempt"
+                reason="This item ID has a prior winner attempt; physical copy identity is unverified"
             else
                 decision="PROPOSE_TO_LEADER"
                 reason="No SAVED reservation found; guild/other clients must verify first"

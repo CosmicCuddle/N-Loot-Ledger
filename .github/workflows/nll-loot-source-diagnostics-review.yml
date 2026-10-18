@@ -41,7 +41,9 @@ jobs:
           grep -Fq 'sourceVerified=false,canUnlock=false' NaxxLootLottery/Core/LootSourceDiagnostics.lua
           grep -Fq 'targetGUIDHint' NaxxLootLottery/Core/LootSourceDiagnostics.lua
           grep -Fq '/nll lootsource' NaxxLootLottery/Core/Core.lua
-          if grep -Eq '(GiveMasterLoot|RandomRoll|GetLootSourceInfo)[[:space:]]*\(' NaxxLootLottery/Core/LootSourceDiagnostics.lua; then
+          # Reject executable calls; comments mentioning unavailable
+          # APIs are documentation, not permission to invoke them.
+          if grep -Ev '^[[:space:]]*--' NaxxLootLottery/Core/LootSourceDiagnostics.lua | grep -Eq '(GiveMasterLoot|RandomRoll|GetLootSourceInfo)[[:space:]]*\('; then
             echo "::error::Read-only source diagnostic must not award/roll/call 5.0.4 APIs"; exit 1
           fi
           if git diff "$BASE" HEAD -- NaxxLootLottery/Core/GuildLootTransfer.lua NaxxLootLottery/Core/AwardWorkflow.lua NaxxLootLottery/Core/GuildAutoPreview.lua NaxxLootLottery/Core/LootIdentity.lua | grep -q '^[+-][^+-]'; then

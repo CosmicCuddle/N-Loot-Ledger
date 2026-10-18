@@ -9,7 +9,7 @@ local NLL = NaxxLootLottery
 
 NLL.name = "Naxxramas Loot Ledger"
 NLL.shortName = "NLL"
-NLL.version = "0.1.0.29-rc.1-dev5"
+NLL.version = "0.1.0.29-rc.1-dev6"
 NLL.databaseVersion = 1
 NLL.initialized = false
 NLL.initializeAttempted = false
@@ -399,6 +399,11 @@ function NLL:HandleSlashCommand(message)
         end
         return
     end
+    if command=="reconcileui" then
+        self.UI:ShowMainFrame("currentloot")
+        self.UI:OpenReconciliationDialog()
+        return
+    end
     if command=="reconcile" then
         local mode,identifier=(arguments or ""):match("^%s*(%S*)%s*(.-)%s*$")
         mode=string.lower(mode or "")
@@ -700,6 +705,7 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll lotteryhistory - Show last 5 lottery records.")
         self:Print("/nll awardreview - Review the selected winner and manual award.")
         self:Print("/nll receiptinbox - Review my pending award confirmations.")
+        self:Print("/nll reconcileui - Open the non-awarding reconciliation window.")
         self:Print("/nll reconcile list - Inspect uncertain winner and guild award attempts.")
         self:Print("/nll reconcile winner <UID> | guild <index> - Arm NO-RETRY review.")
         self:Print("/nll reconcile confirm - Close review only; no delivery proof or retry.")

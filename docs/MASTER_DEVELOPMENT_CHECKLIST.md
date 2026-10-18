@@ -204,7 +204,9 @@ current draft addon has been installed.
       rows, five reconciliation rows, five My Bags rows, footer
       containment and visible button spacing. No frame screenshots
       or font-size claims from these simulated coordinates.
-- [ ] Run exact-head Lua 5.1 syntax and all historical regressions.
+- [x] Dedicated geometry/no-release CI and all historical Lua 5.1
+      regressions passed; exact-head evidence linked on PR #29.
+- [ ] Repeat exact-head checks after any further code or doc change.
 - [ ] Verify at real WoW UI scale during owner-approved test window;
       record screenshots for long names/font overflow and tooltips.
 - [ ] Mark merge/release only after separate owner approval.

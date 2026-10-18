@@ -507,8 +507,10 @@ mean their code is included in the current stack.
       suite and 604-plan C14 regression, deterministic ZIP with 50
       modules, SHA256SUMS, BUILD_INFO/commit provenance, 14-day
       GitHub Actions artifact retention, no tag/release/install.
-- [ ] Verify the exact-head Actions ZIP artifact exists with a
-      successful workflow and SHA256 before telling owner it is ready.
+- [x] Verified test-only Actions ZIP packaging + 50-module checksum
+      `ab1298c7a61887161f1bcbf98bd8ddc068b9be1affc5c40f602b7d4933f57ac4`;
+      final exact-head run and downloadable artifact linked on PR #37.
+      Reverify if any future addon Lua or .toc content changes.
 - [ ] Owner chooses to back up and manually replace ONE test client
       addon folder; owner SavedVariables are never bundled.
 - [ ] Complete NON-DESTRUCTIVE Phase 1: /nll version, /nll status,

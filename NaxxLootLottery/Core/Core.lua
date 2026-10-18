@@ -9,7 +9,7 @@ local NLL = NaxxLootLottery
 
 NLL.name = "Naxxramas Loot Ledger"
 NLL.shortName = "NLL"
-NLL.version = "0.1.0.29-rc.1-dev4"
+NLL.version = "0.1.0.29-rc.1-dev5"
 NLL.databaseVersion = 1
 NLL.initialized = false
 NLL.initializeAttempted = false
@@ -356,6 +356,27 @@ function NLL:HandleSlashCommand(message)
         end
         return
     end
+    if command=="guildpreview" then
+        local P=self.GuildAutoPreview
+        local choice=string.lower((arguments or ""):match("^%s*(.-)%s*$"))
+        if choice=="on" or choice=="off" then
+            local ok,note=P:SetEnabled(choice=="on")
+            self:Print(note)
+        elseif choice=="show" then
+            local plan=P:Build()
+            self:Print(plan.message)
+            for _,item in ipairs(plan.rows) do
+                self:Print("Slot "..tostring(item.slotIndex).." x"..
+                    tostring(item.quantity).." "..tostring(item.itemName)..
+                    " ["..item.decision.."]"..
+                    (item.proposedRecipient and
+                    " -> PROPOSE "..item.proposedRecipient or ""))
+            end
+        else
+            self:Print("Usage: /nll guildpreview on|off|show (DRY RUN only).")
+        end
+        return
+    end
     if command=="guildloot" then
         self.UI:ShowMainFrame("currentloot")
         self.UI:OpenGuildLootReview()
@@ -684,6 +705,7 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll reconcile confirm - Close review only; no delivery proof or retry.")
         self:Print("/nll receiptsync <dropUID> - Resend a previously verified human receipt.")
         self:Print("/nll guildloot - Read-only review of ALL visible item slots, including materials.")
+        self:Print("/nll guildpreview on|off|show - Safe leader allocation DRY RUN, never awards.")
         self:Print("/nll guildgive on|off - Separate login-only consent for manual guild transfers.")
         self:Print("/nll awardhistory - Show manual, requested and observed awards.")
         self:Print("/nll directaward off - Immediately disable live direct awarding.")

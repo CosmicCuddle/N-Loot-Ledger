@@ -299,6 +299,31 @@ Do not merge, publish or change the live server/SavedVariables.
 - [ ] Screenshot source-limit text, check multi-line readability,
       preserve original SavedVariables and OFF opt-in defaults.
 
+## F10 — Combined C14 navigation and release-readiness (draft #37)
+
+- [ ] First choose an owner-approved testing window; copy complete
+      addon folder + matched NaxxLootLottery.lua and .lua.bak on
+      every involved client before installing ANY development build.
+- [ ] Preserve complete 604/38/469 NEED/135 GREED baseline, global
+      bot roles, original recipes, personal wishlists, winner/receipt
+      history, durable physical locks and transfer opt-ins OFF.
+- [ ] In controlled copy, open Gear Plans role/status Confirm;
+      switch main tabs, Wishlist subtabs, change filter, close or Esc.
+      No old confirmation survives. Test invalid row selection as well.
+- [ ] Start add-only import Preview, then switch tabs, close dialog or
+      Esc; any Confirm ADD from the previous preview stays disabled.
+- [ ] From Recipes open Profession Review; changing main/Wishlist
+      context must hide it. No recipe auto-allocation or skill proof.
+- [ ] Confirm exact 250/250/104 export, original V1 conflict compare,
+      explicit role/status one-row edit, recipe update and no-retry holds
+      do not interfere with each other in a real WoW 3.3.5a session.
+- [ ] Check scaled and long-name UI geometry, mouse navigation,
+      keyboard Escape and re-open behaviour with screenshot evidence.
+- [ ] Test cross-client recipient ACK only under separate consent;
+      receipt statement is NOT server proof and cannot unlock attempts.
+- [ ] Compare SavedVariables and restore original matched pair only
+      when owner authorises; use C14_INTEGRATION_RELEASE_READINESS.md.
+
 ## Release gates (require separate owner approval)
 
 - [ ] Full Lua 5.1 CI passes at the exact stacked final SHA.

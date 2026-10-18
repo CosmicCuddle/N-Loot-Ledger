@@ -9,7 +9,7 @@ Do not delete historical work just because another feature takes priority.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
 **Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
--> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 (Gear Plans export batches).
+-> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 (guarded edits).
 **Shared baseline:** 604 imported Gear Plans across 38 Playerbots
 (469 NEED, 135 GREED). These are **real owner data**, not development fixtures.
 **Public release baseline:** v0.1.0.28 on main, separate from the above.
@@ -250,6 +250,21 @@ current draft addon has been installed.
 - [ ] Owner-approved WoW clipboard, paging, full SavedVariables
       comparison and readability checks (not yet tested or installed).
 
+**NLL-032 — Guarded edits/removal of existing Playerbot Gear Plans; draft PR #32**
+- [x] Replace instant status/dropdown and X deletion with a
+      distinct 15-second preview/confirm or cancel step.
+- [x] Allow NEED/GREED/DISABLED, but not manual OBTAINED. Existing
+      OBTAINED and pending winner receipt plans cannot be altered.
+- [x] Require stable exact source/item/character and full Gear Plans
+      snapshot. Changed actor, filter, page, record or active lottery
+      cancels review.
+- [x] Preserve 604 saved rows, global roles, local wishlists and
+      winner/receipt histories except the ONE explicitly confirmed row.
+- [x] Add [controlled in-game acceptance guide](TESTING_GUARDED_GEARPLAN_REVIEWS_DRAFT.md)
+      and 604-row Lua 5.1 mocked data/UI regression tests.
+- [ ] Open stacked draft PR #32 and verify dedicated/full exact-head CI.
+- [ ] Separate owner-approved actual WoW test, not part of development.
+
 ## D. Parallel draft work that must NOT be forgotten
 
 **IMPORTANT:** The PRs below are **not** ancestors of #25/#26.
@@ -284,8 +299,10 @@ mean their code is included in the current stack.
 - [ ] Add dedicated Lua 5.1 and in-game acceptance.
 
 **NLL-F02 — Gear Plan maintenance**
-- [ ] Guarded per-record edits/import conflict resolution with
-      before/after preview and explicit consent.
+- [x] Draft #32 adds guarded *existing bot row* status/deletion edits
+      with before/after preview and explicit owner click.
+- [ ] Design import conflict resolution and role editing separately;
+      draft #32 does not bulk overwrite or change shared roles.
 - [x] Draft #31 implements all-roster read-only batched export
       (>250 plans) without replacing stored 604 rows.
 - [ ] Owner verifies Ctrl+C / multi-batch clipboard behaviour in WoW.

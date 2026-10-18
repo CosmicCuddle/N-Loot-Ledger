@@ -308,7 +308,7 @@ current draft addon has been installed.
 - [ ] Rerun exact-head CI if future commits change this draft.
 - [ ] Actual WoW clipboard/multiline/modal acceptance with backups.
 
-**NLL-035 — Read-only profession-aware Molten Core recipe review; draft PR #35**
+**NLL-035 — Read-only profession-aware Molten Core recipe review; [draft PR #35](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/35)**
 - [x] Add exact ten MC recipe ID to profession/skill 300 catalogue,
       preserving current recipe manualOnly policy and no active grant.
 - [x] Add read-only lookup joining saved Gear Plan interests to each
@@ -321,7 +321,8 @@ current draft addon has been installed.
       transferAuthorized=false. No new SavedVariables roster/schema.
 - [x] Add 604-row Lua 5.1 tests plus UI tab and paging regressions;
       controlled owner [acceptance guide](TESTING_PROFESSION_RECIPE_REVIEW_DRAFT.md).
-- [ ] Open stacked draft PR #35; record dedicated/full exact-head CI.
+- [x] Open stacked draft PR #35 after PR #34.
+- [ ] Record dedicated/full exact-head CI at the final reviewed commit.
 - [ ] Owner-approved visual and profession evidence verification in
       actual AzerothCore/IP 3.3.5a; no approval for live distribution.
 

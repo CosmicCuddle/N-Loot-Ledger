@@ -18,6 +18,8 @@ GetItemInfo=function(id)
         id==18259 and "Recipe" or "Trade Goods")
 end
 GetNumRaidMembers=function()return 3 end
+GetLootMethod=function()return "master",nil,1 end
+UnitName=function()return "Leader" end
 local duplicate=false
 GetRaidRosterInfo=function(i)
     if i==1 then return "Leader",2 end
@@ -44,8 +46,10 @@ NaxxLootLottery={
     UI={},
 }
 NaxxLootLotteryDB={gearNeeds=needs,submissionInbox=inbox,localWishlists=wish,
-    lootAwardHistory={{itemID=17015,slotIndex=9,status="LOOT_SLOT_CLEARED"}},
-    guildLootTransferAudit={{itemID=17014,slotIndex=8,status="LOOT_SLOT_CLEARED"}}}
+    lootAwardHistory={{itemID=17015,slotIndex=9,status="LOOT_SLOT_CLEARED",
+        reconciliationStatus="CLOSED_NO_RETRY"}},
+    guildLootTransferAudit={{itemID=17014,slotIndex=8,status="LOOT_SLOT_CLEARED",
+        reconciliationStatus="CLOSED_NO_RETRY"}}}
 local N=NaxxLootLottery
 assert(loadfile("NaxxLootLottery/Storage/Database.lua"))()
 N.Database:Initialize()
@@ -97,6 +101,7 @@ ok(db.gearNeeds==records and db.submissionInbox==pending and
     db.lootAwardHistory==awardHistory and db.guildLootTransferAudit==guildHistory,
     "read-only plan preserves same SavedVariables objects")
 guildHistory[1].status="AWARD_OUTCOME_UNKNOWN"
+guildHistory[1].reconciliationStatus=nil
 plan=P:Build()
 ok(plan.proposed==0 and
     decisions[17010].decision=="PROPOSE_TO_LEADER" and

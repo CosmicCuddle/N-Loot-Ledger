@@ -322,7 +322,9 @@ current draft addon has been installed.
 - [x] Add 604-row Lua 5.1 tests plus UI tab and paging regressions;
       controlled owner [acceptance guide](TESTING_PROFESSION_RECIPE_REVIEW_DRAFT.md).
 - [x] Open stacked draft PR #35 after PR #34.
-- [ ] Record dedicated/full exact-head CI at the final reviewed commit.
+- [x] Dedicated recipe/no-release and complete Lua 5.1 regression
+      checks passed; exact-head links recorded in draft PR #35.
+- [ ] Revalidate exact-head checks if any future commits change this draft.
 - [ ] Owner-approved visual and profession evidence verification in
       actual AzerothCore/IP 3.3.5a; no approval for live distribution.
 

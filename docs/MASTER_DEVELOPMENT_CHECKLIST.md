@@ -353,7 +353,7 @@ current draft addon has been installed.
 - [ ] Owner-approved actual WoW source/quantity audit and saved-data
       comparison; no direct award or repeat grant test is approved.
 
-**NLL-037 — C14 combined integration, modal safety and release-readiness draft PR #37**
+**NLL-037 — C14 combined integration, modal safety and release-readiness [draft PR #37](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/37)**
 - [x] Verify shared 604/38/469/135 synthetic saved Gear Plans across
       250/250/104 export, guarded role/status, import-conflict report,
       profession interest and duplicate material NO RETRY policies.
@@ -367,7 +367,8 @@ current draft addon has been installed.
 - [x] Add [integration, owner acceptance and rollback blueprint]
       (C14_INTEGRATION_RELEASE_READINESS.md) and combined Lua 5.1
       regression covering existing C8–C13 core paths.
-- [ ] Open stacked draft PR #37 and verify dedicated/full exact-head CI.
+- [x] Open stacked draft PR #37 after #36.
+- [ ] Verify dedicated/full Lua 5.1 regression CI on final exact head.
 - [ ] Owner-approved backup-first in-client WoW 3.3.5a accessibility,
       multi-client and release-review gate. NOT complete.
 - [ ] Compare alternative PRs #18–#21 at eventual merge decision;

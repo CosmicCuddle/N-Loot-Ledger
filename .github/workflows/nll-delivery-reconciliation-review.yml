@@ -1,0 +1,58 @@
+name: NLL Reconciliation hardening (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-delivery-reconciliation
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lua 5.1 / durable no-retry reconciliation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact development head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restrict changes to reconciliation and tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=82ce0ebb8a32a5723977a848f23b50b9c4bde32b
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/Core/LootReconciliation.lua|NaxxLootLottery/Core/AwardWorkflow.lua|NaxxLootLottery/Core/GuildLootTransfer.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/Storage/Database.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_delivery_reconciliation.lua|scripts/build_release_zip.py|tests/test_release_packaging.py|docs/TESTING_DELIVERY_RECONCILIATION_DRAFT.md|.github/workflows/nll-delivery-reconciliation-review.yml) ;;
+              *) echo "::error::Unexpected file changed in reconciliation draft: $file"; exit 1;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          grep -Fqx '## Version: 0.1.0.29-rc.1-dev4' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          if grep -Eq '^[[:space:]]*(GiveMasterLoot|RandomRoll)[[:space:]]*\(' NaxxLootLottery/Core/LootReconciliation.lua; then
+            echo "::error::Reconciliation must never call a real award/roll API";exit 1
+          fi
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse all Lua files (WoW 3.3.5-compatible)
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Execute all historical and new safety regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in tests/test_*.lua; do
+            echo "Running $file"
+            lua5.1 "$file"
+          done
+      - name: Reproducible packaging and no-data-leak check
+        run: python3 tests/test_release_packaging.py
+      - name: Review only
+        run: echo "No artifact published, no release, no merge, no live item awarded."

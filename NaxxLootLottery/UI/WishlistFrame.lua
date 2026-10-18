@@ -2178,6 +2178,8 @@ function UI:CreateGearPlanTransfer()
     previewButton:SetPoint("LEFT",importButton,"RIGHT",10,0)
     local confirmButton=self:CreateTextButton(panel,"Confirm ADD",115)
     confirmButton:SetPoint("LEFT",previewButton,"RIGHT",10,0)
+    local compareButton=self:CreateTextButton(panel,"Compare Conflicts",140)
+    compareButton:SetPoint("LEFT",confirmButton,"RIGHT",9,0)
     local closeButton=self:CreateTextButton(panel,"Close",66)
     closeButton:SetPoint("TOPRIGHT",panel,"TOPRIGHT",-15,-13)
 
@@ -2233,10 +2235,15 @@ function UI:CreateGearPlanTransfer()
     local exportPages=1
     confirmButton:Disable()
     previewButton:Disable()
+    compareButton:Disable()
 
     local function ClearPreview()
         preview=nil
         confirmButton:Disable()
+        compareButton:Disable()
+        if UI.CloseGearPlanConflictDialog then
+            UI:CloseGearPlanConflictDialog()
+        end
     end
     local function SetStatus(message)
         status:SetText(tostring(message or ""))
@@ -2343,7 +2350,27 @@ function UI:CreateGearPlanTransfer()
         end
         preview=candidate
         SetStatus(NLL.GearPlanTransfer:Summary(candidate))
-        if candidate.ready then confirmButton:Enable() end
+        if #candidate.conflicts>0 then
+            -- Conflicts always prevent Confirm ADD, even when the
+            -- same paste also includes valid new plans.
+            compareButton:Enable()
+        elseif candidate.ready then
+            confirmButton:Enable()
+        end
+    end)
+
+    compareButton:SetScript("OnClick",function()
+        if mode~="IMPORT" or not preview or
+           #preview.conflicts==0 then
+            SetStatus("Preview a conflicting paste before comparing.")
+            return
+        end
+        -- No import, no mutation, no confirm action. This report is
+        -- shown only for this exact preview and saved-data snapshot.
+        local ok,message=UI:ShowGearPlanConflictDialog(preview)
+        SetStatus((ok and "READ ONLY: " or "COMPARE BLOCKED: ")..
+            tostring(message))
+        confirmButton:Disable()
     end)
 
     confirmButton:SetScript("OnClick",function()
@@ -2369,6 +2396,7 @@ function UI:CreateGearPlanTransfer()
     self.gearTransferDialog=panel
     self.gearTransferTextBox=edit
     self.gearTransferPreview=previewButton
+    self.gearTransferCompare=compareButton
     self.gearTransferConfirm=confirmButton
     self.gearTransferStatus=status
     self.gearTransferExport=exportButton

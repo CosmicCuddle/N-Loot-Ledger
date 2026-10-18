@@ -11,6 +11,7 @@
 
 ## Development tracker and test plan
 
+- [Molten Core profession recipe review and eligibility caveats](docs/TESTING_PROFESSION_RECIPE_REVIEW_DRAFT.md) — ten manually reviewed recipes, skill 300 and saved interests are **not** verified recipient professions or a physical award.
 - [Read-only import conflicts test plan](docs/TESTING_GEAR_PLAN_CONFLICT_COMPARISON.md) — inspect SAVED vs PASTED differences and UTF-8 aliases, with all conflicting imports blocked.
 - [Single-item role editing acceptance](docs/TESTING_PER_ITEM_ROLE_REVIEWS_DRAFT.md) — choose one bot item's new role, then explicitly confirm; never alter a global raid-role assignment.
 - [Guarded existing Gear Plan editing tests](docs/TESTING_GUARDED_GEARPLAN_REVIEWS_DRAFT.md) — status and X now require explicit review; no manual OBTAINED.

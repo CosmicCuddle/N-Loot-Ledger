@@ -9,7 +9,7 @@ Do not delete historical work just because another feature takes priority.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
 **Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
--> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 -> #33 -> #34 (import comparison).
+-> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 -> #33 -> #34 -> #35 (profession recipe review).
 **Shared baseline:** 604 imported Gear Plans across 38 Playerbots
 (469 NEED, 135 GREED). These are **real owner data**, not development fixtures.
 **Public release baseline:** v0.1.0.28 on main, separate from the above.
@@ -308,10 +308,29 @@ current draft addon has been installed.
 - [ ] Rerun exact-head CI if future commits change this draft.
 - [ ] Actual WoW clipboard/multiline/modal acceptance with backups.
 
+**NLL-035 — Read-only profession-aware Molten Core recipe review; draft PR #35**
+- [x] Add exact ten MC recipe ID to profession/skill 300 catalogue,
+      preserving current recipe manualOnly policy and no active grant.
+- [x] Add read-only lookup joining saved Gear Plan interests to each
+      recipe. Interest is explicitly NOT known profession, level,
+      specialization, already-learned recipe or loot receipt proof.
+- [x] Add Recipes-tab-only Prof. Review entry with ten-recipe pages and
+      separate four-names-per-page candidate list; no add, edit, award
+      or allocation control.
+- [x] All potential recipients stay UNVERIFIED and autoEligible=false,
+      transferAuthorized=false. No new SavedVariables roster/schema.
+- [x] Add 604-row Lua 5.1 tests plus UI tab and paging regressions;
+      controlled owner [acceptance guide](TESTING_PROFESSION_RECIPE_REVIEW_DRAFT.md).
+- [ ] Open stacked draft PR #35; record dedicated/full exact-head CI.
+- [ ] Owner-approved visual and profession evidence verification in
+      actual AzerothCore/IP 3.3.5a; no approval for live distribution.
+
 **Estimated remaining development stages (not a promise):**
 - [x] **C11:** Read-only import conflict comparison in draft #34;
   existing saved plans cannot be replaced via import.
-- **C12:** Profession/specialisation-aware recipe eligibility and manual review.
+- [x] **C12:** Ten-recipe profession/skill reference plus unverified
+  recipient interest audit in draft #35; no automatic recipient eligibility.
+  Verify actual profession/spec/skill in the client's game.
 - **C13:** Duplicate-copy/loot-source evidence research and fail-closed design,
   not an automatic material retry.
 - **C14:** Combined draft integration, accessibility and release-readiness
@@ -382,9 +401,14 @@ mean their code is included in the current stack.
       are both independently validated.
 
 **NLL-F04 — Profession and guild recipe allocation**
-- [ ] Determine eligible profession-recipient rules, including
-      specialist recipes, without bypassing NEED/GREED or leader
-      manual review. A recipe wishlist is not itself proof of delivery.
+- [x] Draft #35 maps all ten MC recipe requirements to primary
+      professions/skill 300 for read-only manual review.
+- [x] Never infer bot profession/spec, learned recipe or receipt from
+      NEED/GREED or raid role; saved candidates remain UNVERIFIED.
+- [ ] Verify any specialization constraints and individual bot profession
+      /skill evidence through actual AzerothCore + IP 3.3.5a client.
+- [ ] Only a separately approved module may ingest verified profession
+      evidence. No automatic award or physical material retry.
 
 **NLL-F05 — User experience and accessibility**
 - [x] Draft #29 adds deterministic frame bounds/gutter regression

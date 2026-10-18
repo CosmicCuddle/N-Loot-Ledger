@@ -2062,7 +2062,9 @@ function UI:RefreshInbox()
                 row.toggle.label:SetText("Reject")
             end
 
-            if selected.status == "PENDING" then
+            if not self.inboxShowArchived and
+                selected.status=="PENDING" and
+                NLL.Communication:IsSelfRaidLeader() then
                 row.toggle:Enable()
             else
                 row.toggle:Disable()

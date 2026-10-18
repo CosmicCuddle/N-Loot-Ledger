@@ -268,7 +268,7 @@ current draft addon has been installed.
 - [ ] Recheck exact-head CI if future commits change this draft.
 - [ ] Separate owner-approved actual WoW test, not part of development.
 
-**NLL-033 — Individual Playerbot Gear Plan item-role change; draft PR #33**
+**NLL-033 — Individual Playerbot Gear Plan item-role change; [draft PR #33](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/33)**
 - [x] Built: small Edit control in Role column, full six-role chooser,
       then separate 15-second confirm/cancel for exact bot/item.
 - [x] Built: only saved BOT_GEAR_PLAN row.role can change. The
@@ -280,9 +280,22 @@ current draft addon has been installed.
       [owner acceptance instructions](TESTING_PER_ITEM_ROLE_REVIEWS_DRAFT.md).
 - [x] Added 604-row Lua 5.1 fixture covering all 6 roles and UI
       selection, cancel, expiration and final confirmation.
-- [ ] Open draft PR #33 and verify dedicated/full exact-head CI.
+- [x] Open stacked draft PR #33 after #32.
+- [ ] Verify dedicated/full exact-head CI at the final reviewed SHA.
 - [ ] Real 3.3.5a UI/font/clipboard acceptance and matched backups
       still require separate owner approval.
+
+**Estimated remaining development stages (not a promise):**
+- **C11:** Read-only import conflict comparison; no overwritten saved rows.
+- **C12:** Profession/specialisation-aware recipe eligibility and manual review.
+- **C13:** Duplicate-copy/loot-source evidence research and fail-closed design,
+  not an automatic material retry.
+- **C14:** Combined draft integration, accessibility and release-readiness
+  hardening with full test coverage.
+- **Then:** a separate owner-approved, backup-first WoW 3.3.5a testing,
+  multi-client receipt review, rollback rehearsal and release decision.
+  Bugs or new findings may require additional stages or split existing
+  stages; there is no fixed completion count.
 
 ## D. Parallel draft work that must NOT be forgotten
 

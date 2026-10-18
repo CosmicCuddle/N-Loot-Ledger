@@ -825,6 +825,19 @@ function UI:CreateGuildLootDialog()
     end)
     self.guildLootArm=arm
     self.guildLootConfirm=give
+    -- This control only enables a read-only proposal view. It has no path
+    -- to GiveMasterLoot, and does not enable either physical award setting.
+    local dry=self:CreateTextButton(f,"Dry Run: OFF",163)
+    dry:SetPoint("LEFT",give,"RIGHT",12,0)
+    dry:SetScript("OnClick",function()
+        local P=NLL.GuildAutoPreview
+        if not P then return end
+        local ok,note=P:SetEnabled(not P:IsEnabled())
+        UI.guildLootLastMessage=note
+        NLL:Print(note)
+        UI:RefreshGuildLootDialog()
+    end)
+    self.guildLootDryRun=dry
 
     local close=self:CreateTextButton(f,"Close (No Award)",150)
     close:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-24,20)
@@ -845,14 +858,25 @@ function UI:RefreshGuildLootDialog()
     for _,item in ipairs(rows) do
         if item.status=="GUILD_REVIEW" then candidates=candidates+1 end
     end
+    local P=NLL.GuildAutoPreview
+    local dryRun=P and P:IsEnabled() and P:Build() or nil
+    local proposalBySlot={}
+    if dryRun then
+        for _,v in ipairs(dryRun.rows) do proposalBySlot[v.slotIndex]=v end
+    end
+    if self.guildLootDryRun and self.guildLootDryRun.label then
+        self.guildLootDryRun.label:SetText(
+            dryRun and "Dry Run: ON" or "Dry Run: OFF")
+    end
     local T=NLL.GuildLootTransfer
     local transferState=T and T:IsEnabled() and
         "OPTIONAL TRANSFER ON (double confirm)" or "TRANSFER OFF"
     -- Live-corpse status has priority over any older arm/review message.
     -- Otherwise the stale old message can hide a despawned corpse.
     local label=(#rows==0 and tostring(message)) or self.guildLootLastMessage or
+        (dryRun and dryRun.message or
         ("Eligible for guild REVIEW: "..candidates..". "..transferState..
-         ". NO AUTO-ROUTING.")
+         ". NO AUTO-ROUTING."))
     self.guildLootStatus:SetText(tostring(label))
     if self.guildLootArm and self.guildLootConfirm then
         local review=T and T.review
@@ -878,10 +902,12 @@ function UI:RefreshGuildLootDialog()
         local row=self.guildLootRows[i]
         local item=rows[(self.guildLootPage-1)*6+i]
         if item then
+            local proposal=proposalBySlot[item.slotIndex]
+            local state=proposal and proposal.decision or item.status
             row.nameText:SetText(
                 "Slot "..item.slotIndex..": "..item.itemName..
-                " x"..item.quantity.." ["..item.status.."]")
-            row.reasonText:SetText(tostring(item.reason)..
+                " x"..item.quantity.." ["..state.."]")
+            row.reasonText:SetText(tostring(proposal and proposal.reason or item.reason)..
                 "  |  Leader: "..tostring(item.leader))
             row.reviewButton.target={
                 slotIndex=item.slotIndex,itemID=item.itemID,

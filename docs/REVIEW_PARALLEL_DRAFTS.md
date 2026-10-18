@@ -33,7 +33,8 @@ forward-port only missing, safe behavior. No alternative branch was merged.
       delivery or authorization.
 - [x] Keep all physical-award consents OFF at every login/reload.
 - [x] Add new mocked Lua 5.1 coverage with zero GiveMasterLoot or RandomRoll.
-- [ ] Pass dedicated and general exact-head GitHub Actions checks.
+- [x] Pass dedicated and general exact-head GitHub Actions checks
+      (proof links and exact SHA recorded on PR #27).
 - [ ] Perform controlled WoW tests only after explicit owner approval.
 
 ## Risks not solved

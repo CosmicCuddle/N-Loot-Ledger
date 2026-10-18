@@ -156,7 +156,10 @@ current draft addon has been installed.
 - [x] Built: typing updates immediately; Enter, Apply and All work.
 - [x] Built: only the display is filtered, no status or saved row edits.
 - [x] Draft PR #26 opened on top of #25; the prior stack remains unchanged.
-- [ ] Record final exact-head CI results once green.
+- [x] Automated Lua 5.1, 604-row preservation and checklist integrity CI
+      passed (see exact-head checks and review notes on PR #26).
+- [ ] Perform the in-game filter acceptance separately; automated success
+      is NOT proof of the installed client's UI behaviour.
 - [ ] Owner verifies filter in the WoW client at their chosen test stage.
 
 ## D. Parallel draft work that must NOT be forgotten

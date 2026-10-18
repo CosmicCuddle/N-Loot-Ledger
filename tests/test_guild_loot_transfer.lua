@@ -203,7 +203,14 @@ ok(not sent and msg:find("previous request") and T:WasAttempted(17010,17),
 local target2={slotIndex=rows[2].slotIndex,itemID=rows[2].itemID,
     itemLink=rows[2].itemLink,quantity=rows[2].quantity}
 LootFrame.selectedSlot=2
-ok(T:Review(target2) and T:Arm(),"other unreserved material remains separately reviewable")
+sent,msg=T:Review(target2)
+ok(not sent and msg:find("unresolved"),
+   "a cleared slot remains delivery UNKNOWN and blocks unrelated items")
+-- The real addon requires the separately audited two-click NO RETRY
+-- investigation; the mock marks the completed investigation record.
+rankAtCall.reconciliationStatus="CLOSED_NO_RETRY"
+ok(T:Review(target2) and T:Arm(),
+   "after NO RETRY audit unrelated items may be separately reviewed")
 local failOnce=true
 GiveMasterLoot=function() if failOnce then error("WoW denied") end end
 sent,msg=T:Commit()

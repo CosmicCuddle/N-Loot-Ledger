@@ -265,6 +265,23 @@ Do not merge, publish or change the live server/SavedVariables.
       accessibility, zero receipt/loot history/role changes and no
       mutation to the 604 stored real plans.
 
+## F8 — Profession-aware recipe review (draft #35)
+
+- [ ] Save matched full addon + account SavedVariables backups, and
+      verify the 604 / 38 / 469 NEED / 135 GREED Gear Plan baseline.
+- [ ] In My Wishlist → Recipes, confirm Prof. Review replaces only
+      the category's Interest header; Gear / Items header is unchanged.
+- [ ] Browse ten Molten Core recipe IDs, profession and 300 skill;
+      verify actual skill/specialization rules in the IP/3.3.5a client.
+- [ ] Browse many names with four-per-page candidate controls;
+      imported Gear Plan NEED/GREED is interest, NOT profession proof.
+- [ ] Verify OBTAINED/DISABLED plans, unknown professions and
+      unverified Goblin/Gnomish/Leatherworking specializations are
+      never deemed eligible or offered automatic allocation.
+- [ ] Confirm no GiveMasterLoot, roll, raid message, award attempt
+      lock change, SavedVariables write or item transfer.
+- [ ] Capture real game UI screenshots and full data comparison.
+
 ## Release gates (require separate owner approval)
 
 - [ ] Full Lua 5.1 CI passes at the exact stacked final SHA.

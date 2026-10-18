@@ -9,7 +9,7 @@ Do not delete historical work just because another feature takes priority.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
 **Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
--> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 -> #33 -> #34 -> #35 (profession recipe review).
+-> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 -> #33 -> #34 -> #35 -> #36 (copy risk audit).
 **Shared baseline:** 604 imported Gear Plans across 38 Playerbots
 (469 NEED, 135 GREED). These are **real owner data**, not development fixtures.
 **Public release baseline:** v0.1.0.28 on main, separate from the above.
@@ -328,14 +328,37 @@ current draft addon has been installed.
 - [ ] Owner-approved visual and profession evidence verification in
       actual AzerothCore/IP 3.3.5a; no approval for live distribution.
 
+**NLL-036 — Duplicate physical-copy risk and future trusted-source evidence; draft PR #36**
+- [x] Group currently observed WoW 3.3.5a loot item IDs into
+      visible slot count vs displayed stack units. Neither proves a
+      distinct corpse, physical item instance or safe repeat grant.
+- [x] Expose /nll copyaudit, using existing /nll lootsource live
+      context. Closed/fake/unverified windows display no live item rows.
+- [x] Preserve winner and guild attempt item-ID holds regardless of
+      moved slot, changed target, stack quantity, or manual new-corpse
+      acknowledgement. NO original CLOSED_NO_RETRY is unlocked.
+- [x] Keep explicit canAward=false, canRetry=false, canUnlock=false,
+      autoTransferAuthorized=false; multi-copy saved plan support stays OFF.
+- [x] Write [authenticated per-item source and recipient receipt
+      evidence contract](BLUEPRINT_VERIFIED_LOOT_COPY_BRIDGE.md),
+      with replay/authority/crash/race restrictions. No actual server
+      bridge, migration or auto-transfer implemented/authorised.
+- [x] Add Lua 5.1 regressions: stacked/repeated materials, 604
+      unchanged Gear Plans, original locks, absent/fake source and
+      hostile attempts to claim future source-API authority.
+- [ ] Open stacked draft PR #36; verify dedicated/all Lua 5.1 CI.
+- [ ] Owner-approved actual WoW source/quantity audit and saved-data
+      comparison; no direct award or repeat grant test is approved.
+
 **Estimated remaining development stages (not a promise):**
 - [x] **C11:** Read-only import conflict comparison in draft #34;
   existing saved plans cannot be replaced via import.
 - [x] **C12:** Ten-recipe profession/skill reference plus unverified
   recipient interest audit in draft #35; no automatic recipient eligibility.
   Verify actual profession/spec/skill in the client's game.
-- **C13:** Duplicate-copy/loot-source evidence research and fail-closed design,
-  not an automatic material retry.
+- [x] **C13:** Read-only /nll copyaudit and trustworthy per-item
+  receipt/source evidence research in draft #36. No physical copy
+  identity, repeat attempt or second-copy reservation permitted.
 - **C14:** Combined draft integration, accessibility and release-readiness
   hardening with full test coverage.
 - **Then:** a separate owner-approved, backup-first WoW 3.3.5a testing,
@@ -371,6 +394,8 @@ mean their code is included in the current stack.
 ## E. Future requested or identified work (not implemented)
 
 **NLL-F01 — Multi-copy and duplicate-equipped items**
+- [x] C13 blueprint spells out the required unique-equipped and realm
+      item_template verification; no extra copy is yet authorised.
 - [ ] Research item-specific unique/unique-equipped restrictions.
 - [ ] Design per-copy reservations/receipts without resetting the
       boolean wishlist or using two tickets for one physical copy.
@@ -392,6 +417,11 @@ mean their code is included in the current stack.
       overwriting human wishlist or bot sources.
 
 **NLL-F03 — Safer repeated corpses / materials**
+- [x] Draft #36 inventories repeated slots versus stack quantities
+      without interpreting either as authoritative copy/source proof.
+- [x] Future authenticated source/receipt bridge contract documented
+      in BLUEPRINT_VERIFIED_LOOT_COPY_BRIDGE.md; never authorises a
+      retry of an old attempted physical transaction.
 - [x] Completed client API limitation study: no GetLootSourceInfo
       before 5.0.4; UnitGUID('target') cannot prove loot source.
       See [source research](RESEARCH_WOTLK_LOOT_SOURCE_IDENTITY.md).

@@ -757,6 +757,10 @@ function NLL:Initialize()
         self.GuildLootTransfer
     )
     RequireModule(
+        "Core/GuildLootReconciliation.lua",
+        self.GuildLootReconciliation
+    )
+    RequireModule(
         "Core/LootReceiptTracker.lua",
         self.LootReceiptTracker
     )

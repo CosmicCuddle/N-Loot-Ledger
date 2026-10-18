@@ -36,7 +36,8 @@ function T:IsUnresolved()
     for _,row in ipairs(audit) do
         if row.reconciliationStatus~="CLOSED_NO_RETRY" and
            (row.status=="AWARD_REQUESTED" or
-            row.status=="AWARD_OUTCOME_UNKNOWN") then
+            row.status=="AWARD_OUTCOME_UNKNOWN" or
+            row.status=="LOOT_SLOT_CLEARED") then
             return true
         end
     end
@@ -52,7 +53,8 @@ function T:IsUnresolved()
             Key(receipt.character)==Key(row.winner)
         if not confirmed and row.reconciliationStatus~="CLOSED_NO_RETRY" and
            (row.status=="AWARD_REQUESTED" or
-            row.status=="AWARD_OUTCOME_UNKNOWN") then
+            row.status=="AWARD_OUTCOME_UNKNOWN" or
+            row.status=="LOOT_SLOT_CLEARED") then
             return true
         end
     end
@@ -234,6 +236,7 @@ function T:Commit()
     local row={
         itemID=fresh.itemID,itemLink=fresh.link,quantity=fresh.quantity,
         slotIndex=fresh.slot,recipient=fresh.leader,
+        operator=UnitName and UnitName("player") or nil,
         candidateIndex=fresh.candidate,
         status="AWARD_OUTCOME_UNKNOWN",
         note="Request attempt; no recipient receipt verified",

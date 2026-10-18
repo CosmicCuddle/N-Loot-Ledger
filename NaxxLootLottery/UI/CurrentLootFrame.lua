@@ -760,6 +760,11 @@ function UI:CreateGuildLootDialog()
     status:SetWidth(670)
     status:SetJustifyH("CENTER")
     self.guildLootStatus=status
+    local preview=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    preview:SetPoint("TOP",status,"BOTTOM",0,-11)
+    preview:SetWidth(670)
+    preview:SetJustifyH("CENTER")
+    self.guildLootPolicySummary=preview
     self.guildLootRows={}
     for i=1,6 do
         local row=CreateFrame("Frame",nil,f)
@@ -825,6 +830,12 @@ function UI:CreateGuildLootDialog()
     end)
     self.guildLootArm=arm
     self.guildLootConfirm=give
+    local reconcile=self:CreateTextButton(f,"Reconcile Awards",170)
+    reconcile:SetPoint("LEFT",give,"RIGHT",12,0)
+    reconcile:SetScript("OnClick",function()
+        UI:OpenGuildReconciliationReview()
+    end)
+    self.guildLootReconcileButton=reconcile
 
     local close=self:CreateTextButton(f,"Close (No Award)",150)
     close:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-24,20)
@@ -854,6 +865,16 @@ function UI:RefreshGuildLootDialog()
         ("Eligible for guild REVIEW: "..candidates..". "..transferState..
          ". NO AUTO-ROUTING.")
     self.guildLootStatus:SetText(tostring(label))
+    if self.guildLootPolicySummary then
+        local preview=NLL.GuildLootAutoPreview and
+            NLL.GuildLootAutoPreview:Build()
+        local counts=preview and preview.counts
+        self.guildLootPolicySummary:SetText(counts and
+            ("DRY RUN: "..counts.candidates.." possible guild items, "..
+             counts.reserved.." reserved, "..counts.held.." manual holds, "..
+             counts.blocked.." past-request blocks. ZERO auto awards.") or
+            "AUTO ROUTING DISABLED: review only.")
+    end
     if self.guildLootArm and self.guildLootConfirm then
         local review=T and T.review
         if review and review.armedAt then

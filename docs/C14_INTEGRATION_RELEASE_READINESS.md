@@ -33,7 +33,8 @@ The submitted paste text is **not a SavedVariables backup**; its transient impor
 - [x] New `tests/test_c14_cross_feature_integration.lua`: real project core modules loaded together, 38 synthetic bots / 604 row identities, 469 NEED / 135 GREED; verify 3 export chunks (250/250/104), approved single-row status/role updates, blocked old import, updated read-only recipe interest and immutable physical source audit.
 - [x] Main UI navigation and invalid selection mocked transitions; all previously armed controls revoked and new confirmation required.
 - [x] Original personal wishlists, global raid roles, Gear Plans table identity and other 603 saved row objects remain intact; old winner/receipt/write-ahead/guild attempt history stays untouched; direct Master Loot and guild transfers OFF.
-- [ ] Dedicated C14 exact-head scope/NO RELEASE GitHub checks and all historical Lua 5.1 regressions.
+- [x] Dedicated C14 exact-head scope/NO RELEASE and historical Lua 5.1
+      regressions passed; final exact-head evidence linked in draft PR #37.
 - [ ] Actual WoW 3.3.5a FrameXML/Lua execution and multi-client acceptance with screenshots and paired account backups. **Mocked CI does not verify real client pixels or permissions.**
 
 ## Unresolved physical safety blockers — do NOT downgrade

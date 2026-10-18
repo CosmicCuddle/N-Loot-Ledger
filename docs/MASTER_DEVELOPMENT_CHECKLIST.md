@@ -281,7 +281,9 @@ current draft addon has been installed.
 - [x] Added 604-row Lua 5.1 fixture covering all 6 roles and UI
       selection, cancel, expiration and final confirmation.
 - [x] Open stacked draft PR #33 after #32.
-- [ ] Verify dedicated/full exact-head CI at the final reviewed SHA.
+- [x] Dedicated item-role/no-release checks and all historical Lua 5.1
+      regressions passed (exact-head run links recorded in PR #33).
+- [ ] Repeat exact-head CI for any additional future code/doc changes.
 - [ ] Real 3.3.5a UI/font/clipboard acceptance and matched backups
       still require separate owner approval.
 

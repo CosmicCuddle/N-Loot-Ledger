@@ -1,0 +1,70 @@
+name: Update dev20 Pre-release Description (NOT ASSETS)
+
+on:
+  push:
+    branches:
+      - prerelease/v0.1.0.29-rc.1-dev20-test.1
+    paths:
+      - '.github/workflows/update-v0.1.0.29-rc.1-dev20-release-notes.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  release-notes:
+    name: Simplify published dev20 description without changing downloads
+    if: github.repository == 'CosmicCuddle/N-Loot-Ledger'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout description-only branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Confirm original owner-tested addon code and protected release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE='e7566c77bdee565c35830e9fddc9481f7db88464'
+          TAG='v0.1.0.29-rc.1-dev20-test.1'
+          test "$GITHUB_REF" = 'refs/heads/prerelease/v0.1.0.29-rc.1-dev20-test.1'
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          test -z "$(git diff --name-only "$BASE" "$GITHUB_SHA" -- NaxxLootLottery tests scripts)"
+          while IFS= read -r f; do
+            case "$f" in
+              docs/PRERELEASE_v0.1.0.29-rc.1-dev20-test.1.md|.github/workflows/publish-v0.1.0.29-rc.1-dev20-test.1.yml|.github/workflows/update-v0.1.0.29-rc.1-dev20-release-notes.yml) ;;
+              *) echo "::error::Unexpected code or document change: $f"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.prerelease')" = true
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.target_commitish')" = "$BASE"
+          ASSETS="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '[.assets[].name] | sort | join(",")')"
+          test "$ASSETS" = 'Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev20.zip,SHA256SUMS.txt'
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.assets | length')" = 2
+
+      - name: Update only release text and title
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='v0.1.0.29-rc.1-dev20-test.1'
+          gh release edit "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title 'Naxxramas Loot Ledger v0.1.0.29-rc.1-dev20 (Pre-release)' \
+            --notes-file docs/PRERELEASE_v0.1.0.29-rc.1-dev20-test.1.md
+          echo "Updated only title/description at: https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Recheck unchanged tag, downloadable assets, and pre-release status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='v0.1.0.29-rc.1-dev20-test.1'
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.prerelease')" = true
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.target_commitish')" = 'e7566c77bdee565c35830e9fddc9481f7db88464'
+          ASSETS="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '[.assets[].name] | sort | join(",")')"
+          test "$ASSETS" = 'Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev20.zip,SHA256SUMS.txt'
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json name,isPrerelease --jq '{title:.name,preRelease:.isPrerelease}'

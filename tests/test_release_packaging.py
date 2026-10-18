@@ -1,4 +1,4 @@
-"""Read-only v0.1.0.29-rc.1-dev7 candidate packaging and opt-in safety checks."""
+"""Read-only v0.1.0.29-rc.1-dev8 candidate packaging and opt-in safety checks."""
 from __future__ import annotations
 
 import hashlib
@@ -13,11 +13,11 @@ spec = importlib.util.spec_from_file_location("nll_zip", script)
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-assert module.EXPECTED_VERSION == "0.1.0.29-rc.1-dev7"
+assert module.EXPECTED_VERSION == "0.1.0.29-rc.1-dev8"
 assert module.EXPECTED_INTERFACE == "30300"
 
 with tempfile.TemporaryDirectory() as tmp:
-    path = Path(tmp) / "Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev7.zip"
+    path = Path(tmp) / "Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev8.zip"
     digest = module.build(path)
     assert path.is_file() and len(digest) == 64
     assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
@@ -30,8 +30,8 @@ with tempfile.TemporaryDirectory() as tmp:
         ).decode()
         assert "## Interface: 30300" in toc
         assert "## SavedVariables: NaxxLootLotteryDB" in toc
-        assert "## Version: 0.1.0.29-rc.1-dev7" in toc
-        assert 'NLL.version = "0.1.0.29-rc.1-dev7"' in core
+        assert "## Version: 0.1.0.29-rc.1-dev8" in toc
+        assert 'NLL.version = "0.1.0.29-rc.1-dev8"' in core
         assert "db.settings.directMasterLootEnabled = false" in db
         assert "Live Loot Awards (Experimental)" in award_settings
         assert "GiveMasterLoot" not in award_settings.split("heading:SetText")[0]
@@ -40,4 +40,4 @@ with tempfile.TemporaryDirectory() as tmp:
     second = Path(tmp) / "again.zip"
     assert module.build(second) == digest, "ZIP is not deterministic"
 
-print("PASS: 0.1.0.29-rc.1-dev7 ZIP format, versions, offline-direct default, reproducibility")
+print("PASS: 0.1.0.29-rc.1-dev8 ZIP format, versions, offline-direct default, reproducibility")

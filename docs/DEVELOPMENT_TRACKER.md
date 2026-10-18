@@ -1,5 +1,7 @@
 # NLL — rolling development tracker
 
+**Start here:** [MASTER DEVELOPMENT CHECKLIST](MASTER_DEVELOPMENT_CHECKLIST.md) is the authoritative project-wide source of truth. This shorter table is a quick status snapshot, not a replacement for historical and parallel work.
+
 **Update this document when opening or completing each development stage.**
 Never confuse draft code, automated checks, real WoW acceptance or release.
 
@@ -17,6 +19,10 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 | #24 | UI for reconciliation list, paging, arm/confirm | Passed on 60e28ad81eae | Pending | Draft only |
 | #25 | Duplicate item ID across slots / full test checklist | Passed (latest exact-head CI evidence linked on PR #25) | Pending | Draft only |
 
+| #26 | Live exact character filter + master checklist | Full Lua 5.1 and dedicated safety CI passed (PR #26 checks) | Pending client acceptance | Draft only |
+
+**Parallel, separately stacked drafts #18–#21** are inventoried in the master checklist; do not assume they are included in #25/#26.
+
 ## Hard safety rules
 
 - Do not merge, release, install or change live server or actual item.
@@ -29,7 +35,7 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 - Same-item-ID guild loot transfers stay blocked across slot changes:
   this conservative hold awaits reliable independent corpse identity.
 
-## Next work (after current draft #25)
+## Next work (after current draft #26)
 
 - [ ] Visual test evidence for the reconciliation window, dry-run
       allocations, overlapping buttons and long item names.

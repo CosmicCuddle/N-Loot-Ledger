@@ -54,6 +54,20 @@ Do not merge, publish or change the live server/SavedVariables.
       the old winner, subject to unique identity verification.
 - [ ] Pending roll/countdown is never silently bypassed by New Drop.
 
+## B2 — Character-only Gear Plans filtering (new draft #26)
+
+- [ ] Open Wishlists -> Gear Plans on the controlled test build.
+- [ ] Type one exact bot name, for example Gorak. Confirm only that
+      character's records appear; no similarly named bot appears.
+- [ ] Repeat with different letter case and surrounding spaces.
+- [ ] Type a partial or nonexistent name; ensure the list shows no
+      other character and has no stale paged rows.
+- [ ] Try Apply, Enter and All. All restores the complete Gear Plans
+      view, with the six-row pager remaining readable.
+- [ ] Compare the 604 / 469 NEED / 135 GREED saved baselines before
+      and after filtering; verify no item statuses or receipt history
+      changed as a result of the filter.
+
 ## C — Item award and reconciliation
 
 - [ ] Current WoW Master Looter, recipient candidate and exact loot slot

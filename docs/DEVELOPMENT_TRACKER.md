@@ -30,7 +30,7 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 | #34 | Read-only V1 import conflict comparisons incl. UTF-8 aliases, paged SAVED/PASTED UI | Dedicated no-release + complete Lua 5.1 CI passed (PR #34) | Pending clipboard/UI acceptance | Draft only |
 | #35 | Ten MC recipe professions + unverified Gear Plan candidates; manual-only paged review | Dedicated no-release + full Lua 5.1 CI passed (PR #35) | Pending profession evidence/UI acceptance | Draft only |
 | #36 | Read-only grouped duplicate slot/stack audit, old item-ID holds and trusted source evidence blueprint | Dedicated no-release + full Lua 5.1 checks passed (PR #36) | Pending controlled real 3.3.5a /nll copyaudit checks | Draft only |
-| #37 | C14 combined 604-plan regression + stale review/import modal disarming on navigation, Escape and close | CI pending | Pending owner-approved full-stack 3.3.5a UI, multi-client and rollback | Draft only |
+| #37 | C14 combined 604-plan regression + stale review/import modal disarming on navigation, Escape and close | Dedicated no-release + complete Lua 5.1 CI passed (PR #37) | Pending owner-approved full-stack 3.3.5a UI, multi-client and rollback | Draft only |
 
 **Parallel, separately stacked drafts #18–#21** are inventoried in the master checklist; see [review decisions](REVIEW_PARALLEL_DRAFTS.md) for the safe findings forwarded into #27. The alternative reconciliation branches remain separate drafts.
 

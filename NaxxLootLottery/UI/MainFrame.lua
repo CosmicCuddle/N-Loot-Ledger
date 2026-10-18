@@ -106,6 +106,11 @@ function UI:CreateMainFrame()
         )
     end
 
+    -- Escape / UISpecialFrames may hide the frame without calling
+    -- UI:HideMainFrame. Disarm the same transient reviews in both cases.
+    frame:SetScript("OnHide",function()
+        UI:DismissContextReviews()
+    end)
     frame:SetScript("OnDragStart", function(self)
         self:StartMoving()
     end)
@@ -730,7 +735,30 @@ function UI:RefreshOverview()
     end
 end
 
+-- C14: one owner-controlled UI dismissal path for every recent
+-- review overlay. Navigation, Escape and closing the main frame must
+-- never preserve an armed Gear Plan write or a stale import preview.
+-- Safe even before optional child panels have been constructed.
+function UI:DismissContextReviews()
+    if NLL.GearPlanReview then NLL.GearPlanReview:Cancel() end
+    if self.CancelGearPlanRolePicker then self:CancelGearPlanRolePicker() end
+    if self.gearPlanReviewDialog then self.gearPlanReviewDialog:Hide() end
+    if self.CloseGearPlanConflictDialog then
+        self:CloseGearPlanConflictDialog()
+    end
+    if self.CloseProfessionRecipeReview then
+        self:CloseProfessionRecipeReview()
+    end
+    if self.CloseGearPlanTransfer then
+        self:CloseGearPlanTransfer()
+    elseif self.gearTransferDialog then
+        self.gearTransferDialog:Hide()
+    end
+end
+
 function UI:ShowPanel(panelName)
+    -- Includes same-tab navigation: a prior modal is not an approval.
+    self:DismissContextReviews()
     -- Close the drop-scoped review overlay when changing tabs.
     if self.candidateReviewPanel then self.candidateReviewPanel:Hide() end
     if self.awardReviewFrame then self.awardReviewFrame:Hide() end
@@ -778,6 +806,7 @@ function UI:ShowMainFrame(panelName)
 end
 
 function UI:HideMainFrame()
+    self:DismissContextReviews()
     if self.mainFrame then
         self.mainFrame:Hide()
     end

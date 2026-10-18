@@ -106,8 +106,14 @@ function UI:CreateAwardHistoryContent(parent)
         UI.awardHistoryPage=(UI.awardHistoryPage or 1)+1
         UI:RefreshAwardHistory()
     end)
+    local investigate=self:CreateTextButton(panel,'Investigate Transfers',176)
+    investigate:SetPoint('LEFT',nextButton,'RIGHT',12,0)
+    investigate:SetScript('OnClick',function()
+        if UI.OpenReconciliationDialog then UI:OpenReconciliationDialog() end
+    end)
+    self.awardHistoryInvestigate=investigate
     local pages=panel:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
-    pages:SetPoint('LEFT',nextButton,'RIGHT',15,0)
+    pages:SetPoint('LEFT',investigate,'RIGHT',12,0)
     self.awardHistoryPrevious=prev
     self.awardHistoryNext=nextButton
     self.awardHistoryPageLabel=pages

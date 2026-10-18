@@ -69,16 +69,19 @@ function UI:CreateWishlistPanel(parent)
     inboxButton:SetPoint("LEFT", plansButton, "RIGHT", 4, 0)
 
     myButton:SetScript("OnClick", function()
+        if UI.DismissContextReviews then UI:DismissContextReviews() end
         UI.wishlistMode = "local"
         UI:RefreshWishlistPanel()
     end)
 
     plansButton:SetScript("OnClick", function()
+        if UI.DismissContextReviews then UI:DismissContextReviews() end
         UI.wishlistMode = "plans"
         UI:RefreshWishlistPanel()
     end)
 
     inboxButton:SetScript("OnClick", function()
+        if UI.DismissContextReviews then UI:DismissContextReviews() end
         UI.wishlistMode = "inbox"
         UI:RefreshWishlistPanel()
     end)
@@ -2413,10 +2416,11 @@ function UI:CreateGearPlanTransfer()
         end
     end)
     closeButton:SetScript("OnClick",function()
-        ClearPreview()
-        edit:ClearFocus()
-        panel:Hide()
+        UI:CloseGearPlanTransfer()
     end)
+    -- The same revocation path is used by direct Close, changing
+    -- Wishlist tabs, navigating to another panel and Escape.
+    self.gearTransferCancelTransient=ClearPreview
 
     self.gearTransferDialog=panel
     self.gearTransferTextBox=edit
@@ -2432,11 +2436,22 @@ function UI:CreateGearPlanTransfer()
     panel:Hide()
 end
 
+function UI:CloseGearPlanTransfer()
+    if self.gearTransferCancelTransient then
+        self.gearTransferCancelTransient()
+    end
+    if self.gearTransferTextBox and self.gearTransferTextBox.ClearFocus then
+        self.gearTransferTextBox:ClearFocus()
+    end
+    if self.gearTransferDialog then self.gearTransferDialog:Hide() end
+end
+
 function UI:ShowGearPlanTransfer()
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
         NLL:Print("Stop the fake raid before using real Gear Plan Import / Export.")
         return
     end
+    if self.DismissContextReviews then self:DismissContextReviews() end
     self:CreateGearPlanTransfer()
     self.gearTransferDialog:Show()
     -- Open safely in read-only export mode and highlight the text.

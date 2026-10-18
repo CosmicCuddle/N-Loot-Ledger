@@ -52,6 +52,12 @@ end
 
 function UI:ReviewBotPlan(key,action,status)
     if not NLL.GearPlanReview then return end
+    -- An invalid replacement selection must not leave yesterday's
+    -- still-visible confirm button associated with a different row.
+    if self.gearPlanReviewDialog then self.gearPlanReviewDialog:Hide() end
+    if self.CloseGearPlanConflictDialog then
+        self:CloseGearPlanConflictDialog()
+    end
     local ok,message=NLL.GearPlanReview:Arm(key,action,status)
     if not ok then
         if NLL.Print then NLL:Print(message) end
@@ -119,6 +125,10 @@ end
 
 function UI:OpenGearPlanRolePicker(key)
     self:CancelGearPlanRolePicker()
+    if self.gearPlanReviewDialog then self.gearPlanReviewDialog:Hide() end
+    if self.CloseGearPlanConflictDialog then
+        self:CloseGearPlanConflictDialog()
+    end
     if not NLL.GearPlanReview then return end
     -- Check the same full safety guards before exposing any role option.
     -- The second ROLE review will check them again, including the role ID.

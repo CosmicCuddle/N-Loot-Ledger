@@ -9,7 +9,7 @@ Do not delete historical work just because another feature takes priority.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
 **Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
--> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 -> #33 -> #34 -> #35 -> #36 (copy risk audit).
+-> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 -> #33 -> #34 -> #35 -> #36 -> #37 (integration hardening).
 **Shared baseline:** 604 imported Gear Plans across 38 Playerbots
 (469 NEED, 135 GREED). These are **real owner data**, not development fixtures.
 **Public release baseline:** v0.1.0.28 on main, separate from the above.
@@ -353,6 +353,30 @@ current draft addon has been installed.
 - [ ] Owner-approved actual WoW source/quantity audit and saved-data
       comparison; no direct award or repeat grant test is approved.
 
+**NLL-037 — C14 combined integration, modal safety and release-readiness [draft PR #37](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/37)**
+- [x] Verify shared 604/38/469/135 synthetic saved Gear Plans across
+      250/250/104 export, guarded role/status, import-conflict report,
+      profession interest and duplicate material NO RETRY policies.
+- [x] Close/disarm context-specific Gear Plan edit, role choice, import
+      comparison, transient ADD consent and profession review when
+      main UI changes tabs, switches Wishlist modes, closes or Escapes.
+- [x] An invalid new row/role/status selection also hides the old
+      confirmation, so a stale modal cannot authorise another change.
+- [x] Preserve per-item role scope, original 603 unrelated Gear Plans,
+      all global raid roles, SavedVariables history and OFF loot consents.
+- [x] Add [integration, owner acceptance and rollback blueprint]
+      (C14_INTEGRATION_RELEASE_READINESS.md) and combined Lua 5.1
+      regression covering existing C8–C13 core paths.
+- [x] Open stacked draft PR #37 after #36.
+- [x] Dedicated C14 integration/NO RELEASE and complete historical
+      Lua 5.1 regression CI passed; final exact-head links are
+      recorded in draft PR #37.
+- [ ] Recheck exact-head CI for any future changes to this draft.
+- [ ] Owner-approved backup-first in-client WoW 3.3.5a accessibility,
+      multi-client and release-review gate. NOT complete.
+- [ ] Compare alternative PRs #18–#21 at eventual merge decision;
+      preserve any unique protections. NOT merged automatically.
+
 **Estimated remaining development stages (not a promise):**
 - [x] **C11:** Read-only import conflict comparison in draft #34;
   existing saved plans cannot be replaced via import.
@@ -362,8 +386,9 @@ current draft addon has been installed.
 - [x] **C13:** Read-only /nll copyaudit and trustworthy per-item
   receipt/source evidence research in draft #36. No physical copy
   identity, repeat attempt or second-copy reservation permitted.
-- **C14:** Combined draft integration, accessibility and release-readiness
-  hardening with full test coverage.
+- [x] **C14:** Combined draft Lua 5.1 regression and transient UI
+  confirmation hardening in #37. This is development-only: actual
+  WoW font/layout/multi-client acceptance remains OPEN.
 - **Then:** a separate owner-approved, backup-first WoW 3.3.5a testing,
   multi-client receipt review, rollback rehearsal and release decision.
   Bugs or new findings may require additional stages or split existing
@@ -473,6 +498,30 @@ mean their code is included in the current stack.
       before any unattended physical transfer. OFF by default.
 
 ## F. Integrated testing, backup and release gate
+
+**NLL-TEST-001 — Owner-controlled test-only build and Phase 1 smoke gate**
+- [x] Add [phase-1 owner test handoff](OWNER_TEST_ONLY_HANDOFF.md):
+      separate full HF2 addon backup and matched `.lua` / `.lua.bak`
+      before WoW launch, on every client where testing occurs.
+- [x] Add `nll-owner-test-zip.yml` TEST-ONLY workflow: full Lua 5.1
+      suite and 604-plan C14 regression, deterministic ZIP with 50
+      modules, SHA256SUMS, BUILD_INFO/commit provenance, 14-day
+      GitHub Actions artifact retention, no tag/release/install.
+- [x] Verified test-only Actions ZIP packaging + 50-module checksum
+      `ab1298c7a61887161f1bcbf98bd8ddc068b9be1affc5c40f602b7d4933f57ac4`;
+      final exact-head run and downloadable artifact linked on PR #37.
+      Reverify if any future addon Lua or .toc content changes.
+- [ ] Owner chooses to back up and manually replace ONE test client
+      addon folder; owner SavedVariables are never bundled.
+- [ ] Complete NON-DESTRUCTIVE Phase 1: /nll version, /nll status,
+      604/38/469/135 baseline, 250/250/104 export only, no imports,
+      recipe review, navigation/Escape and CLOSED loot /nll copyaudit.
+- [ ] Pause after Phase 1 for screenshots/error log and saved-data
+      preservation check. No loot grants, resets or raid use.
+- [ ] Separate owner permission for Phase 2 physical/raid tests and
+      any future release; mocked CI is not live WoW acceptance.
+
+
 
 - [ ] Owner chooses a controlled in-game testing session.
 - [ ] Back up Interface/AddOns/NaxxLootLottery/ as a complete directory.

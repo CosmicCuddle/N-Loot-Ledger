@@ -378,6 +378,35 @@ function NLL:HandleSlashCommand(message)
         end
         return
     end
+    if command=="reconcile" then
+        local mode,identifier=(arguments or ""):match("^%s*(%S*)%s*(.-)%s*$")
+        mode=string.lower(mode or "")
+        local R=self.LootReconciliation
+        if mode=="list" then
+            local rows=R:List()
+            self:Print("Reconciliation ledger: "..#rows.." recorded attempts.")
+            for _,row in ipairs(rows) do
+                self:Print(row.kind.." "..tostring(row.id)..
+                    " item "..tostring(row.itemID).." "..tostring(row.status)..
+                    (row.reviewed and " [REVIEWED, NO RETRY]" or
+                    " [UNRESOLVED / RECEIPT UNVERIFIED]"))
+            end
+        elseif mode=="winner" or mode=="guild" then
+            local id=mode=="guild" and tonumber(identifier) or identifier
+            local ok,note=R:Arm(string.upper(mode),id)
+            self:Print(tostring(note))
+        elseif mode=="confirm" and identifier=="" then
+            local ok,note=R:ConfirmNoRetry()
+            self:Print(tostring(note))
+        elseif mode=="cancel" then
+            R:Cancel()
+            self:Print("Reconciliation review cancelled; original award remains locked.")
+        else
+            self:Print("Usage: /nll reconcile list | winner <dropUID> | guild <audit index>")
+            self:Print("Then: /nll reconcile confirm (15 sec). Review only: NO item retry or receipt.")
+        end
+        return
+    end
     if command == "awardreview" then
         self.UI:ShowMainFrame('currentloot')
         self.UI:OpenAwardReview()
@@ -650,6 +679,9 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll lotteryhistory - Show last 5 lottery records.")
         self:Print("/nll awardreview - Review the selected winner and manual award.")
         self:Print("/nll receiptinbox - Review my pending award confirmations.")
+        self:Print("/nll reconcile list - Inspect uncertain winner and guild award attempts.")
+        self:Print("/nll reconcile winner <UID> | guild <index> - Arm NO-RETRY review.")
+        self:Print("/nll reconcile confirm - Close review only; no delivery proof or retry.")
         self:Print("/nll receiptsync <dropUID> - Resend a previously verified human receipt.")
         self:Print("/nll guildloot - Read-only review of ALL visible item slots, including materials.")
         self:Print("/nll guildgive on|off - Separate login-only consent for manual guild transfers.")

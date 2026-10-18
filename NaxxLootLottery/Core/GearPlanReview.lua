@@ -108,6 +108,16 @@ function R:CanEdit(key,action,newStatus)
         if row.status==newStatus then
             return false,"Already "..newStatus.."; no change necessary."
         end
+    elseif action=="ROLE" then
+        -- This is the role on ONE Gear Plan, not the globally assigned
+        -- raid role shared across every item and character record.
+        if type(newStatus)~="string" or not NLL.roleLabels or
+           not NLL.roleLabels[newStatus] then
+            return false,"Choose a supported raid role for this item only."
+        end
+        if row.role==newStatus then
+            return false,"This Gear Plan already has that role."
+        end
     elseif action~="REMOVE" then
         return false,"Unknown review action."
     end
@@ -121,13 +131,19 @@ function R:Arm(key,action,newStatus)
     if not ok then return false,row end
     self.armed={
         key=key,action=action,newStatus=newStatus,reference=row,
-        snapshot=stamp,oldStatus=row.status,character=row.character,
-        itemID=row.itemID,actor=Actor(),started=Now(),
+        snapshot=stamp,oldStatus=row.status,oldRole=row.role,
+        character=row.character,itemID=row.itemID,
+        actor=Actor(),started=Now(),
     }
     return true,"REVIEW "..row.character.." item "..row.itemID..": "..
         (action=="REMOVE" and "REMOVE existing bot plan" or
-         (row.status.." -> "..newStatus))..
-        ". Confirm within 15 seconds. No changes have been made."
+         (action=="ROLE" and
+          ("ITEM ROLE "..tostring(NLL.roleLabels[row.role] or row.role)..
+           " -> "..tostring(NLL.roleLabels[newStatus])) or
+          ("STATUS "..row.status.." -> "..newStatus)))..
+        ". Confirm within 15 seconds. No changes have been made. "..
+        (action=="ROLE" and
+         "Global raid-role assignments remain unchanged." or "")
 end
 function R:Confirm()
     local armed=self.armed
@@ -143,14 +159,21 @@ function R:Confirm()
     local ok,row,stamp=self:CanEdit(armed.key,armed.action,armed.newStatus)
     if not ok then return false,row end
     if row~=armed.reference or stamp~=armed.snapshot or
-       row.status~=armed.oldStatus or row.itemID~=armed.itemID or
-       row.character~=armed.character then
+       row.status~=armed.oldStatus or row.role~=armed.oldRole or
+       row.itemID~=armed.itemID or row.character~=armed.character then
         return false,"Saved Gear Plans changed after review; nothing was changed."
     end
     if armed.action=="STATUS" then
         row.status=armed.newStatus
         return true,"Updated only "..row.character.." item "..row.itemID..
             " to "..row.status..". Winner receipts and role data unchanged."
+    end
+    if armed.action=="ROLE" then
+        row.role=armed.newStatus
+        return true,"Updated ONLY the role on "..row.character..
+            " item "..row.itemID.." to "..
+            tostring(NLL.roleLabels[row.role])..
+            ". Global raid roles, all other plans and receipts unchanged."
     end
     NLL.db.gearNeeds[armed.key]=nil
     return true,"Removed only the explicitly reviewed bot plan "..

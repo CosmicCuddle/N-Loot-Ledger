@@ -328,7 +328,7 @@ current draft addon has been installed.
 - [ ] Owner-approved visual and profession evidence verification in
       actual AzerothCore/IP 3.3.5a; no approval for live distribution.
 
-**NLL-036 — Duplicate physical-copy risk and future trusted-source evidence; draft PR #36**
+**NLL-036 — Duplicate physical-copy risk and future trusted-source evidence; [draft PR #36](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/36)**
 - [x] Group currently observed WoW 3.3.5a loot item IDs into
       visible slot count vs displayed stack units. Neither proves a
       distinct corpse, physical item instance or safe repeat grant.
@@ -346,7 +346,8 @@ current draft addon has been installed.
 - [x] Add Lua 5.1 regressions: stacked/repeated materials, 604
       unchanged Gear Plans, original locks, absent/fake source and
       hostile attempts to claim future source-API authority.
-- [ ] Open stacked draft PR #36; verify dedicated/all Lua 5.1 CI.
+- [x] Open stacked draft PR #36 after #35.
+- [ ] Verify dedicated/all Lua 5.1 CI on final exact head.
 - [ ] Owner-approved actual WoW source/quantity audit and saved-data
       comparison; no direct award or repeat grant test is approved.
 

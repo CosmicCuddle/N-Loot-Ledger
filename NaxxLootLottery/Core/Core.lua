@@ -9,7 +9,7 @@ local NLL = NaxxLootLottery
 
 NLL.name = "Naxxramas Loot Ledger"
 NLL.shortName = "NLL"
-NLL.version = "0.1.0.29-rc.1-dev17"
+NLL.version = "0.1.0.29-rc.1-dev18"
 NLL.databaseVersion = 1
 NLL.initialized = false
 NLL.initializeAttempted = false
@@ -272,6 +272,18 @@ function NLL:HandleSlashCommand(message)
             ok, message = self.LootIdentity:PrepareReset()
         end
         self:Print(message)
+        return
+    end
+    if command=="copyaudit" then
+        -- Wrath slot/stack evidence cannot prove independently grantable
+        -- copies or release historical write-ahead NO-RETRY locks.
+        if self.LootCopyAudit then
+            for _,line in ipairs(self.LootCopyAudit:Report()) do
+                self:Print(line)
+            end
+        else
+            self:Print("Read-only copy audit unavailable; NO RETRY remains.")
+        end
         return
     end
     if command=="lootsource" then
@@ -742,6 +754,7 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll clearloot - Clear detected loot (not the roll history).")
         self:Print("/nll lootidentity - Show current and archived loot group counts.")
         self:Print("/nll lootsource - Read-only source-hint/duplicate-lock diagnosis; NO RETRY.")
+        self:Print("/nll copyaudit - Read-only grouped stack/copy risks; NO RETRY.")
         self:Print("/nll botcheck [name] - Read-only real Playerbot roster/loot preflight.")
         self:Print("/nll newloot - Confirm a DIFFERENT corpse when loot overlaps.")
         self:Print("/nll newloot confirm - Confirm new corpse within 20 seconds.")

@@ -282,6 +282,23 @@ Do not merge, publish or change the live server/SavedVariables.
       lock change, SavedVariables write or item transfer.
 - [ ] Capture real game UI screenshots and full data comparison.
 
+## F9 — Repeated materials and immutable copy-risk audit (draft #36)
+
+- [ ] Back up matched full addon folder plus all account
+      NaxxLootLottery.lua / .lua.bak, and inventory winner/audit history.
+- [ ] Confirm 604 plans / 38 bots / 469 NEED / 135 GREED unchanged.
+- [ ] Use /nll copyaudit ONLY in owner-approved controlled real loot.
+      Confirm distinct visible item IDs, slots and stack unit counts.
+- [ ] One stack x20 is displayed quantity, NOT 20 independently
+      proven new item instances or 20 safe physical awards.
+- [ ] Existing item-ID guild and winner request holds remain, including
+      after CLOSED_NO_RETRY, moved slots, changed target and /reload.
+- [ ] Fake, closed, API-missing or unverified loot shows NO live rows.
+- [ ] All client output says NO SOURCE/COPY PROOF, NO RETRY; no
+      automatic guild transfer, new attempt or extra copy reservation.
+- [ ] Screenshot source-limit text, check multi-line readability,
+      preserve original SavedVariables and OFF opt-in defaults.
+
 ## Release gates (require separate owner approval)
 
 - [ ] Full Lua 5.1 CI passes at the exact stacked final SHA.

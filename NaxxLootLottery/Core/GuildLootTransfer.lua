@@ -35,7 +35,8 @@ function T:IsUnresolved()
     -- Never retry silently after an uncertain outcome, even after /reload.
     for _,row in ipairs(audit) do
         if row.status=="AWARD_REQUESTED" or
-           row.status=="AWARD_OUTCOME_UNKNOWN" then
+           row.status=="AWARD_OUTCOME_UNKNOWN" or
+           row.status=="LOOT_SLOT_CLEARED" then
             return true
         end
     end
@@ -44,7 +45,17 @@ function T:IsUnresolved()
     for _,row in ipairs(NLL.db and NLL.db.lootAwardHistory or {}) do
         if row.status=="AWARD_REQUESTED" or
            row.status=="AWARD_OUTCOME_UNKNOWN" then
-            return true
+            -- A separately and explicitly confirmed human receipt for
+            -- this exact prior winner can resolve the global lock.
+            -- The ORIGINAL winning drop itself remains locked by
+            -- TicketLottery/AwardWorkflow and cannot be reawarded.
+            local receipt=NLL.LootReceiptTracker and row.dropUID and
+                NLL.LootReceiptTracker:Get(row.dropUID)
+            local verified=receipt and receipt.status=="OBTAINED" and
+                receipt.evidence=="LEADER_CONFIRMED_RECIPIENT_INVENTORY" and
+                receipt.itemID==row.itemID and
+                Key(receipt.character)==Key(row.winner)
+            if not verified then return true end
         end
     end
     if NLL.AwardWorkflow then
@@ -220,6 +231,7 @@ function T:Commit()
     local row={
         itemID=fresh.itemID,itemLink=fresh.link,quantity=fresh.quantity,
         slotIndex=fresh.slot,recipient=fresh.leader,
+        requestedBy=UnitName and UnitName("player") or "Unknown",
         candidateIndex=fresh.candidate,
         status="AWARD_OUTCOME_UNKNOWN",
         note="Request attempt; no recipient receipt verified",

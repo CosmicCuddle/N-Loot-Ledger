@@ -1,0 +1,67 @@
+name: Guild receipt reconciliation + zero-award routing preview (DRAFT)
+
+on:
+  push:
+    branches:
+      - dev/nll-guild-reconciliation-preview
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nll-guild-reconciliation-preview
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Full Lua 5.1, receipt and automatic-award prevention
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact development head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce limited changes and no automatic item transfers
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=82ce0ebb8a32a5723977a848f23b50b9c4bde32b
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          while IFS= read -r p; do
+            case "$p" in
+              NaxxLootLottery/Core/GuildLootReconciliation.lua|NaxxLootLottery/Core/GuildLootAutoPreview.lua|NaxxLootLottery/Core/GuildLootTransfer.lua|NaxxLootLottery/UI/GuildReconciliationFrame.lua|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_guild_loot_transfer.lua|tests/test_guild_reconciliation.lua|tests/test_guild_reconciliation_ui.lua|tests/test_guild_auto_preview.lua|docs/TESTING_GUILD_RECONCILIATION_PREVIEW.md|.github/workflows/nll-guild-reconciliation-preview-review.yml) ;;
+              *) echo "::error::Unreviewed changes in guild-reconciliation draft: $p"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          if git diff --name-only "$BASE" "$GITHUB_SHA" | grep -E '^NaxxLootLottery/Core/(AwardWorkflow|TicketLottery|GearNeeds|LootReceiptTracker|ReceiptSync).lua$'; then
+            echo "::error::Lottery, Gear Plans or winner award logic changed"; exit 1
+          fi
+          if grep -Eq '^[[:space:]]*(GiveMasterLoot|RandomRoll)[[:space:]]*\(' NaxxLootLottery/Core/GuildLootReconciliation.lua NaxxLootLottery/Core/GuildLootAutoPreview.lua NaxxLootLottery/UI/GuildReconciliationFrame.lua; then
+            echo "::error::New guild receipt/preview code may not send physical items or roll"; exit 1
+          fi
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'automaticTransfers=0' NaxxLootLottery/Core/GuildLootAutoPreview.lua
+          grep -qx '## Version: 0.1.0.29-rc.1-dev4' NaxxLootLottery/NaxxLootLottery.toc
+          echo "Zero auto-awards; existing two real-transfer consent toggles OFF."
+      - name: Install Lua 5.1
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse all addon and test Lua
+        run: find NaxxLootLottery tests -name '*.lua' -type f -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Execute complete Lua regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in tests/test_*.lua; do
+            echo "Running $f"
+            lua5.1 "$f"
+          done
+      - name: Check reproducible package and Master Loot defaults
+        run: python3 tests/test_release_packaging.py
+      - name: Confirm development only
+        run: |
+          echo "NO install ZIP, merge, release, tag, automatic material transfer or in-client award."

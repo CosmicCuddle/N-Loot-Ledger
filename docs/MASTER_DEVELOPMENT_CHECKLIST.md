@@ -347,7 +347,9 @@ current draft addon has been installed.
       unchanged Gear Plans, original locks, absent/fake source and
       hostile attempts to claim future source-API authority.
 - [x] Open stacked draft PR #36 after #35.
-- [ ] Verify dedicated/all Lua 5.1 CI on final exact head.
+- [x] Dedicated copy-audit/NO RELEASE safety checks and all old
+      Lua 5.1 regressions passed; final exact-head evidence on PR #36.
+- [ ] Repeat exact-head CI after any future edits.
 - [ ] Owner-approved actual WoW source/quantity audit and saved-data
       comparison; no direct award or repeat grant test is approved.
 

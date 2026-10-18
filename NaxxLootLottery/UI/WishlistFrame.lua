@@ -860,6 +860,8 @@ function UI:CreateGearPlansContent(parent)
     )
 
     local function ApplyCharacterFilter()
+        if NLL.GearPlanReview then NLL.GearPlanReview:Cancel() end
+        if UI.gearPlanReviewDialog then UI.gearPlanReviewDialog:Hide() end
         -- Filtering is a VIEW operation. Never edit, remove, re-import or
         -- otherwise mutate stored Gear Plans while searching for a bot.
         UI.gearPlanFilter=filterBox:GetText() or ""
@@ -1067,12 +1069,9 @@ function UI:CreateGearPlansContent(parent)
 
                     info.func = function()
                         if statusDrop.needKey then
-                            NLL.GearNeeds:SetStatus(
-                                statusDrop.needKey,
-                                status
-                            )
-
-                            UI:RefreshGearPlans()
+                            -- Review before saving; no dropdown click
+                            -- may mark a bot OBTAINED or change a plan.
+                            UI:ReviewBotPlan(statusDrop.needKey,"STATUS",status)
                         end
                     end
 
@@ -1093,10 +1092,7 @@ function UI:CreateGearPlansContent(parent)
 
         remove:SetScript("OnClick", function(self)
             if self.needKey then
-                NLL.GearNeeds:RemoveNeed(
-                    self.needKey
-                )
-                UI:RefreshGearPlans()
+                UI:ReviewBotPlan(self.needKey,"REMOVE")
             end
         end)
 
@@ -1159,6 +1155,8 @@ function UI:CreateGearPlansContent(parent)
     )
 
     previous:SetScript("OnClick", function()
+        if NLL.GearPlanReview then NLL.GearPlanReview:Cancel() end
+        if UI.gearPlanReviewDialog then UI.gearPlanReviewDialog:Hide() end
         if UI.gearPlansPage > 1 then
             UI.gearPlansPage =
                 UI.gearPlansPage - 1
@@ -1168,6 +1166,8 @@ function UI:CreateGearPlansContent(parent)
     end)
 
     nextButton:SetScript("OnClick", function()
+        if NLL.GearPlanReview then NLL.GearPlanReview:Cancel() end
+        if UI.gearPlanReviewDialog then UI.gearPlanReviewDialog:Hide() end
         if UI.gearPlansPage
             < UI.gearPlansTotalPages then
 
@@ -1268,6 +1268,13 @@ function UI:RefreshGearPlans()
             )
 
             row.remove.needKey = need.key
+            -- This new editor is for existing Playerbot plans only.
+            -- Receipt-confirmed OBTAINED records are never removable.
+            if need.source=="BOT_GEAR_PLAN" and
+               need.characterType=="PLAYERBOT" and
+               need.status~="OBTAINED" then
+                row.remove:Enable()
+            else row.remove:Disable() end
             row:Show()
         else
             row:Hide()

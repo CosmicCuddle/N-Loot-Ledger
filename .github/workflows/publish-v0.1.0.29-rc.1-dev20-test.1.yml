@@ -1,0 +1,153 @@
+name: Publish NLL v0.1.0.29-rc.1-dev20-test.1 (PRE-RELEASE)
+
+on:
+  push:
+    branches:
+      - prerelease/v0.1.0.29-rc.1-dev20-test.1
+    paths:
+      - '.github/workflows/publish-v0.1.0.29-rc.1-dev20-test.1.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nll-v0.1.0.29-rc.1-dev20-test.1-release
+  cancel-in-progress: false
+
+jobs:
+  prerelease:
+    name: Validate audited dev20 snapshot and publish pre-release ZIP only
+    if: github.repository == 'CosmicCuddle/N-Loot-Ledger'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout packaging branch and original audited dev20 commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify exactly TWO packaging-only files changed since tested dev20
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='e7566c77bdee565c35830e9fddc9481f7db88464'
+          test "$GITHUB_REF" = "refs/heads/prerelease/v0.1.0.29-rc.1-dev20-test.1"
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" "$GITHUB_SHA"
+          test "$(git diff --name-only "$BASE" "$GITHUB_SHA" | wc -l)" -eq 2
+          while IFS= read -r file; do
+            case "$file" in
+              docs/PRERELEASE_v0.1.0.29-rc.1-dev20-test.1.md|.github/workflows/publish-v0.1.0.29-rc.1-dev20-test.1.yml) ;;
+              *) echo "::error::Source differs from manually tested dev20: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" "$GITHUB_SHA")
+          test -z "$(git diff --name-only "$BASE" "$GITHUB_SHA" -- NaxxLootLottery tests scripts)"
+          test -z "$(git status --porcelain)"
+          grep -Fxq '## Interface: 30300' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fxq '## SavedVariables: NaxxLootLotteryDB' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev20' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'NLL.version = "0.1.0.29-rc.1-dev20"' NaxxLootLottery/Core/Core.lua
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          echo "Source is identical to exact owner-tested dev20 HEAD $BASE"
+
+      - name: Install Lua 5.1 for WoW 3.3.5a
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+
+      - name: Parse every Lua addon module and every Lua regression test
+        shell: bash
+        run: |
+          set -euo pipefail
+          find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+
+      - name: Run C15 live UI owner fixture with 636 non-mutating plans
+        run: lua5.1 tests/test_live_feedback_archive_history.lua
+
+      - name: Run full historical 3.3.5a Lua 5.1 regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test_file in tests/test_*.lua; do
+            echo "Running $test_file"
+            lua5.1 "$test_file"
+          done
+
+      - name: Master checklist continuity (no parallel draft lost)
+        run: python3 tests/test_master_checklist.py
+
+      - name: Validate reproducible packaged addon and OFF transfer defaults
+        run: python3 tests/test_release_packaging.py
+
+      - name: Produce installable ZIP with exact previously-tested SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP='Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev20.zip'
+          python3 scripts/build_release_zip.py --output "dist/$ZIP"
+          (
+            cd dist
+            sha256sum "$ZIP" > SHA256SUMS.txt
+            sha256sum -c SHA256SUMS.txt
+          )
+          EXPECTED='19f1ec42328ee184b84e2de2fac91000e1d0c68480a61fbf06f407aff22acae7'
+          ACTUAL="$(sha256sum "dist/$ZIP" | awk '{print $1}')"
+          test "$EXPECTED" = "$ACTUAL" || {
+            echo "::error::Addon ZIP is not byte-identical to owner-tested dev20."
+            exit 1
+          }
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          p='dist/Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev20.zip'
+          with ZipFile(p) as z:
+              names=z.namelist()
+              assert z.testzip() is None
+              assert len(names)==52
+              assert all(x.startswith('NaxxLootLottery/') for x in names)
+              assert 'NaxxLootLottery/NaxxLootLottery.toc' in names
+              assert not any('WTF/' in x or 'SavedVariables/' in x or '.bak' in x
+                             for x in names)
+          print('PASS: exact owner-tested ZIP, 51 Lua files + 1 TOC; no personal data')
+          PY
+
+      - name: Retain independently verified archive and checksum in Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: NLL-v0.1.0.29-rc.1-dev20-test.1-validated
+          path: |
+            dist/Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev20.zip
+            dist/SHA256SUMS.txt
+            docs/PRERELEASE_v0.1.0.29-rc.1-dev20-test.1.md
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish NEW immutable-in-practice PRERELEASE, keep stable untouched
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='v0.1.0.29-rc.1-dev20-test.1'
+          BASE='e7566c77bdee565c35830e9fddc9481f7db88464'
+          ZIP='Naxxramas-Loot-Ledger-v0.1.0.29-rc.1-dev20.zip'
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Refusing to replace or modify existing release $TAG."
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Refusing to retag existing $TAG."
+            exit 1
+          fi
+          gh release create "$TAG" "dist/$ZIP" dist/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$BASE" \
+            --title 'Naxxramas Loot Ledger dev20 — Shared Raid Test (PRE-RELEASE)' \
+            --notes-file docs/PRERELEASE_v0.1.0.29-rc.1-dev20-test.1.md \
+            --prerelease
+          test "$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isPrerelease --jq '.isPrerelease')" = 'true'
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.target_commitish')" = "$BASE"
+          echo "Published tested code only (tag $TAG -> $BASE); stable/main unchanged."
+          echo "https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" >> "$GITHUB_STEP_SUMMARY"

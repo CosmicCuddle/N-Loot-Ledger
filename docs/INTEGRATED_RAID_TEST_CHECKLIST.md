@@ -165,6 +165,25 @@ Do not merge, publish or change the live server/SavedVariables.
 - [ ] Roll back only after preserving test logs and restoring both addon
       and the CORRESPONDING SavedVariables backup as a matched pair.
 
+## F2 — Modal geometry and accessibility (draft #29)
+
+- [ ] Test the Guild Loot, NO RETRY investigation and My Bags modals
+      at the owner's real WoW interface scale, including fonts.
+- [ ] Confirm the final Guild Loot row has a visible, comfortable
+      gap to ARM / CONFIRM / Dry Run controls and no overlapping click
+      target or obscured label.
+- [ ] Confirm paging buttons, labels, receipt link and Close never
+      overlap or clip long item names and recipient names.
+- [ ] Verify on a different officer's client that My Bag Receipt
+      stays disabled for another person's transfer and even a forced
+      click cannot start an attestation.
+- [ ] On intended recipient client, check that My Bag Receipt opens
+      the correct indexed guild audit, not the nearest matching item ID.
+- [ ] Confirm page changes, close, loot reopen and /reload never leave
+      a previously armed confirmation active.
+- [ ] Record screenshots; geometry mock tests alone are not proof of
+      pixel-perfect in-client appearance.
+
 ## Release gates (require separate owner approval)
 
 - [ ] Full Lua 5.1 CI passes at the exact stacked final SHA.

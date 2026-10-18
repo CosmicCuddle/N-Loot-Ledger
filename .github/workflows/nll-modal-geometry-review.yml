@@ -1,0 +1,63 @@
+name: NLL Modal Geometry and Recipient Routing (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-modal-layout-safety
+  pull_request:
+    branches:
+      - dev/nll-recipient-self-attestation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  modal-safety:
+    name: Lua 5.1 modal geometry, historical regressions, package gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact draft head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce expected base, scope and OFF-by-default transfer
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=589ce5034abf6201d605177b788d33de272c79f0
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/UI/ReconciliationFrame.lua|NaxxLootLottery/UI/GuildRecipientReceiptFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_modal_geometry_safety.lua|tests/test_master_checklist.py|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|README.md|.github/workflows/nll-modal-geometry-review.yml) ;;
+              *) echo "::error::Unexpected change outside modal layout stage: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev11' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'arm:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",24,49)' NaxxLootLottery/UI/CurrentLootFrame.lua
+          grep -Fq 'NLL.GuildRecipientReceipt:CanAttest(selected.id)' NaxxLootLottery/UI/ReconciliationFrame.lua
+          grep -Fq 'tests/test_modal_geometry_safety.lua' <(find tests -name 'test_modal_geometry_safety.lua')
+      - name: Install WoW-compatible Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse all Lua addon and test modules
+        run: find NaxxLootLottery tests -name '*.lua' -type f -print0 | xargs -0 -n1 luac5.1 -p
+      - name: All Lua 5.1 regression scenarios, including geometry
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test_file in tests/test_*.lua; do
+            echo "Running $test_file"
+            lua5.1 "$test_file"
+          done
+      - name: Verify master checklist continuity
+        run: python3 tests/test_master_checklist.py
+      - name: Smoke package dev11 without publishing
+        run: python3 tests/test_release_packaging.py
+      - name: Declare no-release verification
+        run: echo "No actual UI screenshots, installed files, SavedVariables updates or item transfer."

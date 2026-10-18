@@ -9,7 +9,7 @@ Do not delete historical work just because another feature takes priority.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
 **Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
--> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 (recipient attestation).
+-> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 (modal layout).
 **Shared baseline:** 604 imported Gear Plans across 38 Playerbots
 (469 NEED, 135 GREED). These are **real owner data**, not development fixtures.
 **Public release baseline:** v0.1.0.28 on main, separate from the above.
@@ -194,6 +194,23 @@ current draft addon has been installed.
 - [ ] Real client and paired human-client acceptance; still not a
       certified delivery receipt or automatic allocation authority.
 
+**NLL-029 — Modal geometry and exact-recipient navigation; [draft PR #29](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/29)**
+- [x] Built: increase last Guild Loot row / action-row gap from 2px
+      to 6px without moving dangerous physical-award controls closer.
+- [x] Built: My Bag Receipt entry point requires actual intended
+      recipient eligibility, not just a selected guild audit row.
+      Both UI click and recipient backend revalidate the actor.
+- [x] Built: mocked WoW 3.3.5a geometry checks of the six Guild Loot
+      rows, five reconciliation rows, five My Bags rows, footer
+      containment and visible button spacing. No frame screenshots
+      or font-size claims from these simulated coordinates.
+- [x] Dedicated geometry/no-release CI and all historical Lua 5.1
+      regressions passed; exact-head evidence linked on PR #29.
+- [ ] Repeat exact-head checks after any further code or doc change.
+- [ ] Verify at real WoW UI scale during owner-approved test window;
+      record screenshots for long names/font overflow and tooltips.
+- [ ] Mark merge/release only after separate owner approval.
+
 ## D. Parallel draft work that must NOT be forgotten
 
 **IMPORTANT:** The PRs below are **not** ancestors of #25/#26.
@@ -247,6 +264,8 @@ mean their code is included in the current stack.
       manual review. A recipe wishlist is not itself proof of delivery.
 
 **NLL-F05 — User experience and accessibility**
+- [x] Draft #29 adds deterministic frame bounds/gutter regression
+      for Guild Loot, NO RETRY and My Bags modal button placement.
 - [ ] Verify long character/item text, filter names and paging.
 - [ ] Verify reconciliation modal and dry-run buttons do not overlap.
 - [ ] Preserve optional mouse/keyboard controls for fatiguing hands.

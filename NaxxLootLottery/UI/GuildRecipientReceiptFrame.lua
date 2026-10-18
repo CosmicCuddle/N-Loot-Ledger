@@ -167,6 +167,9 @@ function UI:RefreshGuildRecipientReceiptDialog()
     else self.guildReceiptArm:Disable() end
     if fresh then self.guildReceiptConfirm:Enable()
     else self.guildReceiptConfirm:Disable() end
+    -- Never leave both first-click and final confirmation available.
+    -- A failed / expired bag check must visually disable both actions,
+    -- not just be rejected by the backend on click.
     self.guildReceiptNotice:SetText(tostring(self.guildReceiptMessage or
         (selected and "Select YOUR prior request. Review bags; two clicks to attest only." or
          "Select a historical GUILD request. NO item will be awarded.")))

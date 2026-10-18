@@ -141,6 +141,11 @@ function UI:CreateReconciliationDialog()
         if not selected or selected.kind~="GUILD" or
            not NLL.GuildRecipientReceipt or
            not UI.OpenGuildRecipientReceiptDialog then return end
+        -- An old guild receipt belongs to its EXACT recipient. A
+        -- different character may inspect NO RETRY, but must never
+        -- be invited into the recipient's own-bag confirmation flow.
+        local permitted=NLL.GuildRecipientReceipt:CanAttest(selected.id)
+        if not permitted then return end
         NLL.LootReconciliation:Cancel()
         UI.reconciliationSelected=nil
         f:Hide()
@@ -197,10 +202,12 @@ function UI:RefreshReconciliationDialog()
         ledger:Cancel()
     end
     if self.reconciliationBagReceipt then
-        if active and active.kind=="GUILD" and
-           NLL.GuildRecipientReceipt and
-           self.OpenGuildRecipientReceiptDialog then
-            self.reconciliationBagReceipt:Enable()
+        local permitted=active and active.kind=="GUILD" and
+            NLL.GuildRecipientReceipt and
+            NLL.GuildRecipientReceipt.CanAttest and
+            self.OpenGuildRecipientReceiptDialog and
+            NLL.GuildRecipientReceipt:CanAttest(active.id)
+        if permitted then self.reconciliationBagReceipt:Enable()
         else self.reconciliationBagReceipt:Disable() end
     end
     local armed=ledger.armed

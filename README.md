@@ -2,15 +2,19 @@
 
 **Raid loot planning, wishlists, post-drop ticket lotteries, and award tracking for World of Warcraft 3.3.5a (Wrath of the Lich King) on AzerothCore.**
 
-**Latest published version:** `v0.1.0.28` (stable-core release, 13 October 2026)  
-**Current owner raid installation:** `0.1.0.29-rc.1-hf2` — preserve this working build and its SavedVariables until the owner approves testing.  
-**Current development:** Stacked draft PRs #10, #12–#17 and #22–#37; latest experimental draft `dev/nll-c14-integration-hardening` is `0.1.0.29-rc.1-dev19` (50 Lua modules). These new features are **not installed, merged or released**.  
+**Latest STABLE version:** `v0.1.0.28` (13 October 2026, unchanged).
+**Latest voluntary raid-test PRE-RELEASE:** [`v0.1.0.29-rc.1-dev20-test.1`](https://github.com/CosmicCuddle/N-Loot-Ledger/releases/tag/v0.1.0.29-rc.1-dev20-test.1) (18 October 2026). Manual, backup-first testing only; NO verified automatic item awarding.  
+**Current owner's in-game test:** `0.1.0.29-rc.1-dev20` (owner-confirmed screenshot, 18 October 2026) — keep matched full addon/SavedVariables backups; prior `hf2` backup is a separate rollback point. **Screenshot now shows 636 saved plans; older 604 is historical.**  
+**Current development:** Stacked draft PRs #10, #12–#17 and #22–#38; latest experimental draft `dev/nll-live-ui-feedback` is `0.1.0.29-rc.1-dev20` (51 Lua modules). Features are **development draft PRs, unmerged**; the exact independently audited dev20 addon ZIP alone is now published as a separate **experimental prerelease**. Real item awarding remains unverified and OFF.  
 **Status:** Direct Master Loot remains **experimental, unverified and OFF by default**. Live boss loot and bot inventory delivery are not certified.
 
 **Historical release sequence:** PRs #2, #3 and #6 have been merged into `main`, and v0.1.0.28 was published. The new Need Before Greed branch does not alter that release or activate real awarding.
 
+**For tomorrow's testers:** [Pre-release download + exact install/rollback safety instructions](https://github.com/CosmicCuddle/N-Loot-Ledger/releases/tag/v0.1.0.29-rc.1-dev20-test.1). The ZIP contains no player's SavedVariables or 636 Gear Plans. Back up individually and leave physical Master Loot features OFF.
+
 ## Development tracker and test plan
 
+- [First owner dev19 screenshots and dev20 UI improvement plan](docs/C15_LIVE_FEEDBACK_UI_ACCEPTANCE.md) — 636 currently saved Gear Plans; Inbox Archive/Restore, read-only roll-winner history and safer Wishlist layout. **Do not install unreleased dev20 until a new backup-first TEST-ONLY handoff.**
 - [Owner-controlled TEST-ONLY ZIP / Phase 1 WoW handoff](docs/OWNER_TEST_ONLY_HANDOFF.md) — requires a green checksum-verified [GitHub Actions TEST-ONLY artifact](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/workflows/nll-owner-test-zip.yml) and complete backups BEFORE manually testing on one client; never a GitHub Release.
 - [C14 combined integration and release-readiness gate](docs/C14_INTEGRATION_RELEASE_READINESS.md) — closes stale review/import modals across navigation and Escape; development tests do NOT authorise installing or releasing.
 - [Duplicate loot-copy audit and trusted source evidence blueprint](docs/BLUEPRINT_VERIFIED_LOOT_COPY_BRIDGE.md) — `/nll copyaudit` is read-only and NEVER unlocks an older physical attempt.

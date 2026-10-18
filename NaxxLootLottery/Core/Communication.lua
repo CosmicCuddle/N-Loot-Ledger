@@ -750,25 +750,47 @@ function Comm:StoreInboxSubmission(
     return NLL.db.submissionInbox[key]
 end
 
-function Comm:GetInboxSubmissions()
+function Comm:GetInboxSubmissions(showArchived)
     local output = {}
-
-    for key, submission
-        in pairs(NLL.db.submissionInbox or {}) do
-
-        if type(submission) == "table" then
-            submission.key = key
-            table.insert(output, submission)
+    for key,submission in pairs(NLL.db.submissionInbox or {}) do
+        if type(submission)=="table" and
+           ((showArchived==true and submission.archived==true) or
+            (showArchived~=true and submission.archived~=true)) then
+            submission.key=key
+            output[#output+1]=submission
         end
     end
-
-    table.sort(output, function(a, b)
-        return
-            (a.receivedEpoch or 0)
-            > (b.receivedEpoch or 0)
+    table.sort(output,function(a,b)
+        if (a.receivedEpoch or 0)~=(b.receivedEpoch or 0) then
+            return (a.receivedEpoch or 0)>(b.receivedEpoch or 0)
+        end
+        return tostring(a.key)<tostring(b.key)
     end)
-
     return output
+end
+
+-- Archiving only hides old or pending submissions from the active Inbox.
+-- Never deletes an item, modifies accepted Gear Needs, invalidates receipt
+-- histories, sends a message or fabricates a review decision.
+function Comm:ArchiveSubmission(key)
+    local entry=self:GetSubmission(key)
+    if type(entry)~="table" or entry.archived==true then
+        return false,"Submission already archived or missing."
+    end
+    entry.archived=true
+    entry.archivedAt=date and date("%d/%m/%Y %H:%M") or "unknown"
+    self:RefreshUI()
+    return true,"Submission archived locally. Select Archived to restore."
+end
+function Comm:RestoreArchivedSubmission(key)
+    local entry=self:GetSubmission(key)
+    if type(entry)~="table" or entry.archived~=true then
+        return false,"No archived submission selected."
+    end
+    entry.archived=nil
+    entry.archivedAt=nil
+    self:RefreshUI()
+    return true,"Submission restored to active Inbox."
 end
 
 function Comm:GetSubmission(key)

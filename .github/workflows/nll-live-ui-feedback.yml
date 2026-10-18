@@ -1,0 +1,74 @@
+name: NLL Live UI Feedback C15 (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-live-ui-feedback
+  pull_request:
+    branches:
+      - dev/nll-c14-integration-hardening
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lua 5.1 / 636 preservation / read-only winners / archives
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact stacked draft
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce small scope, no grant and all historical protections
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=767531e4ff599b5315c35e514795234d46cfa021
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/Core/RaidHistoryView.lua|NaxxLootLottery/Core/Communication.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/UI/AwardHistoryFrame.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/UI/MainFrame.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_live_feedback_archive_history.lua|tests/test_inbox_layout.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|docs/C15_LIVE_FEEDBACK_UI_ACCEPTANCE.md|docs/C15_OWNER_RETEST_HANDOFF.md|.github/workflows/nll-c15-owner-test-zip.yml|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|README.md|.github/workflows/nll-live-ui-feedback.yml) ;;
+              *) echo "::error::Changed unrelated file: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev20' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'function H:Build(showAll)' NaxxLootLottery/Core/RaidHistoryView.lua
+          grep -Fq 'function H:ConfirmNewRun()' NaxxLootLottery/Core/RaidHistoryView.lua
+          grep -Fq 'function Comm:ArchiveSubmission(key)' NaxxLootLottery/Core/Communication.lua
+          grep -Fq 'function Comm:RestoreArchivedSubmission(key)' NaxxLootLottery/Core/Communication.lua
+          grep -Fq 'local LOCAL_ROWS = 7' NaxxLootLottery/UI/WishlistFrame.lua
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          if git diff "$BASE" HEAD -- NaxxLootLottery/Storage/Database.lua NaxxLootLottery/Core/TicketLottery.lua NaxxLootLottery/Core/AwardWorkflow.lua NaxxLootLottery/Core/GearNeeds.lua NaxxLootLottery/Core/LootReceiptTracker.lua NaxxLootLottery/Core/GuildLootTransfer.lua NaxxLootLottery/Core/LootCopyAudit.lua NaxxLootLottery/Core/LootIdentity.lua | grep -q '^[+-][^+-]'; then
+            echo "::error::Physical award, immutable locks, loot receipts, SavedVariables and ticket storage changed"; exit 1
+          fi
+          if grep -Ev '^[[:space:]]*--' NaxxLootLottery/Core/RaidHistoryView.lua | grep -Eq '(GiveMasterLoot|RandomRoll|SendAddonMessage|GetLootSourceInfo|:ClearHistory)[[:space:]]*\('; then
+            echo "::error::history view attempted grant/roll/network/clear action"; exit 1
+          fi
+      - name: Install Wrath Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Check ALL Lua syntax
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Run owner 636-plan and screenshot-feedback regression
+        run: lua5.1 tests/test_live_feedback_archive_history.lua
+      - name: Run every earlier and current Lua 5.1 test
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in tests/test_*.lua; do
+            echo "Running $f"
+            lua5.1 "$f"
+          done
+      - name: Historical + parallel master checklist
+        run: python3 tests/test_master_checklist.py
+      - name: Candidate package reproducibility, no release
+        run: python3 tests/test_release_packaging.py
+      - name: No release or installation
+        run: |
+          echo "Draft only. No SavedVariables deletion, historical award purge, physical transfer, SQL/module/server edit or test installation."

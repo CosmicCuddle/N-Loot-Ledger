@@ -33,13 +33,47 @@ local selected={
 local originalItems=selected.itemIDs
 local originalExcluded=selected.excluded
 local mutations=0
+GetTime=function()return 100 end
+local archives,restores=0,0
+local submissions={selected}
+for i=2,6 do
+    submissions[#submissions+1]={
+        key="sub"..i,player="Other"..i,raidKey="MOLTEN_CORE",
+        receivedAt="2026-10-18",itemIDs={16800},
+        excluded={},status=i%2==0 and "ACCEPTED" or "REJECTED"
+    }
+end
 NaxxLootLottery={
     UI={},
     GetRoleLabel=function()return "Melee DPS" end,
     Communication={
-        GetInboxSubmissions=function() return {selected} end,
+        GetInboxSubmissions=function(_,archiveMode)
+            local out={}
+            for _,item in ipairs(submissions) do
+                if (item.archived==true)==(archiveMode==true) then
+                    out[#out+1]=item
+                end
+            end
+            return out
+        end,
         IsSelfRaidLeader=function() return true end,
-        GetSubmission=function(_,key) if key=="pikeotter" then return selected end end,
+        GetSubmission=function(_,key)
+            for _,item in ipairs(submissions) do
+                if item.key==key then return item end
+            end
+        end,
+        ArchiveSubmission=function(_,key)
+            for _,item in ipairs(submissions) do
+                if item.key==key then item.archived=true; archives=archives+1
+                    return true,"Archived" end
+            end
+        end,
+        RestoreArchivedSubmission=function(_,key)
+            for _,item in ipairs(submissions) do
+                if item.key==key then item.archived=nil; restores=restores+1
+                    return true,"Restored" end
+            end
+        end,
         GetConflictCount=function()return 0 end,
         ToggleExcludedItem=function()mutations=mutations+1 end,
         AcceptSubmission=function()mutations=mutations+1 end,
@@ -62,6 +96,16 @@ assert(loadfile("NaxxLootLottery/UI/WishlistFrame.lua"))()
 UI:CreateInboxContent(frame())
 UI.selectedSubmissionKey=selected.key
 UI:RefreshInbox()
+check(UI.inboxTotalPages==2 and
+    UI.inboxTopPageLabel.text=="1/2" and
+    UI.inboxOlder.enabled and not UI.inboxNewer.enabled,
+    "six stored submissions have independent two-page Inbox list")
+UI.inboxOlder.events.OnClick()
+check(UI.inboxPage==2 and UI.inboxRows[1].review.submissionKey=="sub5" and
+    UI.inboxRows[2].review.submissionKey=="sub6",
+    "second Inbox page shows fifth/sixth saved submissions")
+UI.inboxNewer.events.OnClick()
+check(UI.inboxPage==1,"Newer returns to first Inbox submissions")
 check(#UI.inboxItemRows==4,"only four review rows are created")
 check(UI.inboxItemTotalPages==2,"seven items require two pages")
 check(UI.inboxItemPage==1,"first page selected")
@@ -92,4 +136,25 @@ check(#selected.itemIDs==7 and selected.itemIDs==originalItems,
     "no submission item was added, removed or replaced")
 check(selected.excluded==originalExcluded and mutations==0,
     "no per-item reject, Accept, or Reject action occurred")
+check(UI.inboxArchiveButton.visible,
+    "selected entry exposes reversible Archive control")
+UI.inboxArchiveButton.events.OnClick()
+check(UI.inboxArchiveArmed and not selected.archived,
+    "first click only ARMS archive and never hides a submission")
+UI.inboxArchiveButton.events.OnClick()
+check(selected.archived and archives==1 and
+    UI.inboxPage==1 and UI.inboxTotalPages==2,
+    "second click only archives locally without mutating item list")
+UI.inboxArchivedToggle.events.OnClick()
+check(UI.inboxShowArchived and UI.inboxRows[1].review.submissionKey=="pikeotter",
+    "Archived view can find old submission")
+UI.inboxRows[1].review.events.OnClick(UI.inboxRows[1].review)
+UI.inboxArchiveButton.events.OnClick()
+check(restores==1 and not selected.archived and
+    UI.inboxShowArchived and UI.inboxTotalPages==1,
+    "Restore returns entire original submission from archive")
+UI.inboxArchivedToggle.events.OnClick()
+check(not UI.inboxShowArchived and #selected.itemIDs==7 and
+    selected.itemIDs==originalItems and selected.excluded==originalExcluded,
+    "active inbox restored and item reservations unchanged")
 print("PASS: "..checks.." Inbox footer/pagination and non-destructive assertions")

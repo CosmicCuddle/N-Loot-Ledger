@@ -740,6 +740,8 @@ end
 -- never preserve an armed Gear Plan write or a stale import preview.
 -- Safe even before optional child panels have been constructed.
 function UI:DismissContextReviews()
+    if NLL.RaidHistoryView then NLL.RaidHistoryView:Cancel() end
+    self.inboxArchiveArmed=nil
     if NLL.GearPlanReview then NLL.GearPlanReview:Cancel() end
     if self.CancelGearPlanRolePicker then self:CancelGearPlanRolePicker() end
     if self.gearPlanReviewDialog then self.gearPlanReviewDialog:Hide() end

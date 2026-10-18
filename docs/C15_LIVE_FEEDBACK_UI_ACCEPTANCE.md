@@ -22,7 +22,8 @@
 - [x] Adjust My Wishlist header/footer geometry based on supplied screenshot, shortening text without altering saved data.
 - [x] Add Lua 5.1 integrated no-award test using **636 synthetic saved plans**, six Inbox submissions, one standalone completed real roll, one physical history record with same drop UID, simulated-only records excluded, immutable old receipt/write-ahead state and default physical consent OFF.
 - [x] Add Inbox GUI test for sixth entry, two-click archive and restore.
-- [ ] Dedicated no-release CI + complete historical Lua 5.1 checks pass on final exact PR head.
+- [x] Dedicated no-release, full historical Lua 5.1 and owner
+      TEST-ONLY package CI passed; exact-head links recorded on PR #38.
 - [ ] Owner-approved in-client UI screenshots at actual large font, scaling, 636-plan count and item visibility. No newly generated test build should be installed until full matched backups are made.
 - [ ] Test explicit New Run View only after observing winner-history read-only snapshots; **do not test a real physical award**, retry, deletion or imported changes as part of these UI checks.
 - [ ] Investigate any other overlapping elements visible on screen after these first changes and add tests; do not assume mock geometry is real WoW proof.

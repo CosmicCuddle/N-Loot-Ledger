@@ -31,6 +31,8 @@ function Database:Initialize()
     db.settings.directMasterLootEnabled = false
     -- Guild-material Master Loot is a separate consent and never persists.
     db.settings.guildLootTransfersEnabled = false
+    -- Preview is harmless, but still requires deliberate opt-in each login.
+    db.settings.guildAutoPreviewEnabled = false
     if type(db.guildLootTransferAudit)~="table" then
         db.guildLootTransferAudit={}
     end

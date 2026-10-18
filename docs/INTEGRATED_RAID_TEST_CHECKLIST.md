@@ -3,7 +3,7 @@
 **Status: NOT STARTED — automated tests are not evidence of physical item delivery.**
 
 Applies to development stack #10 -> #12 -> #13 -> #14 -> #15 ->
-#16 -> #17 -> #22 -> #23 -> #24 -> #25.
+#16 -> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28.
 
 Current installed raid build is 0.1.0.29-rc.1-hf2.
 Do not install development builds until owner approves a controlled test.
@@ -117,6 +117,23 @@ Do not merge, publish or change the live server/SavedVariables.
       designated Master Looter returns HOLD, never PROPOSE_TO_LEADER.
 - [ ] Test that historic local OBTAINED wishlist entries are not counted
       as active interest without a new SavedVariables table being created.
+
+## D3 — Recipient-self guild bag-check (draft #28)
+
+- [ ] In the owner-authorized test build open /nll guildreceiptui.
+- [ ] Only the EXACT intended guild recipient may arm their own entry.
+- [ ] Require visible quantity in their own bags, but recognise
+      pre-existing stock is not proof of which corpse supplied it.
+- [ ] Two deliberate buttons within 15 seconds; page/selection change,
+      fake mode, changed actor, closing and /reload cancel pending work.
+- [ ] A successful second click adds only one append-only attestation
+      to guildRecipientReceiptAudit; original statuses stay unchanged.
+- [ ] CLOSED_NO_RETRY and recipient attestation can both exist,
+      but neither unblocks original same-item transfer locks.
+- [ ] Validate same-item different audit rows independently and reject
+      duplicate attestations for the same exact audit index.
+- [ ] This is NOT server delivery certification or an automatic
+      permission to allocate additional guild loot.
 
 ## E — Guild materials and future automation safety
 

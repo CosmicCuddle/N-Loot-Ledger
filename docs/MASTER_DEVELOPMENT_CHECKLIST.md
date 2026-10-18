@@ -9,7 +9,7 @@ Do not delete historical work just because another feature takes priority.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
 **Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
--> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 (receipt safety).
+-> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 (recipient attestation).
 **Shared baseline:** 604 imported Gear Plans across 38 Playerbots
 (469 NEED, 135 GREED). These are **real owner data**, not development fixtures.
 **Public release baseline:** v0.1.0.28 on main, separate from the above.
@@ -178,6 +178,22 @@ current draft addon has been installed.
 - [ ] Repeat the CI status check if any new code commits are added.
 - [ ] Owner-approved in-client and remote-human receipt testing.
 
+**NLL-028 — Intended-recipient own-bag statement; [PR #28](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/28)**
+- [x] Implement a separate, strictly recipient-owned two-click
+      own-bag attestation ledger and window. It never edits old guild
+      audit status, NO RETRY closure, item locks or Gear Plans.
+- [x] Validate exact character, old audit identity, bag count,
+      elapsed time, tamper, duplicate and fake raid; no server item
+      source proof is asserted.
+- [x] Add WoW 3.3.5a Lua 5.1 mock UI/backend regressions and
+      [acceptance plan](TESTING_GUILD_RECIPIENT_ATTESTATION_DRAFT.md).
+- [x] Open stacked draft PR #28 after #27.
+- [x] Dedicated and full Lua 5.1 GitHub Actions passed; exact current
+      head evidence is maintained in PR #28 review comments.
+- [ ] Revalidate exact-head checks if later code commits change this draft.
+- [ ] Real client and paired human-client acceptance; still not a
+      certified delivery receipt or automatic allocation authority.
+
 ## D. Parallel draft work that must NOT be forgotten
 
 **IMPORTANT:** The PRs below are **not** ancestors of #25/#26.
@@ -237,12 +253,15 @@ mean their code is included in the current stack.
 - [ ] Log repeatable UI defects with screenshots and matching regressions.
 
 **NLL-F07 — Recipient-self guild receipt attestation**
-- [ ] Design separately from NO-RETRY closure: a verified intended
-      recipient may explicitly attest their own inventory.
-- [ ] Require source actor, item, quantity and audit-row consistency;
-      compare #18 and #20 approaches before changing any data schemas.
-- [ ] Record self-attestation as human evidence, not API/server proof.
-- [ ] Never unlock an original physical item or send a repeat grant.
+- [x] Draft #28 adds intended-recipient self-attestation with an
+      append-only audit; NO RETRY remains a distinct separate event.
+- [x] Require exact actor, item, link, quantity and audit-row
+      consistency, 15-second confirmation and non-mutating bag count.
+- [x] Record human evidence explicitly; NOT API/server delivery proof.
+- [x] Never unlock an original physical item or send a repeat grant.
+- [ ] Owner-approved real-client acceptance and future decision on
+      whether/when recipient evidence can help close OTHER holds
+      (not authorised by this draft).
 
 **NLL-F06 — Eventual automatic guild allocation**
 - [x] Read-only proposal mode developed in #23.

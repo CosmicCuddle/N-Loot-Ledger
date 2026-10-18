@@ -9,7 +9,7 @@ local NLL = NaxxLootLottery
 
 NLL.name = "Naxxramas Loot Ledger"
 NLL.shortName = "NLL"
-NLL.version = "0.1.0.29-rc.1-dev9"
+NLL.version = "0.1.0.29-rc.1-dev10"
 NLL.databaseVersion = 1
 NLL.initialized = false
 NLL.initializeAttempted = false
@@ -399,6 +399,40 @@ function NLL:HandleSlashCommand(message)
         end
         return
     end
+    if command=="guildreceiptui" then
+        self.UI:ShowMainFrame("currentloot")
+        self.UI:OpenGuildRecipientReceiptDialog()
+        return
+    end
+    if command=="guildreceipt" then
+        local mode,identifier=(arguments or ""):match("^%s*(%S*)%s*(.-)%s*$")
+        mode=string.lower(mode or "")
+        local R=self.GuildRecipientReceipt
+        if mode=="list" then
+            for _,row in ipairs(R:List()) do
+                self:Print("Guild audit #"..tostring(row.auditIndex)..
+                    " item "..tostring(row.itemID).." x"..tostring(row.quantity)..
+                    " -> "..tostring(row.recipient)..
+                    (row.selfAttested and " [SELF-ATTESTED; source unverified]" or
+                     " [NOT SELF-ATTESTED]"))
+            end
+        elseif mode=="arm" then
+            local ok,note=R:Arm(tonumber(identifier))
+            self:Print(tostring(note))
+        elseif mode=="confirm" and identifier=="" then
+            local ok,note=R:Confirm()
+            self:Print(tostring(note))
+        elseif mode=="cancel" then
+            R:Cancel()
+            self:Print("Recipient bag-check cancelled; no audit recorded.")
+        else
+            self:Print("Usage: /nll guildreceiptui (visual) or "..
+                "/nll guildreceipt list|arm <index>|confirm|cancel")
+            self:Print("Only intended recipient may attest own bags. "..
+                "Original item stays LOCKED; no delivery source is proven.")
+        end
+        return
+    end
     if command=="reconcileui" then
         self.UI:ShowMainFrame("currentloot")
         self.UI:OpenReconciliationDialog()
@@ -705,6 +739,8 @@ function NLL:HandleSlashCommand(message)
         self:Print("/nll lotteryhistory - Show last 5 lottery records.")
         self:Print("/nll awardreview - Review the selected winner and manual award.")
         self:Print("/nll receiptinbox - Review my pending award confirmations.")
+        self:Print("/nll guildreceiptui - Open separate recipient bag-check window.")
+        self:Print("/nll guildreceipt list|arm <index>|confirm|cancel - HUMAN attestation only.")
         self:Print("/nll reconcileui - Open the non-awarding reconciliation window.")
         self:Print("/nll reconcile list - Inspect uncertain winner and guild award attempts.")
         self:Print("/nll reconcile winner <UID> | guild <index> - Arm NO-RETRY review.")

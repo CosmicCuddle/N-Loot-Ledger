@@ -132,6 +132,22 @@ function UI:CreateReconciliationDialog()
     self.reconciliationArm=arm
     self.reconciliationConfirm=confirm
 
+    -- Only guild rows may open a SEPARATE self-inventory attestation.
+    -- NO RETRY and recipient bag evidence must never share a confirm click.
+    local bags=self:CreateTextButton(f,"My Bag Receipt",114)
+    bags:SetPoint("LEFT",confirm,"RIGHT",6,0)
+    bags:SetScript("OnClick",function()
+        local selected=UI.reconciliationSelected
+        if not selected or selected.kind~="GUILD" or
+           not NLL.GuildRecipientReceipt or
+           not UI.OpenGuildRecipientReceiptDialog then return end
+        NLL.LootReconciliation:Cancel()
+        UI.reconciliationSelected=nil
+        f:Hide()
+        UI:OpenGuildRecipientReceiptDialog(selected.id)
+    end)
+    self.reconciliationBagReceipt=bags
+
     local close=self:CreateTextButton(f,"Close / Cancel",155)
     close:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-21,22)
     close:SetScript("OnClick",function()
@@ -179,6 +195,13 @@ function UI:RefreshReconciliationDialog()
     if not active then
         self.reconciliationSelected=nil
         ledger:Cancel()
+    end
+    if self.reconciliationBagReceipt then
+        if active and active.kind=="GUILD" and
+           NLL.GuildRecipientReceipt and
+           self.OpenGuildRecipientReceiptDialog then
+            self.reconciliationBagReceipt:Enable()
+        else self.reconciliationBagReceipt:Disable() end
     end
     local armed=ledger.armed
     local matching=active and not active.reviewed and

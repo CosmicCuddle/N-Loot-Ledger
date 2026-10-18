@@ -368,7 +368,8 @@ function T:Preview(text)
         local aliasKey=foldedExisting[SameCharacterItemKey(row)]
         if saved==nil and aliasKey~=nil then
             preview.conflicts[#preview.conflicts+1]={
-                character=row.character,itemID=row.itemID,key=aliasKey}
+                character=row.character,itemID=row.itemID,key=aliasKey,
+                incoming=row,kind="CASE_ALIAS"}
         elseif saved==nil then
             preview.additions[#preview.additions+1]=row
             preview.newCount=preview.newCount+1
@@ -376,13 +377,96 @@ function T:Preview(text)
             preview.unchanged=preview.unchanged+1
         else
             preview.conflicts[#preview.conflicts+1]={
-                character=row.character,itemID=row.itemID,key=row.key}
+                character=row.character,itemID=row.itemID,key=row.key,
+                incoming=row,kind="EXACT_KEY"}
         end
         preview.rows[#preview.rows+1]=row
     end
     preview.ready=#preview.conflicts==0 and preview.newCount>0
     return preview
 end
+-- Read-only conflict-by-conflict comparison; no mutation, reconciliation,
+-- replacement, new SavedVariables keys, or implicit consent. Reject changed
+-- paste / saved data rather than showing a stale "safe to fix" report.
+local COMPARE_FIELDS={
+    {"character","Character"},
+    {"characterType","Type"},
+    {"role","Role"},
+    {"raidKey","Raid"},
+    {"itemID","Item ID"},
+    {"source","Source"},
+    {"status","Interest"},
+}
+function T:CompareConflict(p,currentText,index)
+    if type(p)~="table" or p.used or
+       type(currentText)~="string" or currentText~=p.sourceText then
+        return nil,"Pasted text changed; run Preview again."
+    end
+    local blocked,reason=self:IsBlocked()
+    if blocked then return nil,reason end
+    local gear=Existing()
+    if not gear or Snapshot()~=p.currentSnapshot then
+        return nil,"Saved Gear Plans changed; run Preview again."
+    end
+    if type(index)~="number" or index<1 or index%1~=0 or
+       type(p.conflicts)~="table" or index>#p.conflicts then
+        return nil,"Choose a valid conflict number."
+    end
+    local conflict=p.conflicts[index]
+    local saved=gear[conflict.key]
+    local incoming=conflict.incoming
+    if type(saved)~="table" or type(incoming)~="table" or
+       (conflict.kind~="EXACT_KEY" and conflict.kind~="CASE_ALIAS") or
+       SameCharacterItemKey(saved)~=SameCharacterItemKey(incoming) then
+        return nil,"Conflict identity no longer matches. Review again."
+    end
+    local report={
+        index=index,total=#p.conflicts,kind=conflict.kind,
+        character=incoming.character,itemID=incoming.itemID,
+        changes={},savedKey=conflict.key,
+        safeToApply=false,replaceAuthorized=false,
+        message="COMPARISON ONLY: import BLOCKED; no replacement is possible.",
+    }
+    for _,field in ipairs(COMPARE_FIELDS) do
+        local key,label=field[1],field[2]
+        local old=saved[key]
+        local new=incoming[key]
+        if old~=new then
+            report.changes[#report.changes+1]={
+                field=key,label=label,saved=tostring(old),
+                pasted=tostring(new),
+            }
+        end
+    end
+    -- Case aliases require special treatment even if a locale/migration
+    -- somehow presents no visible differences: identity is still held.
+    if conflict.kind=="CASE_ALIAS" then
+        report.message=report.message..
+            " Existing key differs in character casing/UTF-8; never create a duplicate."
+    end
+    return report
+end
+function T:FormatConflict(p,currentText,index)
+    local report,why=self:CompareConflict(p,currentText,index)
+    if not report then return nil,why end
+    local out={
+        "CONFLICT "..index.." / "..report.total..
+            " -- "..report.character.." / item "..report.itemID,
+        report.kind=="CASE_ALIAS" and
+            "CASE / UTF-8 CHARACTER ALIAS -- duplicate identity blocked." or
+            "EXISTING PLAN DIFFERS -- paste cannot overwrite it.",
+    }
+    for _,change in ipairs(report.changes) do
+        out[#out+1]=change.label..": SAVED ["..change.saved..
+            "]  /  PASTED ["..change.pasted.."]"
+    end
+    out[#out+1]="READ ONLY. No existing Gear Plan, global role, "..
+        "wishlist, receipt or loot history is changed."
+    out[#out+1]="IMPORT BLOCKED. Use the separate individual "..
+        "Gear Plan review flow for authorised edits."
+    return table.concat(out,"\n"),report.total
+end
+
 function T:Summary(p)
     if not p then return "No preview." end
     local result="Parsed "..#p.rows.." plans: "..p.newCount.." NEW, "..

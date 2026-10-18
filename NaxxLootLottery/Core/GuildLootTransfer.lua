@@ -127,7 +127,7 @@ function T:Validate(target)
         return false,"Another Master Loot winner review is pending. Close it first."
     end
     if self:WasAttempted(row.itemID,row.slotIndex) then
-        return false,"This item/slot was already requested. No duplicate attempt is allowed."
+        return false,"This item ID has a previous request, possibly from another slot/corpse. No automatic duplicate attempt is allowed."
     end
     if type(GetLootMethod)~="function" or
        type(GetRaidRosterInfo)~="function" or

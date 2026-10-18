@@ -19,7 +19,7 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 | #24 | UI for reconciliation list, paging, arm/confirm | Passed on 60e28ad81eae | Pending | Draft only |
 | #25 | Duplicate item ID across slots / full test checklist | Passed (latest exact-head CI evidence linked on PR #25) | Pending | Draft only |
 
-| #26 | Live exact character filter + master checklist | CI pending on this draft | Pending client acceptance | Draft only |
+| #26 | Live exact character filter + master checklist | Full Lua 5.1 and dedicated safety CI passed (PR #26 checks) | Pending client acceptance | Draft only |
 
 **Parallel, separately stacked drafts #18–#21** are inventoried in the master checklist; do not assume they are included in #25/#26.
 

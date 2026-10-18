@@ -86,7 +86,8 @@ Normal add-only import remains unchanged for batches without conflicts.
       and original objects remaining unchanged.
 - [x] Added UI mock tests for Compare enabled only after conflict,
       two paged saved/pasted views, no Confirm ADD, Close and disarm.
-- [ ] Dedicated no-release and entire Lua 5.1 regressions on final SHA.
+- [x] Dedicated no-release and entire Lua 5.1 regression suite passed;
+      final exact-head evidence is retained on draft PR #34.
 - [ ] Separate actual WoW 3.3.5a acceptance under owner approval.
 
 **No merge, install, published release, SQL/server change, physical

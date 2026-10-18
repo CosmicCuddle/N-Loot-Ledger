@@ -302,7 +302,10 @@ current draft addon has been installed.
       UI paging and disarm checks. Owner acceptance blueprint:
       [TESTING_GEAR_PLAN_CONFLICT_COMPARISON.md](TESTING_GEAR_PLAN_CONFLICT_COMPARISON.md).
 - [x] Open stacked draft PR #34 after PR #33.
-- [ ] Verify latest exact-head dedicated and full Lua 5.1 CI.
+- [x] Dedicated read-only conflict/no-release safety checks and all
+      historic Lua 5.1 regressions passed; final exact-head run links
+      are recorded on PR #34.
+- [ ] Rerun exact-head CI if future commits change this draft.
 - [ ] Actual WoW clipboard/multiline/modal acceptance with backups.
 
 **Estimated remaining development stages (not a promise):**

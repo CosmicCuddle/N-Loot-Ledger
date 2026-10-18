@@ -7,7 +7,7 @@ Do not delete historical work just because another feature takes priority.
 
 **Last audited:** 18 October 2026.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
-**Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
+**Owner's installed TEST BUILD:** 0.1.0.29-rc.1-dev20 (confirmed by screenshots, 18 Oct). Maintain paired dev20 addon/SavedVariables backups; keep older HF2 separately.
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
 -> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 -> #33 -> #34 -> #35 -> #36 -> #37 -> #38 (owner UI feedback).
 **Historic audited baseline:** 604 imported Gear Plans across 38 Playerbots
@@ -16,7 +16,8 @@ Do not delete historical work just because another feature takes priority.
 installed dev19, 106 pages of six. Do NOT roll back or reduce this to 604.
 Current NEED/GREED split and bot count require verification from current
 SavedVariables. Keep old 604 synthetic regression tests as historical tests.
-**Public release baseline:** v0.1.0.28 on main, separate from the above.
+**Stable public baseline:** v0.1.0.28 on main, unchanged.
+**Voluntary RAID TEST PRE-RELEASE:** [v0.1.0.29-rc.1-dev20-test.1](https://github.com/CosmicCuddle/N-Loot-Ledger/releases/tag/v0.1.0.29-rc.1-dev20-test.1) was published from exact owner-tested source e7566c77bdee565c35830e9fddc9481f7db88464. Zip SHA256 `19f1ec42328ee184b84e2de2fac91000e1d0c68480a61fbf06f407aff22acae7`; docs/testing only, physical transfer functions unverified and OFF, draft PR #38 and main untouched.
 **Compatibility:** WoW 3.3.5a, Interface 30300, Lua 5.1, AzerothCore,
 Individual Progression and Playerbots.
 
@@ -573,6 +574,16 @@ See [C15 screenshot findings and test plan](C15_LIVE_FEEDBACK_UI_ACCEPTANCE.md).
 artifact exists and new matched backups are made.** The owner has already
 tested dev19 in game; do not assume installed HF2 is still current. These checkboxes are planning records,
 not authorisations for a live server change or actual item award.
+
+**NLL-PREREL-DEV20 — Voluntary pre-release for 19 Oct shared raid testing**
+- [x] Owner explicitly requested dev20 pre-release for other testers; release built from exact previously accepted + CI-tested C15 commit, without changing Lua source.
+- [x] Publish distinct tag `v0.1.0.29-rc.1-dev20-test.1` marked **prerelease** with validated standalone installable ZIP, SHA256 checksum and rollback-first notes; stable v0.1.0.28 preserved.
+- [x] Publication workflow verified entire Lua 5.1 suite, immutable code diff from pinned commit and exact previously tested ZIP checksum.
+- [x] Provide all testers matched complete addon + account SavedVariables backup steps; do not import owner's **636** plans into other clients.
+- [ ] On 19 Oct, observe naturally completed rolls and winner history for correct names/items/timestamps. A winner is NOT proof of physical transfer.
+- [ ] Recheck default physical loot opt-ins OFF and do not grant/retry test items.
+- [ ] Fix [#39 UI foreground buff overlap](https://github.com/CosmicCuddle/N-Loot-Ledger/issues/39) in a **new** draft only after functional tests. 
+- [ ] Full multi-client receipt and release acceptance remain open; public prerelease is not a stable release or PR merge.
 
 ## Next-development handover rule
 

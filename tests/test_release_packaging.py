@@ -1,4 +1,4 @@
-"""Read-only v0.1.0.29-rc.1-dev8 candidate packaging and opt-in safety checks."""
+"""Read-only v0.1.0.29-rc.1-dev9 candidate packaging and opt-in safety checks."""
 from __future__ import annotations
 
 import hashlib

@@ -1376,10 +1376,46 @@ function UI:CreateInboxContent(parent)
         "GameFontHighlightSmall"
     )
     status:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -2)
-    status:SetWidth(720)
+    status:SetWidth(348)
+    status:SetHeight(20)
     status:SetJustifyH("LEFT")
-
     self.inboxStatus = status
+    -- The top Inbox list used to show ONLY four submissions even when
+    -- six or more were saved. Both lists must have independent pagers.
+    local older=self:CreateTextButton(content,"Older",67)
+    older:SetPoint("TOPRIGHT",content,"TOPRIGHT",-175,-2)
+    local newer=self:CreateTextButton(content,"Newer",70)
+    newer:SetPoint("LEFT",older,"RIGHT",5,0)
+    local pageLabel=content:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    pageLabel:SetPoint("RIGHT",content,"RIGHT",-81,197)
+    pageLabel:SetWidth(76)
+    pageLabel:SetJustifyH("RIGHT")
+    local archived=self:CreateTextButton(content,"Archived",84)
+    archived:SetPoint("TOPRIGHT",content,"TOPRIGHT",0,-2)
+    older:SetScript("OnClick",function()
+        if UI.inboxPage<(UI.inboxTotalPages or 1) then
+            UI.inboxPage=UI.inboxPage+1
+            UI:RefreshInbox()
+        end
+    end)
+    newer:SetScript("OnClick",function()
+        if UI.inboxPage>1 then
+            UI.inboxPage=UI.inboxPage-1
+            UI:RefreshInbox()
+        end
+    end)
+    archived:SetScript("OnClick",function()
+        UI.inboxShowArchived=not UI.inboxShowArchived
+        UI.inboxPage=1
+        UI.inboxItemPage=1
+        UI.selectedSubmissionKey=nil
+        UI.inboxArchiveArmed=nil
+        UI:RefreshInbox()
+    end)
+    self.inboxOlder=older
+    self.inboxNewer=newer
+    self.inboxTopPageLabel=pageLabel
+    self.inboxArchivedToggle=archived
 
     local header = CreateFrame("Frame", nil, content)
     header:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -28)
@@ -1501,6 +1537,7 @@ function UI:CreateInboxContent(parent)
             if self.submissionKey then
                 UI.selectedSubmissionKey =
                     self.submissionKey
+                UI.inboxArchiveArmed=nil
                 UI.inboxItemPage = 1
                 UI:RefreshInbox()
             end
@@ -1529,13 +1566,55 @@ function UI:CreateInboxContent(parent)
         4,
         -155
     )
-    selectedTitle:SetWidth(720)
+    selectedTitle:SetWidth(582)
     selectedTitle:SetJustifyH("LEFT")
     selectedTitle:SetText(
         "Select a submission to review its items."
     )
 
     self.inboxSelectedTitle = selectedTitle
+
+    -- Two-click ARCHIVE, never a permanent delete. This works for
+    -- an old PENDING submission too, but does not ACCEPT/REJECT it.
+    local archive=self:CreateTextButton(content,"Archive",104)
+    archive:SetPoint("TOPRIGHT",content,"TOPRIGHT",-3,-206)
+    archive:SetScript("OnClick",function()
+        local key=UI.selectedSubmissionKey
+        if not key then return end
+        local submission=NLL.Communication:GetSubmission(key)
+        if not submission then return end
+        if UI.inboxShowArchived then
+            local ok,msg=NLL.Communication:RestoreArchivedSubmission(key)
+            UI.selectedSubmissionKey=nil
+            UI.inboxArchiveArmed=nil
+            if NLL.Print then NLL:Print(msg) end
+            UI:RefreshInbox()
+            return
+        end
+        local a=UI.inboxArchiveArmed
+        local now=GetTime and GetTime() or nil
+        if a and a.key==key and type(now)=="number" and
+           now>=a.at and now-a.at<=15 and
+           a.reference==submission and a.status==submission.status then
+            UI.inboxArchiveArmed=nil
+            local ok,msg=NLL.Communication:ArchiveSubmission(key)
+            UI.selectedSubmissionKey=nil
+            if NLL.Print then NLL:Print(msg) end
+            UI:RefreshInbox()
+            return
+        end
+        UI.inboxArchiveArmed=nil
+        if type(now)~="number" then return end
+        UI.inboxArchiveArmed={
+            key=key,at=now,reference=submission,status=submission.status
+        }
+        archive.label:SetText("CONFIRM")
+        if NLL.Print then
+            NLL:Print("Confirm ARCHIVE within 15 seconds. The full "..
+              "submission stays in SavedVariables and can be restored.")
+        end
+    end)
+    self.inboxArchiveButton=archive
 
     local itemHeader = CreateFrame("Frame", nil, content)
     itemHeader:SetPoint(
@@ -1795,6 +1874,8 @@ function UI:CreateInboxContent(parent)
     self.inboxAcceptButton = accept
     self.inboxRejectButton = reject
     self.inboxPage = 1
+    self.inboxShowArchived=false
+    self.inboxTotalPages=1
     self.inboxItemPage = 1
     self.inboxItemTotalPages = 1
     self.inboxContent = content
@@ -1803,30 +1884,29 @@ function UI:CreateInboxContent(parent)
 end
 
 function UI:RefreshInbox()
-    local submissions =
-        NLL.Communication:
-            GetInboxSubmissions()
-
-    local count = #submissions
-
-    if NLL.Communication:IsSelfRaidLeader() then
-        self.inboxStatus:SetText(
-            tostring(count) ..
-            " saved submission(s). " ..
-            "Only the raid leader can receive new submissions."
-        )
-    else
-        self.inboxStatus:SetText(
-            tostring(count) ..
-            " saved submission(s). " ..
-            "|cffff9933You are not the current raid leader.|r"
-        )
+    local submissions=NLL.Communication:GetInboxSubmissions(
+        self.inboxShowArchived)
+    local count=#submissions
+    local pages=math.max(1,math.ceil(count/4))
+    self.inboxTotalPages=pages
+    self.inboxPage=math.max(1,math.min(self.inboxPage or 1,pages))
+    local first=(self.inboxPage-1)*4
+    self.inboxStatus:SetText(
+        count..(self.inboxShowArchived and " archived submission(s)" or
+        " active submission(s)"))
+    if self.inboxTopPageLabel then
+        self.inboxTopPageLabel:SetText(self.inboxPage.."/"..pages)
+        if self.inboxPage>=pages then self.inboxOlder:Disable()
+        else self.inboxOlder:Enable() end
+        if self.inboxPage<=1 then self.inboxNewer:Disable()
+        else self.inboxNewer:Enable() end
+        self.inboxArchivedToggle.label:SetText(
+            self.inboxShowArchived and "Active" or "Archived")
     end
 
-    for rowIndex = 1, 4 do
-        local row = self.inboxRows[rowIndex]
-        local submission =
-            submissions[rowIndex]
+    for rowIndex=1,4 do
+        local row=self.inboxRows[rowIndex]
+        local submission=submissions[first+rowIndex]
 
         if submission then
             local role =
@@ -1868,6 +1948,24 @@ function UI:RefreshInbox()
                 self.selectedSubmissionKey
             )
 
+    if selected and ((self.inboxShowArchived and selected.archived~=true) or
+        (not self.inboxShowArchived and selected.archived==true)) then
+        self.selectedSubmissionKey=nil
+        selected=nil
+    end
+    if self.inboxArchiveButton then
+        if not selected then
+            self.inboxArchiveArmed=nil
+            self.inboxArchiveButton:Hide()
+        else
+            self.inboxArchiveButton:Show()
+            self.inboxArchiveButton.label:SetText(
+                self.inboxShowArchived and "Restore" or
+                (self.inboxArchiveArmed and
+                 self.inboxArchiveArmed.key==selected.key and
+                 "CONFIRM" or "Archive"))
+        end
+    end
     if not selected then
         self.inboxSelectedTitle:SetText(
             "Select a submission to review its items."
@@ -1999,7 +2097,8 @@ function UI:RefreshInbox()
         self.inboxNextItem:Enable()
     end
 
-    if selected.status == "PENDING" then
+    if not self.inboxShowArchived and selected.status == "PENDING" and
+       NLL.Communication:IsSelfRaidLeader() then
         self.inboxAcceptButton:Enable()
         self.inboxRejectButton:Enable()
     else

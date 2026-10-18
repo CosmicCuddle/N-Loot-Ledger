@@ -170,6 +170,14 @@ ok(not UI.mainFrame.visible and not N.GearPlanReview:Confirm()
     and first.status=="NEEDED" and canceled==2,
     "closing main addon disarms pending consent without touching SavedVariables")
 
+review:Show()
+ok(N.GearPlanReview:Arm(firstKey,"ROLE","TANK"),
+   "a new role change can be armed after the old main frame closes")
+UI:ReviewBotPlan("not-a-saved-row","STATUS","GREED")
+ok(not review.visible and not N.GearPlanReview.armed and
+   not N.GearPlanReview:Confirm(),
+   "invalid new selection hides previous confirm and disarms consent")
+
 -- The tested C14 guard allows one deliberate row role/status change
 -- only after full explicit confirmation, with all other rows intact.
 ok(N.GearPlanReview:Arm(firstKey,"ROLE","HEALER"),

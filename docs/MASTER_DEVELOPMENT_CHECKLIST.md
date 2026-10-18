@@ -244,7 +244,9 @@ current draft addon has been installed.
       import-compatible roundtrip tests preserving old table identity.
 - [x] Added [future copy, backup and game-client test plan](TESTING_BATCHED_GEAR_EXPORT_DRAFT.md).
 - [x] Open stacked draft PR #31, preserving PR #30.
-- [ ] Record exact-head dedicated and full CI pass/fail on PR #31.
+- [x] Dedicated 604-plan export/no-release checks and complete Lua 5.1
+      regression suite passed; exact-head links recorded on draft PR #31.
+- [ ] Repeat the checks after any new development commits.
 - [ ] Owner-approved WoW clipboard, paging, full SavedVariables
       comparison and readability checks (not yet tested or installed).
 

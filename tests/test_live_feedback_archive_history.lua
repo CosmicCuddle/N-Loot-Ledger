@@ -25,6 +25,7 @@ local function frame()
     function f:SetJustifyH(...)end
     function f:SetJustifyV(...)end
     function f:CreateFontString()return frame()end
+    function f:RegisterEvent()end
     function f:SetScript(k,fn)self.scripts[k]=fn end
     function f:Hide()self.visible=false end
     function f:Show()self.visible=true end

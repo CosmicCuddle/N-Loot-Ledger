@@ -1,0 +1,69 @@
+name: NLL Per-Item Bot Role Safety (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-per-item-role-review
+  pull_request:
+    branches:
+      - dev/nll-guarded-gearplan-reviews
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Lua 5.1 item-role-only edits, 604-row regressions and no release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce stacked base, scope and physical award defaults
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=250cfc32029168ff7b33df48c55320bb99f94473
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/Core/GearPlanReview.lua|NaxxLootLottery/UI/GearPlanReviewFrame.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_gearplan_item_role_reviews.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|README.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/TESTING_PER_ITEM_ROLE_REVIEWS_DRAFT.md|.github/workflows/nll-item-role-review.yml) ;;
+              *) echo "::error::Out of scope: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev15' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'if armed.action=="ROLE" then' NaxxLootLottery/Core/GearPlanReview.lua
+          grep -Fq 'row.role=armed.newStatus' NaxxLootLottery/Core/GearPlanReview.lua
+          grep -Fq 'UI:OpenGearPlanRolePicker(button.needKey)' NaxxLootLottery/UI/WishlistFrame.lua
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          if git diff "$BASE" HEAD -- NaxxLootLottery/Storage/Database.lua NaxxLootLottery/Core/GearNeeds.lua NaxxLootLottery/Core/AwardWorkflow.lua NaxxLootLottery/Core/GuildLootTransfer.lua NaxxLootLottery/Core/ReceiptSync.lua | grep -q '^[+-][^+-]'; then
+            echo "::error::Changed global role, receipt, SavedVariables or physical grant path"; exit 1
+          fi
+          if grep -v '^[[:space:]]*--' NaxxLootLottery/Core/GearPlanReview.lua NaxxLootLottery/UI/GearPlanReviewFrame.lua | grep -Eq '(Database:SetRoleAssignment|GearNeeds:AddNeed|GiveMasterLoot|RandomRoll|SendAddonMessage)[[:space:]]*\('; then
+            echo "::error::Item-only role review may not change global roles or award physical items"; exit 1
+          fi
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse all Lua source and test files
+        run: find NaxxLootLottery tests -name '*.lua' -type f -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Execute ALL Lua 5.1 regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for t in tests/test_*.lua; do
+            echo "Running $t"
+            lua5.1 "$t"
+          done
+      - name: Project continuity
+        run: python3 tests/test_master_checklist.py
+      - name: No-release deterministic candidate packaging
+        run: python3 tests/test_release_packaging.py
+      - name: Record non-deployment boundary
+        run: echo "Read-only development test; no install, merge, release, SavedVariables or physical loot modification."

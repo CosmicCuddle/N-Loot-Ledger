@@ -861,6 +861,7 @@ function UI:CreateGearPlansContent(parent)
 
     local function ApplyCharacterFilter()
         if NLL.GearPlanReview then NLL.GearPlanReview:Cancel() end
+        if UI.CancelGearPlanRolePicker then UI:CancelGearPlanRolePicker() end
         if UI.gearPlanReviewDialog then UI.gearPlanReviewDialog:Hide() end
         -- Filtering is a VIEW operation. Never edit, remove, re-import or
         -- otherwise mutate stored Gear Plans while searching for a bot.
@@ -1008,8 +1009,18 @@ function UI:CreateGearPlansContent(parent)
             356,
             0
         )
-        roleText:SetWidth(105)
+        -- Keep the saved per-item role readable while allocating a
+        -- separate, clearly labelled Edit control inside this column.
+        -- Source begins at x=465; role-edit ends at x=458.
+        roleText:SetWidth(58)
         roleText:SetJustifyH("LEFT")
+        local editRole=self:CreateTextButton(row,"Edit",38)
+        editRole:SetPoint("LEFT",row,"LEFT",420,0)
+        editRole:SetScript("OnClick",function(button)
+            if button.needKey then
+                UI:OpenGearPlanRolePicker(button.needKey)
+            end
+        end)
 
         local sourceText =
             row:CreateFontString(
@@ -1099,6 +1110,7 @@ function UI:CreateGearPlansContent(parent)
         row.characterText = characterText
         row.itemText = itemText
         row.roleText = roleText
+        row.roleEdit = editRole
         row.sourceText = sourceText
         row.statusDrop = statusDrop
         row.remove = remove
@@ -1156,6 +1168,7 @@ function UI:CreateGearPlansContent(parent)
 
     previous:SetScript("OnClick", function()
         if NLL.GearPlanReview then NLL.GearPlanReview:Cancel() end
+        if UI.CancelGearPlanRolePicker then UI:CancelGearPlanRolePicker() end
         if UI.gearPlanReviewDialog then UI.gearPlanReviewDialog:Hide() end
         if UI.gearPlansPage > 1 then
             UI.gearPlansPage =
@@ -1167,6 +1180,7 @@ function UI:CreateGearPlansContent(parent)
 
     nextButton:SetScript("OnClick", function()
         if NLL.GearPlanReview then NLL.GearPlanReview:Cancel() end
+        if UI.CancelGearPlanRolePicker then UI:CancelGearPlanRolePicker() end
         if UI.gearPlanReviewDialog then UI.gearPlanReviewDialog:Hide() end
         if UI.gearPlansPage
             < UI.gearPlansTotalPages then
@@ -1242,9 +1256,15 @@ function UI:RefreshGearPlans()
                 or tostring(need.itemID)
             )
 
-            row.roleText:SetText(
-                NLL:GetRoleLabel(need.role)
-            )
+            -- Short labels prevent clipping beside the 38px Edit button.
+            -- The selector shows the FULL role name for selection.
+            local roleShort={
+                MAIN_TANK="Main Tank",TANK="Tank",HEALER="Healer",
+                MELEE_DPS="Melee",RANGED_PHYSICAL_DPS="Ranged",
+                CASTER_DPS="Caster",
+            }
+            row.roleText:SetText(roleShort[need.role] or "Unknown")
+            row.roleEdit.needKey=need.key
 
             if need.source == "BOT_GEAR_PLAN" then
                 row.sourceText:SetText("Bot Plan")
@@ -1268,6 +1288,13 @@ function UI:RefreshGearPlans()
             )
 
             row.remove.needKey = need.key
+            -- Only bot plans which are not already OBTAINED can
+            -- offer per-item role editing or deletion.
+            if need.source=="BOT_GEAR_PLAN" and
+               need.characterType=="PLAYERBOT" and
+               need.status~="OBTAINED" then
+                row.roleEdit:Enable()
+            else row.roleEdit:Disable() end
             -- This new editor is for existing Playerbot plans only.
             -- Receipt-confirmed OBTAINED records are never removable.
             if need.source=="BOT_GEAR_PLAN" and

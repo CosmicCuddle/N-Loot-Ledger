@@ -9,7 +9,7 @@ Do not delete historical work just because another feature takes priority.
 **Repository:** https://github.com/CosmicCuddle/N-Loot-Ledger
 **Owner's installed build:** 0.1.0.29-rc.1-hf2 (**leave installed**).
 **Draft development stack:** #10 -> #12 -> #13 -> #14 -> #15 -> #16
--> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 (guarded edits).
+-> #17 -> #22 -> #23 -> #24 -> #25 -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32 -> #33 (per-item role).
 **Shared baseline:** 604 imported Gear Plans across 38 Playerbots
 (469 NEED, 135 GREED). These are **real owner data**, not development fixtures.
 **Public release baseline:** v0.1.0.28 on main, separate from the above.
@@ -268,6 +268,37 @@ current draft addon has been installed.
 - [ ] Recheck exact-head CI if future commits change this draft.
 - [ ] Separate owner-approved actual WoW test, not part of development.
 
+**NLL-033 — Individual Playerbot Gear Plan item-role change; [draft PR #33](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/33)**
+- [x] Built: small Edit control in Role column, full six-role chooser,
+      then separate 15-second confirm/cancel for exact bot/item.
+- [x] Built: only saved BOT_GEAR_PLAN row.role can change. The
+      character-wide db.roleAssignments and all other saved Gear Plans
+      must NOT change (unlike GearNeeds:AddNeed).
+- [x] Built: reject wrong or no-op role, OBTAINED, pending receipts,
+      uncertain award, changed actor/record, fake raid and active loot.
+- [x] Built: explicit picker cancellation when filtering/paging and
+      [owner acceptance instructions](TESTING_PER_ITEM_ROLE_REVIEWS_DRAFT.md).
+- [x] Added 604-row Lua 5.1 fixture covering all 6 roles and UI
+      selection, cancel, expiration and final confirmation.
+- [x] Open stacked draft PR #33 after #32.
+- [x] Dedicated item-role/no-release checks and all historical Lua 5.1
+      regressions passed (exact-head run links recorded in PR #33).
+- [ ] Repeat exact-head CI for any additional future code/doc changes.
+- [ ] Real 3.3.5a UI/font/clipboard acceptance and matched backups
+      still require separate owner approval.
+
+**Estimated remaining development stages (not a promise):**
+- **C11:** Read-only import conflict comparison; no overwritten saved rows.
+- **C12:** Profession/specialisation-aware recipe eligibility and manual review.
+- **C13:** Duplicate-copy/loot-source evidence research and fail-closed design,
+  not an automatic material retry.
+- **C14:** Combined draft integration, accessibility and release-readiness
+  hardening with full test coverage.
+- **Then:** a separate owner-approved, backup-first WoW 3.3.5a testing,
+  multi-client receipt review, rollback rehearsal and release decision.
+  Bugs or new findings may require additional stages or split existing
+  stages; there is no fixed completion count.
+
 ## D. Parallel draft work that must NOT be forgotten
 
 **IMPORTANT:** The PRs below are **not** ancestors of #25/#26.
@@ -302,10 +333,12 @@ mean their code is included in the current stack.
 - [ ] Add dedicated Lua 5.1 and in-game acceptance.
 
 **NLL-F02 — Gear Plan maintenance**
+- [x] Draft #33 edits only one Gear Plan's item-specific role, never
+      its character-wide role assignment.
 - [x] Draft #32 adds guarded *existing bot row* status/deletion edits
       with before/after preview and explicit owner click.
-- [ ] Design import conflict resolution and role editing separately;
-      draft #32 does not bulk overwrite or change shared roles.
+- [ ] Design import conflict resolution and shared role editing
+      separately; item-only role changes in #33 don't do either.
 - [x] Draft #31 implements all-roster read-only batched export
       (>250 plans) without replacing stored 604 rows.
 - [ ] Owner verifies Ctrl+C / multi-batch clipboard behaviour in WoW.

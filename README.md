@@ -4,13 +4,14 @@
 
 **Latest published version:** `v0.1.0.28` (stable-core release, 13 October 2026)  
 **Current owner raid installation:** `0.1.0.29-rc.1-hf2` — preserve this working build and its SavedVariables until the owner approves testing.  
-**Current development:** Stacked draft PRs #10, #12–#17 and #22–#32; latest experimental draft `dev/nll-guarded-gearplan-reviews` is `0.1.0.29-rc.1-dev14` (46 Lua modules). These new features are **not installed, merged or released**.  
+**Current development:** Stacked draft PRs #10, #12–#17 and #22–#33; latest experimental draft `dev/nll-per-item-role-review` is `0.1.0.29-rc.1-dev15` (46 Lua modules). These new features are **not installed, merged or released**.  
 **Status:** Direct Master Loot remains **experimental, unverified and OFF by default**. Live boss loot and bot inventory delivery are not certified.
 
 **Historical release sequence:** PRs #2, #3 and #6 have been merged into `main`, and v0.1.0.28 was published. The new Need Before Greed branch does not alter that release or activate real awarding.
 
 ## Development tracker and test plan
 
+- [Single-item role editing acceptance](docs/TESTING_PER_ITEM_ROLE_REVIEWS_DRAFT.md) — choose one bot item's new role, then explicitly confirm; never alter a global raid-role assignment.
 - [Guarded existing Gear Plan editing tests](docs/TESTING_GUARDED_GEARPLAN_REVIEWS_DRAFT.md) — status and X now require explicit review; no manual OBTAINED.
 - [604-plan read-only export batch testing](docs/TESTING_BATCHED_GEAR_EXPORT_DRAFT.md) — copyable 250/250/104 sections; full SavedVariables backup is still mandatory.
 - [Wrath 3.3.5a source identity research](docs/RESEARCH_WOTLK_LOOT_SOURCE_IDENTITY.md) — shows why changing targets/loot slots cannot safely unlock repeated materials; /nll lootsource is diagnostic only.

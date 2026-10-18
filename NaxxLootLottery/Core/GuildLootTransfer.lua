@@ -35,7 +35,8 @@ function T:IsUnresolved()
     -- Never retry silently after an uncertain outcome, even after /reload.
     for _,row in ipairs(audit) do
         if row.status=="AWARD_REQUESTED" or
-           row.status=="AWARD_OUTCOME_UNKNOWN" then
+           row.status=="AWARD_OUTCOME_UNKNOWN" or
+           row.status=="LOOT_SLOT_CLEARED" then
             return true
         end
     end

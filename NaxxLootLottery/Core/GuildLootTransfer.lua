@@ -43,7 +43,14 @@ function T:IsUnresolved()
     -- Also include persisted winner-award attempts, not just live
     -- references that vanish at /reload. Missing receipts fail closed.
     for _,row in ipairs(NLL.db and NLL.db.lootAwardHistory or {}) do
-        if row.reconciliationStatus~="CLOSED_NO_RETRY" and
+        local receipt=NLL.LootReceiptTracker and
+            NLL.LootReceiptTracker:Get(row.dropUID)
+        -- Independent HUMAN-confirmed receipt resolves the global unknown
+        -- gate, but NEVER removes the original drop UID's no-retry lock.
+        local confirmed=receipt and receipt.status=="OBTAINED" and
+            tonumber(receipt.itemID)==tonumber(row.itemID) and
+            Key(receipt.character)==Key(row.winner)
+        if not confirmed and row.reconciliationStatus~="CLOSED_NO_RETRY" and
            (row.status=="AWARD_REQUESTED" or
             row.status=="AWARD_OUTCOME_UNKNOWN") then
             return true

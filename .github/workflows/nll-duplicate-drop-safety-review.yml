@@ -30,7 +30,7 @@ jobs:
           git merge-base --is-ancestor "$BASE" HEAD
           while IFS= read -r path; do
             case "$path" in
-              NaxxLootLottery/Core/GuildLootTransfer.lua|NaxxLootLottery/Core/GuildAutoPreview.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_duplicate_physical_items.lua|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|.github/workflows/nll-duplicate-drop-safety-review.yml) ;;
+              NaxxLootLottery/Core/GuildLootTransfer.lua|NaxxLootLottery/Core/GuildAutoPreview.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_duplicate_physical_items.lua|tests/test_guild_loot_transfer.lua|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|.github/workflows/nll-duplicate-drop-safety-review.yml) ;;
               *) echo "::error::Unexpected file in identity safety draft: $path"; exit 1;;
             esac
           done < <(git diff --name-only "$BASE" HEAD)

@@ -22,7 +22,7 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 | #26 | Live exact character filter + master checklist | Full Lua 5.1 and dedicated safety CI passed (PR #26 checks) | Pending client acceptance | Draft only |
 | #27 | Orphaned winner/pending human ACK, slot-cleared, lottery and Master Looter holds | Lua 5.1 + dedicated safety checks passed (PR #27) | Pending paired clients | Draft only |
 | #28 | Intended recipient own-bag statement, separate no-retry audit and paged UI | Dedicated no-release + full Lua 5.1 suite PASSED (PR #28) | Pending in-game | Draft only |
-| #29 | UI footer geometry + recipient-only My Bags entry | Pending CI | Pending visual screenshots | Draft only |
+| #29 | UI footer geometry + recipient-only My Bags entry | Dedicated + full Lua 5.1 CI passed (PR #29) | Pending visual screenshots | Draft only |
 
 **Parallel, separately stacked drafts #18–#21** are inventoried in the master checklist; see [review decisions](REVIEW_PARALLEL_DRAFTS.md) for the safe findings forwarded into #27. The alternative reconciliation branches remain separate drafts.
 

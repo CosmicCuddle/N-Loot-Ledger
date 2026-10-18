@@ -250,7 +250,7 @@ current draft addon has been installed.
 - [ ] Owner-approved WoW clipboard, paging, full SavedVariables
       comparison and readability checks (not yet tested or installed).
 
-**NLL-032 — Guarded edits/removal of existing Playerbot Gear Plans; draft PR #32**
+**NLL-032 — Guarded edits/removal of existing Playerbot Gear Plans; [draft PR #32](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/32)**
 - [x] Replace instant status/dropdown and X deletion with a
       distinct 15-second preview/confirm or cancel step.
 - [x] Allow NEED/GREED/DISABLED, but not manual OBTAINED. Existing
@@ -262,7 +262,8 @@ current draft addon has been installed.
       winner/receipt histories except the ONE explicitly confirmed row.
 - [x] Add [controlled in-game acceptance guide](TESTING_GUARDED_GEARPLAN_REVIEWS_DRAFT.md)
       and 604-row Lua 5.1 mocked data/UI regression tests.
-- [ ] Open stacked draft PR #32 and verify dedicated/full exact-head CI.
+- [x] Open stacked draft PR #32 after #31.
+- [ ] Verify dedicated/full Lua 5.1 CI at final exact head.
 - [ ] Separate owner-approved actual WoW test, not part of development.
 
 ## D. Parallel draft work that must NOT be forgotten

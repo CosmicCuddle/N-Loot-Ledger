@@ -234,17 +234,10 @@ function GearNeeds:GetAllNeeds(characterFilter)
             local include = true
 
             if normalizedFilter ~= "" then
-                local normalizedName =
-                    self:NormalizeCharacterName(need.character)
-
-                if not string.find(
-                    normalizedName,
-                    normalizedFilter,
-                    1,
-                    true
-                ) then
-                    include = false
-                end
+                -- Exact, case-insensitive, trimmed character match.
+                -- Substring matching can mix Gorak with Gorakalt and is
+                -- unsafe when reviewing an individual bot's Gear Plans.
+                include=self:NormalizeCharacterName(need.character)==normalizedFilter
             end
 
             if include then

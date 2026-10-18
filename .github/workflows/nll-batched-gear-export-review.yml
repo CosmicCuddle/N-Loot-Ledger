@@ -1,0 +1,66 @@
+name: NLL 604-Plan Batched Export (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-batched-gear-plan-export
+  pull_request:
+    branches:
+      - dev/nll-loot-source-diagnostics
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lua 5.1 / 604-row no-overwrite export + full regressions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact stacked draft head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce parent, scope, and disabled physical consents
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=e7fbf7be90c931c721cd61a7b8663045612ca51f
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/Core/GearPlanTransfer.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_604_batched_gear_export.lua|tests/test_gear_plan_transfer_ui.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|README.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/TESTING_BATCHED_GEAR_EXPORT_DRAFT.md|.github/workflows/nll-batched-gear-export-review.yml) ;;
+              *) echo "::error::Unexpected change outside read-only export scope: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev13' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'function T:ExportChunk(page)' NaxxLootLottery/Core/GearPlanTransfer.lua
+          grep -Fq 'function T:Export()' NaxxLootLottery/Core/GearPlanTransfer.lua
+          grep -Fq 'Batch ' NaxxLootLottery/UI/WishlistFrame.lua
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          if git diff "$BASE" HEAD -- NaxxLootLottery/Core/GuildLootTransfer.lua NaxxLootLottery/Core/AwardWorkflow.lua NaxxLootLottery/Core/ReceiptSync.lua NaxxLootLottery/Storage/Database.lua | grep -q '^[+-][^+-]'; then
+            echo "::error::Award, receipt and existing SavedVariables handling cannot change"; exit 1
+          fi
+      - name: Install WoW 3.3.5a-compatible Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse all Lua addon modules and tests
+        run: find NaxxLootLottery tests -name '*.lua' -type f -print0 | xargs -0 -n1 luac5.1 -p
+      - name: All Lua 5.1 regressions, including 604-plan export
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in tests/test_*.lua; do
+            echo "Running $file"
+            lua5.1 "$file"
+          done
+      - name: Retain master checklist project inventory
+        run: python3 tests/test_master_checklist.py
+      - name: Reproducible development package smoke (NO RELEASE)
+        run: python3 tests/test_release_packaging.py
+      - name: Safeguards
+        run: echo "No live WoW files, physical items, SavedVariables or published release changed."

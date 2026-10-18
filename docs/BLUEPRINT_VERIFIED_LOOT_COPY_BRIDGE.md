@@ -77,7 +77,8 @@ A separately reviewed server-origin event system **might** one day provide evide
 
 - [x] Lua 5.1 test fixture: repeated item 17010, stacked 17011, uncertain winner item 16800, possible 19147 second-copy ring, 604 preserved original Gear Plan rows.
 - [x] Different target, reordered slots, partial copy subset, old no-retry evidence, fake/closed/missing APIs, and attempts to forge a later `GetLootSourceInfo`-like source claim all fail closed.
-- [ ] Dedicated exact-head and entire historical Lua 5.1 CI.
+- [x] Dedicated no-release and entire historical Lua 5.1 CI passed;
+      final exact-head run IDs linked on draft PR #36.
 - [ ] Owner-approved real 3.3.5a screenshots, SavedVariables comparison and client acceptance.
 
 **Installed HF2 is unchanged. No merge, release, install, server change or loot transfer.**

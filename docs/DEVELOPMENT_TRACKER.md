@@ -30,7 +30,8 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 | #34 | Read-only V1 import conflict comparisons incl. UTF-8 aliases, paged SAVED/PASTED UI | Dedicated no-release + complete Lua 5.1 CI passed (PR #34) | Pending clipboard/UI acceptance | Draft only |
 | #35 | Ten MC recipe professions + unverified Gear Plan candidates; manual-only paged review | Dedicated no-release + full Lua 5.1 CI passed (PR #35) | Pending profession evidence/UI acceptance | Draft only |
 | #36 | Read-only grouped duplicate slot/stack audit, old item-ID holds and trusted source evidence blueprint | Dedicated no-release + full Lua 5.1 checks passed (PR #36) | Pending controlled real 3.3.5a /nll copyaudit checks | Draft only |
-| #37 | C14 combined 604-plan regression + stale review/import modal disarming on navigation, Escape and close | Dedicated no-release + complete Lua 5.1 CI passed (PR #37) | Pending owner-approved full-stack 3.3.5a UI, multi-client and rollback | Draft only |
+| #37 | C14 combined 604-plan regression + stale review/import modal disarming on navigation, Escape and close | Dedicated no-release + complete Lua 5.1 CI passed (PR #37) | Partial owner dev19 UI screenshots received: 636 saved plans; overlaps discovered | Draft only |
+| #38 | Owner dev19 live UI follow-up: Inbox archive/paging, combined roll-winner + physical award read-only history, new run view, Wishlist geometry | CI pending | Owner screenshot/retest pending | Draft only |
 
 **Parallel, separately stacked drafts #18–#21** are inventoried in the master checklist; see [review decisions](REVIEW_PARALLEL_DRAFTS.md) for the safe findings forwarded into #27. The alternative reconciliation branches remain separate drafts.
 
@@ -53,7 +54,12 @@ An artifact is eligible for owner testing only after exact-commit build and
 entire Lua 5.1 regressions pass; no automated installation or release.
 Actual WoW UI screenshots and saved-data preservation remain outstanding.
 
-## Next work (after current draft #37 — owner-approved in-client acceptance gate)
+**Current real owner screenshot (18 Oct): 636 saved Gear Plans, NOT old 604**.
+Keep the older 604/469 NEED/135 GREED regression fixture, but require
+new matched backups and check actual record status counts before migration
+or further installs. No reset or import is approved.
+
+## Next work (after current draft #38 — owner dev19 feedback and safe retest gate)
 
 - [ ] Controlled test evidence for all 604-bot-plan batch exports,
       including Ctrl+C, labels, import preview and SavedVariables backup.

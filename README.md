@@ -11,6 +11,7 @@
 
 ## Development tracker and test plan
 
+- [C14 combined integration and release-readiness gate](docs/C14_INTEGRATION_RELEASE_READINESS.md) — closes stale review/import modals across navigation and Escape; development tests do NOT authorise installing or releasing.
 - [Duplicate loot-copy audit and trusted source evidence blueprint](docs/BLUEPRINT_VERIFIED_LOOT_COPY_BRIDGE.md) — `/nll copyaudit` is read-only and NEVER unlocks an older physical attempt.
 - [Molten Core profession recipe review and eligibility caveats](docs/TESTING_PROFESSION_RECIPE_REVIEW_DRAFT.md) — ten manually reviewed recipes, skill 300 and saved interests are **not** verified recipient professions or a physical award.
 - [Read-only import conflicts test plan](docs/TESTING_GEAR_PLAN_CONFLICT_COMPARISON.md) — inspect SAVED vs PASTED differences and UTF-8 aliases, with all conflicting imports blocked.

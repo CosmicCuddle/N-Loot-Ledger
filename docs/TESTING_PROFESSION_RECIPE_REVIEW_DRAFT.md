@@ -73,7 +73,8 @@ Research references are for the **profession categories**, not evidence about an
 
 - [x] Lua 5.1 synthetic 604-plan + eight-interest fixture covers all ten recipes, profession mapping, skill requirement, unverified specialty, unknown profession/recipe status, candidate pagination and no writes/grants.
 - [x] Existing recipe wishlist UI mock verifies entry is shown **only** on Recipes tab and the Items header returns without moving the list.
-- [ ] Dedicated no-release and complete Lua 5.1 tests at final exact head.
+- [x] Dedicated no-release and complete Lua 5.1 tests passed;
+      exact-final-head evidence retained in draft PR #35.
 - [ ] Owner-approved in-client tests and multi-client receipt/loot physical safeguards.
 
 **No saved profession roster is created in C12.** Verified character-profession data ingestion would require a separate independently reviewed feature and approval; no guessed global attributes or server queries are introduced.

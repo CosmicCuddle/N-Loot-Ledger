@@ -41,7 +41,8 @@ Draft #32 makes **existing Playerbot plan status changes and removals** an expli
 ## Verification status
 
 - [x] Lua 5.1 offline mock fixture covers 604 existing plans, two-step changes, cancellation, expiration, stale record, changed actor, wrong state, pending receipt, NO RETRY, and the modal.
-- [ ] Dedicated exact-head no-release and full historical regression CI.
+- [x] Dedicated no-release and full historical Lua 5.1 regression CI
+      passed; final exact-head run IDs linked in draft PR #32.
 - [ ] Owner-approved actual WoW client acceptance.
 
 **No live SavedVariables were touched. No item was awarded, no module/core/SQL file installed, and no merge or release was performed.**

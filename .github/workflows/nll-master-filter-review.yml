@@ -30,7 +30,7 @@ jobs:
           git merge-base --is-ancestor "$BASE" HEAD
           while IFS= read -r file; do
             case "$file" in
-              NaxxLootLottery/Core/GearNeeds.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_exact_character_filter.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|README.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/ROADMAP.md|.github/workflows/nll-master-filter-review.yml) ;;
+              NaxxLootLottery/Core/GearNeeds.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_exact_character_filter.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|README.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/ROADMAP.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|.github/workflows/nll-master-filter-review.yml) ;;
               *) echo "::error::Out-of-scope change: $file"; exit 1 ;;
             esac
           done < <(git diff --name-only "$BASE" HEAD)

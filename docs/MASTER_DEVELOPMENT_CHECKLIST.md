@@ -173,7 +173,9 @@ current draft addon has been installed.
       proposals; recorded guild operator is audit metadata only.
 - [x] Built: local OBTAINED wishlist status is checked read-only.
 - [x] Open stacked draft PR #27; automated head verification is tracked in PR checks.
-- [ ] Confirm latest exact-head dedicated and full GitHub Actions results.
+- [x] Dedicated and full Lua 5.1 GitHub Actions checks passed at
+      audited dev9 head (exact-head links retained in draft PR #27).
+- [ ] Repeat the CI status check if any new code commits are added.
 - [ ] Owner-approved in-client and remote-human receipt testing.
 
 ## D. Parallel draft work that must NOT be forgotten

@@ -1,0 +1,70 @@
+name: NLL Profession Recipe Review (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-recipe-profession-review
+  pull_request:
+    branches:
+      - dev/nll-import-conflict-comparison
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Lua 5.1 / ten MC recipes / no auto award / all regressions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact stacked draft
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce scope, no-release and physical consent safety
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=9497fa37899fe8fe8a543624f45d2105fe6cba39
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/Core/ProfessionRecipeReview.lua|NaxxLootLottery/UI/ProfessionRecipeFrame.lua|NaxxLootLottery/UI/WishlistFrame.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_profession_recipe_review.lua|tests/test_recipe_wishlist.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|README.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/TESTING_PROFESSION_RECIPE_REVIEW_DRAFT.md|.github/workflows/nll-profession-recipe-review.yml) ;;
+              *) echo "::error::Changed file outside recipe review stage: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev17' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'function R:Build(itemID)' NaxxLootLottery/Core/ProfessionRecipeReview.lua
+          grep -Fq 'autoEligible=false,transferAuthorized=false' NaxxLootLottery/Core/ProfessionRecipeReview.lua
+          grep -Fq 'professionVerified=false' NaxxLootLottery/Core/ProfessionRecipeReview.lua
+          grep -Fq 'function UI:ShowProfessionRecipeReview()' NaxxLootLottery/UI/ProfessionRecipeFrame.lua
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          if git diff "$BASE" HEAD -- NaxxLootLottery/Storage/Database.lua NaxxLootLottery/Data/MoltenCore.lua NaxxLootLottery/Core/GearNeeds.lua NaxxLootLottery/Core/GuildLootTransfer.lua NaxxLootLottery/Core/AwardWorkflow.lua NaxxLootLottery/Core/LootReceiptTracker.lua NaxxLootLottery/Core/GuildAutoPreview.lua | grep -q '^[+-][^+-]'; then
+            echo "::error::Changed physical award, receipt, loot policy, recipe catalog or SavedVariables"; exit 1
+          fi
+          if grep -Ev '^[[:space:]]*--' NaxxLootLottery/Core/ProfessionRecipeReview.lua NaxxLootLottery/UI/ProfessionRecipeFrame.lua | grep -Eq '(GiveMasterLoot|SetRoleAssignment|AddNeed|SendAddonMessage|RandomRoll)[[:space:]]*\('; then
+            echo "::error::Recipe review cannot award, grant, roll, change roles or send messages"; exit 1
+          fi
+      - name: Install WoW 3.3.5a compatible Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Check all Lua syntax
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Run complete historical and new Lua 5.1 regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in tests/test_*.lua; do
+            echo "Running $f"
+            lua5.1 "$f"
+          done
+      - name: Ensure historical NLL checklist remains complete
+        run: python3 tests/test_master_checklist.py
+      - name: Reproducible candidate packaging only - NO RELEASE
+        run: python3 tests/test_release_packaging.py
+      - name: Record non-deployment status
+        run: echo "Dev-only: no SavedVariables, physical loot, SQL/core, release or installed addon modified."

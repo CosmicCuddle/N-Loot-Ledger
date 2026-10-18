@@ -1,0 +1,71 @@
+name: NLL Duplicate-Copy Audit (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - dev/nll-duplicate-copy-audit
+  pull_request:
+    branches:
+      - dev/nll-recipe-profession-review
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Lua 5.1 copy-risk / permanent NO RETRY / full regressions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact stacked draft
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce parent, scope, no-release and immutable old award guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=a54190a303a3a81773e1df978c7b256fa2204eb1
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          while IFS= read -r file; do
+            case "$file" in
+              NaxxLootLottery/Core/LootCopyAudit.lua|NaxxLootLottery/Core/Core.lua|NaxxLootLottery/NaxxLootLottery.toc|tests/test_loot_copy_audit.lua|tests/test_master_checklist.py|tests/test_release_packaging.py|scripts/build_release_zip.py|README.md|docs/MASTER_DEVELOPMENT_CHECKLIST.md|docs/DEVELOPMENT_TRACKER.md|docs/INTEGRATED_RAID_TEST_CHECKLIST.md|docs/BLUEPRINT_VERIFIED_LOOT_COPY_BRIDGE.md|.github/workflows/nll-duplicate-copy-audit.yml) ;;
+              *) echo "::error::Out of read-only copy audit scope: $file"; exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE" HEAD)
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev18' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'if command=="copyaudit" then' NaxxLootLottery/Core/Core.lua
+          grep -Fq 'NLL.LootCopyAudit=NLL.LootCopyAudit or {}' NaxxLootLottery/Core/LootCopyAudit.lua
+          grep -Fq 'canUnlock=false,canReroll=false,canRetry=false' NaxxLootLottery/Core/LootCopyAudit.lua
+          grep -Fq 'canAward=false,autoTransferAuthorized=false' NaxxLootLottery/Core/LootCopyAudit.lua
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+          if git diff "$BASE" HEAD -- NaxxLootLottery/Storage/Database.lua NaxxLootLottery/Core/LootSourceDiagnostics.lua NaxxLootLottery/Core/LootIdentity.lua NaxxLootLottery/Core/LootDetection.lua NaxxLootLottery/Core/GuildLootTransfer.lua NaxxLootLottery/Core/GuildAutoPreview.lua NaxxLootLottery/Core/AwardWorkflow.lua NaxxLootLottery/Core/LootReceiptTracker.lua NaxxLootLottery/Core/GearNeeds.lua NaxxLootLottery/Core/GearPlanTransfer.lua | grep -q '^[+-][^+-]'; then
+            echo "::error::Historical physical award, attempts, receipts and plans are OUT OF SCOPE"; exit 1
+          fi
+          if grep -Ev '^[[:space:]]*--' NaxxLootLottery/Core/LootCopyAudit.lua | grep -Eq '(GiveMasterLoot|RandomRoll|GetLootSourceInfo|SendAddonMessage|:ConfirmReset|:Apply)[[:space:]]*\('; then
+            echo "::error::Copy audit may not grant loot, use Retail source APIs or reset an attempt"; exit 1
+          fi
+      - name: Install WoW 3.3.5a Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse all modules and tests
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Run all old and C13 Lua 5.1 regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in tests/test_*.lua; do
+            echo "Running $f"
+            lua5.1 "$f"
+          done
+      - name: Historical master checklist continuity
+        run: python3 tests/test_master_checklist.py
+      - name: Deterministic candidate package only
+        run: python3 tests/test_release_packaging.py
+      - name: No deployment
+        run: |
+          echo "No install, merge, release, physical transfer, SavedVariables or AzerothCore modification."

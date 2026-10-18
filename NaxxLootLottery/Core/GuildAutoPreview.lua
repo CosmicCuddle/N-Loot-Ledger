@@ -66,7 +66,7 @@ function P:Build()
             elseif NLL.GuildLootTransfer and
                    NLL.GuildLootTransfer:WasAttempted(source.itemID,source.slotIndex) then
                 decision="HOLD_PREVIOUS_ATTEMPT"
-                reason="This item/slot has a permanent guild Master Loot attempt lock"
+                reason="This item ID has a prior guild attempt; slot changes cannot prove a new corpse"
             elseif PriorWinnerAttempt(source.itemID,source.slotIndex) then
                 decision="HOLD_PREVIOUS_ATTEMPT"
                 reason="This item/slot has a previous winner Master Loot attempt"

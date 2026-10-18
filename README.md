@@ -11,6 +11,7 @@
 
 ## Development tracker and test plan
 
+- [Guarded existing Gear Plan editing tests](docs/TESTING_GUARDED_GEARPLAN_REVIEWS_DRAFT.md) — status and X now require explicit review; no manual OBTAINED.
 - [604-plan read-only export batch testing](docs/TESTING_BATCHED_GEAR_EXPORT_DRAFT.md) — copyable 250/250/104 sections; full SavedVariables backup is still mandatory.
 - [Wrath 3.3.5a source identity research](docs/RESEARCH_WOTLK_LOOT_SOURCE_IDENTITY.md) — shows why changing targets/loot slots cannot safely unlock repeated materials; /nll lootsource is diagnostic only.
 - [Recipient self-attestation test blueprint](docs/TESTING_GUILD_RECIPIENT_ATTESTATION_DRAFT.md) — independent human bag evidence without changing NO RETRY or awarding anything.

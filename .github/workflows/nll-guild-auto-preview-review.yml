@@ -5,6 +5,8 @@ on:
     branches:
       - dev/nll-guild-auto-preview
   pull_request:
+    branches:
+      - dev/nll-delivery-reconciliation
   workflow_dispatch:
 
 permissions:
@@ -28,7 +30,7 @@ jobs:
           git merge-base --is-ancestor "$BASE" HEAD
           while IFS= read -r file; do
             case "$file" in
-              NaxxLootLottery/Core/GuildAutoPreview.lua|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/Storage/Database.lua|NaxxLootLottery/NaxxLootLottery.toc|NaxxLootLottery/Core/Core.lua|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_guild_auto_preview.lua|docs/TESTING_GUILD_AUTO_PREVIEW_DRAFT.md|.github/workflows/nll-guild-auto-preview-review.yml) ;;
+              NaxxLootLottery/Core/GuildAutoPreview.lua|.github/workflows/nll-delivery-reconciliation-review.yml|NaxxLootLottery/UI/CurrentLootFrame.lua|NaxxLootLottery/Storage/Database.lua|NaxxLootLottery/NaxxLootLottery.toc|NaxxLootLottery/Core/Core.lua|scripts/build_release_zip.py|tests/test_release_packaging.py|tests/test_guild_auto_preview.lua|docs/TESTING_GUILD_AUTO_PREVIEW_DRAFT.md|.github/workflows/nll-guild-auto-preview-review.yml) ;;
               *) echo "::error::Unexpected file in read-only auto preview: $file"; exit 1;;
             esac
           done < <(git diff --name-only "$BASE" HEAD)

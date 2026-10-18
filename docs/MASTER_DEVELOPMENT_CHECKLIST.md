@@ -225,7 +225,9 @@ current draft addon has been installed.
 - [x] Add deterministic Lua 5.1 tests: changed target, slot reorder,
       simultaneous identical items, fake/closed context and no modern API.
 - [x] Open stacked draft PR #30, preserving the older PR #29 branch.
-- [ ] Verify latest exact-head dedicated safety and full Lua 5.1 CI.
+- [x] Dedicated read-only source-diagnostic safety CI and full Lua 5.1
+      regression suite passed (exact-head evidence on PR #30).
+- [ ] Recheck exact-head CI if any further changes are added.
 - [ ] Record owner-approved in-game text/screenshots and baseline
       SavedVariables comparison; not yet a usable per-corpse solution.
 

@@ -6,12 +6,17 @@ GetTime=function()return 100 end
 time=function()return 1800000000 end
 date=function()return "2026-10-18" end
 UnitName=function()return "Leader" end
+GetLootMethod=function()return "master",nil,1 end
+GetRaidRosterInfo=function(i)
+    if i==1 then return "Leader",2 end
+end
 local awards=0
 GiveMasterLoot=function()awards=awards+1;error("No physical transfers in identity test")end
 local savedPlans={bot={character="Throgar",itemID=16800,status="NEEDED"}}
 local history={
     {dropUID="L99:1:16800",itemID=16800,winner="Pikeotter",
-        slotIndex=2,status="LOOT_SLOT_CLEARED"},
+        slotIndex=2,status="LOOT_SLOT_CLEARED",
+        reconciliationStatus="CLOSED_NO_RETRY"},
 }
 local guild={
     {itemID=17010,slotIndex=1,recipient="Leader",
@@ -115,14 +120,19 @@ ok(I:GetRow(copy1).winner=="Throgar" and
     "old winner persists and other same-item copy stays unawarded")
 -- Unknown outcomes, even from a different slot, freeze unrelated proposals.
 history[1].status="AWARD_OUTCOME_UNKNOWN"
+history[1].reconciliationStatus=nil
 plan=P:Build()
 ok(plan.proposed==0 and
     plan.rows[3].decision=="HOLD_UNRESOLVED_REQUEST",
     "unresolved winner award stops the entire auto guild proposal")
 history[1].status="LOOT_SLOT_CLEARED"
 plan=P:Build()
+ok(plan.proposed==0 and plan.rows[3].decision=="HOLD_UNRESOLVED_REQUEST",
+    "cleared slot stays globally uncertain until a no-retry review")
+history[1].reconciliationStatus="CLOSED_NO_RETRY"
+plan=P:Build()
 ok(plan.proposed==1 and plan.rows[3].decision=="PROPOSE_TO_LEADER",
-    "cleared slot remains receipt-unverified but unrelated preview can proceed")
+    "explicit no-retry review unlocks only unrelated read-only proposals")
 ok(N.db.gearNeeds==savedPlans and savedPlans.bot.status=="NEEDED" and
     N.db.guildLootTransferAudit==guild and
     N.db.lootAwardHistory==history and

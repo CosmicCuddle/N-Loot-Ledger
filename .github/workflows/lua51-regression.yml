@@ -28,6 +28,8 @@ jobs:
         run: lua5.1 tests/test_loot_identity.lua
       - name: Historical loot and Playerbot regression
         run: lua5.1 tests/test_loot_history_and_bots.lua
+      - name: Raid-leader confirmed already-owned bot item (no false receipt)
+        run: lua5.1 tests/test_manual_bot_obtained.lua
       - name: Need Before Greed pool safety regression
         run: lua5.1 tests/test_need_before_greed.lua
       - name: SavedVariables upgrade and reload preservation

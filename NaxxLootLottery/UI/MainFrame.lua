@@ -741,6 +741,15 @@ end
 -- Safe even before optional child panels have been constructed.
 function UI:DismissContextReviews()
     if NLL.RaidHistoryView then NLL.RaidHistoryView:Cancel() end
+    -- Delivery Investigations is a separate DIALOG-strata child. Dismiss
+    -- it on navigation, Escape or main-window closure so it cannot leave
+    -- an invisible click-blocking overlay on the next page.
+    if NLL.LootReconciliation then NLL.LootReconciliation:Cancel() end
+    if self.reconciliationDialog then
+        self.reconciliationSelected=nil
+        self.reconciliationNotice=nil
+        self.reconciliationDialog:Hide()
+    end
     self.inboxArchiveArmed=nil
     if NLL.GearPlanReview then NLL.GearPlanReview:Cancel() end
     if self.CancelGearPlanRolePicker then self:CancelGearPlanRolePicker() end

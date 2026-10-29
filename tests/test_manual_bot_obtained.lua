@@ -66,7 +66,10 @@ assert(pending.status=="WON_AWAITING_ITEM" and
     award.status=="AWARD_OUTCOME_UNKNOWN" and
     award.reconciliationStatus=="CLOSED_NO_RETRY" and
     N.db.awardAttemptLocks==locks and grants==0,
-    "manual entry must NEVER fabricate server receipt or unlock old item")
+    "manual entry must NEVER fabricate server receipt or unlock old item: "..
+    tostring(pending.status).."|"..tostring(award.status).."|"..
+    tostring(award.reconciliationStatus).."|locks="..
+    tostring(N.db.awardAttemptLocks==locks).."|grants="..tostring(grants))
 assert(not R:Arm(key,"ATTEST_OBTAINED"),
     "cannot attest same bot/item twice")
 -- Confirm guard verifies actor, snapshot and expiry before any write.

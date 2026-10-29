@@ -145,7 +145,7 @@ function R:Arm(key,action,newStatus)
     if action=="ATTEST_OBTAINED" then
         return true,row.character.." item "..row.itemID..
             ": mark OBTAINED only if you checked the bot owns it. "..
-            "Human attestation; no loot is awarded."
+            "human attestation; no loot is awarded."
     end
     return true,"REVIEW "..row.character.." item "..row.itemID..": "..
         (action=="REMOVE" and "REMOVE existing bot plan" or

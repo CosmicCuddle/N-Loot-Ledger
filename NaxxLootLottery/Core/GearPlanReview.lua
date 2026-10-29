@@ -1,6 +1,6 @@
 -- NLL guarded, item-specific edit/remove review for existing BOT_GEAR_PLAN rows.
 -- No AddNeed: that would silently rewrite shared role/type assignments.
--- Never permit manual OBTAINED; only independent recipient receipt can do so.
+-- Explicit leader manual-ownership attestation is separate from a server receipt.
 local NLL=NaxxLootLottery
 NLL.GearPlanReview=NLL.GearPlanReview or {}
 local R=NLL.GearPlanReview
@@ -97,10 +97,17 @@ function R:CanEdit(key,action,newStatus)
     if row.status=="OBTAINED" then
         return false,"OBTAINED is receipt evidence; manual editing/removal is blocked."
     end
-    if Outstanding(row) then
+    -- Ordinary edits remain blocked by pending winner receipts. A special
+    -- *explicitly attested* inventory check can update just the Gear Plan,
+    -- without altering the original pending receipt or award attempt lock.
+    if action~="ATTEST_OBTAINED" and Outstanding(row) then
         return false,"A winner/recipient receipt is outstanding. Preserve this Gear Plan."
     end
-    if action=="STATUS" then
+    if action=="ATTEST_OBTAINED" then
+        if row.status~="NEEDED" and row.status~="GREED" or newStatus~=nil then
+            return false,"Only an existing NEEDED/GREED bot item can be manually checked."
+        end
+    elseif action=="STATUS" then
         if newStatus~="NEEDED" and newStatus~="GREED" and
            newStatus~="DISABLED" then
             return false,"Manual OBTAINED is forbidden; use recipient receipt review."
@@ -135,6 +142,13 @@ function R:Arm(key,action,newStatus)
         character=row.character,itemID=row.itemID,
         actor=Actor(),started=Now(),
     }
+    if action=="ATTEST_OBTAINED" then
+        return true,"I checked that "..row.character.." ALREADY HAS item "..
+            row.itemID.." in bags/equipment. Record this ONE Gear Plan as "..
+            "OBTAINED within 15 seconds? This is a human attestation, NOT "..
+            "a server delivery receipt. Historical award and no-retry "..
+            "locks remain unchanged."
+    end
     return true,"REVIEW "..row.character.." item "..row.itemID..": "..
         (action=="REMOVE" and "REMOVE existing bot plan" or
          (action=="ROLE" and
@@ -162,6 +176,30 @@ function R:Confirm()
        row.status~=armed.oldStatus or row.role~=armed.oldRole or
        row.itemID~=armed.itemID or row.character~=armed.character then
         return false,"Saved Gear Plans changed after review; nothing was changed."
+    end
+    if armed.action=="ATTEST_OBTAINED" then
+        -- This is an explicit, auditable *local Gear Plan* correction.
+        -- NEVER mark the independent loot receipt OBTAINED, infer source
+        -- identity, unlock old loot or invoke GiveMasterLoot.
+        local audit=NLL.db.manualObtainedEvidence
+        if type(audit)~="table" then
+            audit={}
+            NLL.db.manualObtainedEvidence=audit
+        end
+        local record={
+            kind="LEADER_ATTESTED_BOT_HAS_ITEM",
+            by=armed.actor,character=row.character,itemID=row.itemID,
+            gearKey=armed.key,oldStatus=row.status,newStatus="OBTAINED",
+            at=time and time() or nil,receiptVerified=false,
+        }
+        audit[#audit+1]=record
+        row.status="OBTAINED"
+        row.manualObtainedEvidence=record.kind
+        row.manualObtainedBy=armed.actor
+        row.manualObtainedAt=record.at
+        return true,"Recorded "..row.character.." item "..row.itemID..
+            " as OBTAINED in this Gear Plan. Manual inventory attestation "..
+            "logged; independent receipt/history and no-retry locks unchanged."
     end
     if armed.action=="STATUS" then
         row.status=armed.newStatus

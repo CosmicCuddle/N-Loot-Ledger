@@ -44,6 +44,7 @@ function UI:CreateGearPlanReviewDialog()
         f:Hide()
     end)
     self.gearPlanReviewDetail=detail
+    self.gearPlanReviewCaution=caution
     self.gearPlanReviewConfirm=confirm
     self.gearPlanReviewCancel=cancel
     self.gearPlanReviewDialog=f
@@ -65,6 +66,17 @@ function UI:ReviewBotPlan(key,action,status)
     end
     self:CreateGearPlanReviewDialog()
     self.gearPlanReviewDetail:SetText(message)
+    if action=="ATTEST_OBTAINED" then
+        self.gearPlanReviewCaution:SetText(
+            "Only confirm if you CHECKED the bot actually owns this item. "..
+            "This saves a local manual Gear Plan note; no loot is granted.")
+        self.gearPlanReviewConfirm.label:SetText("CONFIRM BOT HAS ITEM")
+    else
+        self.gearPlanReviewCaution:SetText(
+            "OBTAINED requires separate evidence. "..
+            "Original winner and inventory records are never edited.")
+        self.gearPlanReviewConfirm.label:SetText("CONFIRM THIS CHANGE")
+    end
     self.gearPlanReviewDialog:Show()
 end
 

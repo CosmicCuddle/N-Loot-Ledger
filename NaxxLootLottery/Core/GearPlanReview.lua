@@ -143,11 +143,9 @@ function R:Arm(key,action,newStatus)
         actor=Actor(),started=Now(),
     }
     if action=="ATTEST_OBTAINED" then
-        return true,"I checked that "..row.character.." ALREADY HAS item "..
-            row.itemID.." in bags/equipment. Record this ONE Gear Plan as "..
-            "OBTAINED within 15 seconds? This is a human attestation, NOT "..
-            "a server delivery receipt. Historical award and no-retry "..
-            "locks remain unchanged."
+        return true,row.character.." item "..row.itemID..
+            ": mark OBTAINED only if you checked the bot owns it. "..
+            "Human attestation; no loot is awarded."
     end
     return true,"REVIEW "..row.character.." item "..row.itemID..": "..
         (action=="REMOVE" and "REMOVE existing bot plan" or

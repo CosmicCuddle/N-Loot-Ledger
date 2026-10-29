@@ -65,11 +65,11 @@ assert(recorded.character=="BotOne" and recorded.itemID==16800 and
 assert(pending.status=="WON_AWAITING_ITEM" and
     award.status=="AWARD_OUTCOME_UNKNOWN" and
     award.reconciliationStatus=="CLOSED_NO_RETRY" and
-    N.db.awardAttemptLocks==locks and grants==0,
+    N.db.awardAttemptLocks==locks and granted==0,
     "manual entry must NEVER fabricate server receipt or unlock old item: "..
     tostring(pending.status).."|"..tostring(award.status).."|"..
     tostring(award.reconciliationStatus).."|locks="..
-    tostring(N.db.awardAttemptLocks==locks).."|grants="..tostring(grants))
+    tostring(N.db.awardAttemptLocks==locks).."|granted="..tostring(granted))
 assert(not R:Arm(key,"ATTEST_OBTAINED"),
     "cannot attest same bot/item twice")
 -- Confirm guard verifies actor, snapshot and expiry before any write.
@@ -87,5 +87,5 @@ assert(not R:Confirm() and two.status=="GREED")
 N.GearPlanTransfer.IsBlocked=function()return true,"Real loot open" end
 assert(not R:Arm(otherKey,"ATTEST_OBTAINED"),
     "in-progress loot still blocks plan corrections")
-assert(#N.db.manualObtainedEvidence==1 and grants==0)
+assert(#N.db.manualObtainedEvidence==1 and granted==0)
 print("PASS: audited exact bot-item manual ownership; old receipts/locks preserved")

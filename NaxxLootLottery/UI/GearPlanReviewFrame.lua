@@ -68,9 +68,9 @@ function UI:ReviewBotPlan(key,action,status)
     self.gearPlanReviewDetail:SetText(message)
     if action=="ATTEST_OBTAINED" then
         self.gearPlanReviewCaution:SetText(
-            "Only confirm if you CHECKED the bot actually owns this item. "..
-            "This saves a local manual Gear Plan note; no loot is granted.")
-        self.gearPlanReviewConfirm.label:SetText("CONFIRM BOT HAS ITEM")
+            "Manual note, NOT a server receipt. Prior award and "..
+            "no-retry locks remain unchanged.")
+        self.gearPlanReviewConfirm.label:SetText("CONFIRM OBTAINED")
     else
         self.gearPlanReviewCaution:SetText(
             "OBTAINED requires separate evidence. "..

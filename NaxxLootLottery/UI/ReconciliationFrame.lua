@@ -220,12 +220,21 @@ function UI:RefreshReconciliationDialog()
         (GetTime and GetTime() or 0)-armed.at<=15
     if fresh then self.reconciliationConfirm:Enable()
     else self.reconciliationConfirm:Disable() end
-    self.reconciliationStatus:SetText(tostring(self.reconciliationNotice or
-        (not active and "Select a request. No status or item is changed." or
-         (active.reviewed and "This original attempt remains permanently locked." or
-          active.receipt=="OBTAINED" and
-          "Recipient receipt already confirmed. Do not close as unknown." or
-          "Selected request. Click ARM NO RETRY, then CONFIRM within 15 seconds."))))
+    -- A completed roll is not necessarily a physical award attempt.
+    -- Empty reconciliation is expected when no uncertain attempts exist.
+    -- Explain the difference rather than presenting an apparently dead UI.
+    if #rows==0 then
+        self.reconciliationStatus:SetText(
+            "No delivery investigations found. Close this window; "..
+            "use Award History > Info to review a saved winner receipt.")
+    else
+        self.reconciliationStatus:SetText(tostring(self.reconciliationNotice or
+            (not active and "Select a request. No status or item is changed." or
+             (active.reviewed and "This original attempt remains permanently locked." or
+              active.receipt=="OBTAINED" and
+              "Recipient receipt already confirmed. Do not close as unknown." or
+              "Selected request. Click ARM NO RETRY, then CONFIRM within 15 seconds."))))
+    end
 end
 
 function UI:OpenReconciliationDialog(kind,identifier)

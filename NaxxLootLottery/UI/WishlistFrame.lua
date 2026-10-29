@@ -1110,7 +1110,13 @@ function UI:CreateGearPlansContent(parent)
                         if statusDrop.needKey then
                             -- Review before saving; no dropdown click
                             -- may mark a bot OBTAINED or change a plan.
-                            UI:ReviewBotPlan(statusDrop.needKey,"STATUS",status)
+                            if status=="OBTAINED" then
+                                -- A separate TWO-CLICK human attestation,
+                                -- never a claim of independent loot receipt.
+                                UI:ReviewBotPlan(statusDrop.needKey,"ATTEST_OBTAINED")
+                            else
+                                UI:ReviewBotPlan(statusDrop.needKey,"STATUS",status)
+                            end
                         end
                     end
 

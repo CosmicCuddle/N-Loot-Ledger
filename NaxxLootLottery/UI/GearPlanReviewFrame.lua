@@ -44,6 +44,7 @@ function UI:CreateGearPlanReviewDialog()
         f:Hide()
     end)
     self.gearPlanReviewDetail=detail
+    self.gearPlanReviewCaution=caution
     self.gearPlanReviewConfirm=confirm
     self.gearPlanReviewCancel=cancel
     self.gearPlanReviewDialog=f
@@ -65,6 +66,17 @@ function UI:ReviewBotPlan(key,action,status)
     end
     self:CreateGearPlanReviewDialog()
     self.gearPlanReviewDetail:SetText(message)
+    if action=="ATTEST_OBTAINED" then
+        self.gearPlanReviewCaution:SetText(
+            "Manual note, NOT a server receipt. Prior award and "..
+            "no-retry locks remain unchanged.")
+        self.gearPlanReviewConfirm.label:SetText("CONFIRM OBTAINED")
+    else
+        self.gearPlanReviewCaution:SetText(
+            "OBTAINED requires separate evidence. "..
+            "Original winner and inventory records are never edited.")
+        self.gearPlanReviewConfirm.label:SetText("CONFIRM THIS CHANGE")
+    end
     self.gearPlanReviewDialog:Show()
 end
 

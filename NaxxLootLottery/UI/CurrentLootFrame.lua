@@ -1114,9 +1114,14 @@ function UI:RefreshCurrentLootPanel()
         " | Present: " .. tostring(eligible) ..
         " (before priority checks) | Rule: " .. priorityLabel
 
-    if selected.manualOnly then
-        statusText =
-            statusText ..
+    local selectedPolicy=NLL.Data and NLL.Data.MoltenCore and
+        NLL.Data.MoltenCore:GetItem(selected.itemID)
+    if selectedPolicy and selectedPolicy.reservationLottery and
+        (selected.itemID==18563 or selected.itemID==18564) then
+        statusText=statusText..
+            "  |cff66ff99Saved Windseeker reservations: equal tickets; manual award.|r"
+    elseif selected.manualOnly then
+        statusText=statusText..
             "  |cffff9933Guild/manual item - no normal lottery.|r"
     end
 

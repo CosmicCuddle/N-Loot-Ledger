@@ -585,6 +585,51 @@ not authorisations for a live server change or actual item award.
 - [ ] Fix [#39 UI foreground buff overlap](https://github.com/CosmicCuddle/N-Loot-Ledger/issues/39) in a **new** draft only after functional tests. 
 - [ ] Full multi-client receipt and release acceptance remain open; public prerelease is not a stable release or PR merge.
 
+## 30 October 2026 live-raid feedback and C16 draft status (PRs #40/#41)
+
+**Status addendum, NOT a new full audit.** Earlier master audit date is
+18 October 2026. Current installed addon build/version has not been
+independently reconfirmed after the owner's latest raid feedback.
+Never substitute historical 604-plan or 636-plan screenshot counts for a
+current SavedVariables inventory.
+
+**NLL-040 — Live UI/Playerbot OBTAINED emergency; draft [#40](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/40)**
+- [x] Built: empty Delivery Investigations explains no recorded attempt;
+      stale overlay disarmed on navigation; exact bot/item manual ownership
+      attestation logs evidence without forging an independent receipt.
+- [x] CI passed on PR head `d2e787cc8e84b05284811afecec0f4292a9c2ae2`
+      (Lua 5.1 and no-release test artifact).
+- [x] Owner reported the prior emergency correction worked in game;
+      this is **limited functional feedback**, not full PR acceptance or
+      independent verification of all receipt and no-retry paths.
+- [ ] Complete exact-build 3.3.5a UI and preservation regression
+      (large Gear Plans, Escape/navigation, old receipts/history).
+- [ ] Owner-approved merge/release. Keep draft and no auto awards.
+
+**NLL-041 — Reserved Windseeker/guild-material C16; stacked draft [#41](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/41)**
+- [x] Built: 18563/18564 use saved class-eligible reservation pools,
+      NEED before GREED with equal tickets; manual award still separate.
+- [x] Built: Lava/Fiery Core, Core Leather, Blood of Mountain, Core of Earth
+      use Guild review; verified guild master (not assumed raid leader),
+      separate opt-ins, exact candidate and no-retry locks.
+- [x] Built: leader-reported manual WoW award opens the existing receipt
+      confirmation; a roll itself never marks a plan OBTAINED.
+- [x] CI passed on exact head
+      `61b5f49b863e21f3a83d7e63bad7d78beb6167d4` through
+      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41043286334),
+      including new real Molten Core catalog/PriorityEngine regression.
+- [ ] WoW 3.3.5a acceptance: Windseeker preview/tickets without a real
+      legendary transfer; materials vs loot-quality threshold; guild
+      master distinct from raid leader; receipt UI and no-retry behaviour.
+- [ ] Owner-approved merge/release. PR #41 depends on draft #40.
+- [ ] Unresolved design limitation: independent same-item-ID guild material
+      copies from different corpses remain blocked by conservative
+      no-retry rule until trustworthy source identity can be verified.
+
+Continue existing release gates: **Built / CI / WoW / Release** separately.
+Do not infer a server receipt from a /roll, cleared slot or successful
+`GiveMasterLoot` API call.
+
 ## Next-development handover rule
 
 Before starting another NLL feature, read this document first,

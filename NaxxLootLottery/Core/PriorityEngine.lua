@@ -385,6 +385,10 @@ function Priority:GetDisplayLabel(
 
         local item = raidKey == "MOLTEN_CORE" and
             NLL.Data.MoltenCore:GetItem(itemID) or nil
+        if item and item.reservationLottery and
+           (item.itemID==18563 or item.itemID==18564) then
+            return "Reserved legendary roll - manual award"
+        end
         if item and item.manualReason then
             return "Manual: " .. item.manualReason
         end

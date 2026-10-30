@@ -617,10 +617,14 @@ current SavedVariables inventory.
 - [x] Built: a previously manually attested OBTAINED bot plan can later
       complete an exact award-backed human receipt review if its
       original saved attestation audit matches; never bypass no-retry.
-- [x] CI passed on source/test head
-      `a1037cd447bf083142a0acf908e9fee144c9e4c5` through
-      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41043748270),
-      including real MC policy and manual-attestation receipt regressions.
+- [x] Built: Guild modal now shows "Arm Guild Master" only when
+      verified, "Arm Raid Leader" on ordinary item reviews, and disables
+      material transfer when the guild master is unavailable.
+- [x] Automated Lua 5.1 tests passed on code/test head
+      `88fd8eb5cd08dec5007d6c872f53fd20b9713141` via
+      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41046200783),
+      covering real MC policies, receipt reconciliation, recipient
+      labels, no-GM disabled control and modal geometry.
 - [ ] WoW 3.3.5a acceptance: Windseeker preview/tickets without a real
       legendary transfer; materials vs loot-quality threshold; guild
       master distinct from raid leader; receipt UI and no-retry behaviour.

@@ -620,11 +620,18 @@ current SavedVariables inventory.
 - [x] Built: Guild modal now shows "Arm Guild Master" only when
       verified, "Arm Raid Leader" on ordinary item reviews, and disables
       material transfer when the guild master is unavailable.
+- [x] Built: explicit Guild material IDs cannot override quest,
+      recipe, legendary or high-rarity special holds on custom servers.
+      Missing/out-of-range GetLootThreshold now blocks all physical Guild
+      material routing with an explanatory disabled UI state. Retained
+      reserved, unknown-receipt, no-retry and no-release protections.
 - [x] Automated Lua 5.1 tests passed on code/test head
-      `88fd8eb5cd08dec5007d6c872f53fd20b9713141` via
-      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41046200783),
-      covering real MC policies, receipt reconciliation, recipient
-      labels, no-GM disabled control and modal geometry.
+      `8f00b2667c49f456f8ebb473064cca392882a52b` via
+      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41047295866)
+      and [Lua regression workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41047301869),
+      including real MC policy, manual receipt reconciliation, guild
+      master/leader labels, custom item classification, missing threshold,
+      dry-run holds and modal geometry.
 - [ ] WoW 3.3.5a acceptance: Windseeker preview/tickets without a real
       legendary transfer; materials vs loot-quality threshold; guild
       master distinct from raid leader; receipt UI and no-retry behaviour.

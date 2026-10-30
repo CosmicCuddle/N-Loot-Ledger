@@ -925,6 +925,8 @@ function UI:RefreshGuildLootDialog()
             local summary=tostring(proposal and proposal.reason or item.reason)
             if item.status=="BELOW_THRESHOLD" then
                 summary="BELOW LOOT THRESHOLD - loot normally; cannot Master Loot."
+            elseif item.status=="THRESHOLD_UNKNOWN" then
+                summary="LOOT THRESHOLD UNKNOWN - Guild transfer blocked."
             elseif item.guildMaterial and item.status=="GUILD_REVIEW" then
                 summary="Guild material | Master: "..tostring(
                     item.guildMaster or "UNAVAILABLE - open Guild roster")

@@ -32,6 +32,7 @@ Date: 2026-10-30 | Owner acceptance: PENDING | GitHub: DRAFT ONLY
 ## Known constraints / no-deployment claims
 - Source/test CI success is NOT in-client 3.3.5a acceptance, no automation is live on user’s existing installed addon until they install the exact test build.
 - An actual bot’s bags are **not visible via standard WoW addon API**. Winner alone and loot slot clearing do not prove item delivery.
+- WoW Master Loot only exposes candidate assignment for items **at or above** the active loot threshold. Even Core of Earth or Lava Core can be below it. This branch labels that material `BELOW_THRESHOLD` and does not let the Guild review send a non-assignable item. Do not silently change raid threshold; for low-quality drops use ordinary Blizzard looting and a separate permitted trade if possible. Setting the threshold after a corpse spawned may not retroactively unlock the drop.
 - Multiple physically different *copies* of the same guild material are not safely distinguishable by standard 3.3.5a APIs. The existing conservative item-ID no-retry lock deliberately blocks subsequent same-ID requests until a future authenticated item-instance source bridge exists.
 - Other legendary/manual item IDs remain excluded from the special binding lottery.
 - No release/tag/merge/SQL/core/server work. All changes live in a separate draft branch.

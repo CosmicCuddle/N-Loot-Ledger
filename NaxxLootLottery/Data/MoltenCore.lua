@@ -470,6 +470,18 @@ for classFile, itemIDs
     end
 end
 
+-- Thunderfury halves are still manually AWARDED after an equal
+-- reservation-only roll. The item restrictions are not priority ranks.
+-- Special lottery handling is limited to these exact item IDs.
+for _,id in ipairs({18563,18564}) do
+    if MC.items[id] then
+        MC.items[id].reservationLottery=true
+        MC.items[id].manualReason="Reserved legendary roll; award separately"
+    end
+end
+MC:SetAllowedClasses(18563, {"WARRIOR","PALADIN","HUNTER","ROGUE"}, "LEGENDARY_ITEM")
+MC:SetAllowedClasses(18564, {"WARRIOR","PALADIN","HUNTER","ROGUE"}, "LEGENDARY_ITEM")
+
 -- The Tome teaches a Hunter-only raid ability. This affects eligibility,
 -- not its role priority. No automatic priority rule is stored for it.
 MC:SetAllowedClasses(16665, { "HUNTER" }, "ITEM_CLASS")

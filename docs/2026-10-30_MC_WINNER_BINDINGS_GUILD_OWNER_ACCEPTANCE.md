@@ -16,6 +16,12 @@ Date: 2026-10-30 | Owner acceptance: PENDING | GitHub: DRAFT ONLY
 
 ## Testing
 - Lua 5.1 full historic suite + all source/test syntax + deterministic test-only ZIP.
+- `tests/test_real_mc_windseeker_policy.lua` checks both halves against the
+  **real catalog and priority engine**, not only mock policy fixtures.
+- `tests/test_manual_obtained_receipt_reconciliation.lua` checks the
+  leader's manual bot-ownership note remains separate from pending receipt,
+  that missing award evidence still blocks, and that a later explicit
+  exact-drop receipt can reconcile it without touching other plans/locks.
 - New `tests/test_windseeker_reserved_roll.lua`: both halves, equal reserved NEED, GREED after NEED, excluded class/unreserved, material still manual, no awarding.
 - New `tests/test_guild_master_materials.lua`: distinct guild master, guild roster and online/raid presence, candidate drift, once-only transfer, unknown outcomes.
 - Updated guild transfer fixture with a separately verified Guild Master and guild UI fixture verifying material-specific button label.

@@ -34,6 +34,8 @@ local itemIDs={17010,17011,16800,18259,17204}
 local names={"Fiery Core","Lava Core","Arcanist Boots","Enchant Formula","Eye of Sulfuras"}
 local locked={}
 local quantities={2,1,1,1,1}
+-- The 3.3.5a client exposes the current Master Loot quality threshold.
+GetLootThreshold=function()return 1 end
 GetNumLootItems=function()return #itemIDs end
 GetLootSlotLink=function(slot)
     local id=itemIDs[slot]

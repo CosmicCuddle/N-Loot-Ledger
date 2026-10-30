@@ -916,7 +916,12 @@ function UI:RefreshGuildLootDialog()
                 "Slot "..item.slotIndex..": "..item.itemName..
                 " x"..item.quantity.." ["..state.."]")
             row.reasonText:SetText(tostring(proposal and proposal.reason or item.reason)..
-                "  |  Leader: "..tostring(item.leader))
+                (item.guildMaterial and
+                  (" | Guild master: "..tostring(item.guildMaster or
+                    "UNAVAILABLE (open Guild roster)")) or
+                  (" | Raid leader: "..tostring(item.leader))))
+            row.reviewButton.label:SetText(
+                item.guildMaterial and "Guild" or "Review")
             row.reviewButton.target={
                 slotIndex=item.slotIndex,itemID=item.itemID,
                 itemLink=item.itemLink,quantity=item.quantity,

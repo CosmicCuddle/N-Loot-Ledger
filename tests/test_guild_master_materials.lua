@@ -33,8 +33,12 @@ GetLootSlotLink=function(i)
     return id and ("|Hitem:"..id..":0|h[Item "..id.."]|h") or nil
 end
 GetLootSlotInfo=function()return nil,nil,1,2,false end
+local specialType=false
+local specialQuality=false
 GetItemInfo=function(id)
-    return "Item "..id,nil,id==18563 and 5 or 2,nil,nil,"Trade Goods"
+    return "Item "..id,nil,
+        (id==18563 or (id==17011 and specialQuality)) and 5 or 2,
+        nil,nil,(id==17011 and specialType) and "Quest" or "Trade Goods"
 end
 local threshold=1
 GetLootThreshold=function() return threshold end
@@ -74,9 +78,36 @@ local blocked=G:Scan()
 assert(blocked[1].status=="BELOW_THRESHOLD" and
     blocked[2].status=="BELOW_THRESHOLD",
     "ordinary materials below Master Loot threshold cannot be assigned")
+threshold=nil
+local unknown=G:Scan()
+assert(unknown[1].status=="THRESHOLD_UNKNOWN" and
+    unknown[2].status=="THRESHOLD_UNKNOWN",
+    "unknown threshold must not expose guild master assignment")
 threshold=1
+specialType=true
+local quest=G:Scan()
+assert(quest[1].status=="SPECIAL_HOLD",
+    "an ID reused by a custom server as a quest item remains held")
+specialType=false
+specialQuality=true
+local legendary=G:Scan()
+assert(legendary[1].status=="SPECIAL_HOLD",
+    "an ID reused as a legendary/special item remains held")
+specialQuality=false
 local target={slotIndex=1,itemID=17011,quantity=1,
     itemLink=rows[1].itemLink}
+threshold=nil
+assert(not T:Review(target),
+    "transfer validation cannot bypass an unavailable threshold")
+threshold=1
+specialType=true
+assert(not T:Review(target),
+    "transfer validation cannot bypass a quest material classification")
+specialType=false
+specialQuality=true
+assert(not T:Review(target),
+    "transfer validation cannot bypass special rarity")
+specialQuality=false
 assert(T:Review(target))
 assert(T.review.context.recipientKind=="GUILD_MASTER" and
     T.review.context.leader=="GuildBoss")

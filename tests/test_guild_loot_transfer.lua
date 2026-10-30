@@ -164,6 +164,30 @@ t=t+16
 sent,msg=T:Commit()
 ok(not sent and msg:find("expired") and #given==0,
     "15-second confirmation expiration fails closed")
+-- No clock can never imply perpetual confirmation eligibility. The
+-- same rule applies after arming if GetTime vanishes or goes backwards.
+local originalClock=GetTime
+GetTime=nil
+ok(T:Review(target),"read-only review may still inspect an item")
+armed,armMessage=T:Arm()
+ok(not armed and armMessage:find("clock") and T.review==nil and
+    #given==0,"missing WoW clock blocks physical transfer arming")
+GetTime=function()return nil end
+ok(T:Review(target) and not T:Arm() and T.review==nil and
+    #given==0,"nil WoW clock cannot be treated as time zero")
+GetTime=originalClock
+ok(T:Review(target) and T:Arm(),"can arm with restored valid WoW clock")
+t=t-1
+sent,msg=T:Commit()
+ok(not sent and msg:find("clock changed") and T.review==nil and
+    #given==0,"backwards clock jump blocks an armed transfer")
+t=t+1
+ok(T:Review(target) and T:Arm(),"fresh deliberate arm after clock change")
+GetTime=nil
+sent,msg=T:Commit()
+ok(not sent and msg:find("clock changed") and T.review==nil and
+    #given==0,"clock disappearing after arm cannot allow an award")
+GetTime=originalClock
 ok(T:Review(target) and T:Arm(),"explicit fresh review+arm possible")
 locked[1]=true
 sent=T:Commit()

@@ -155,9 +155,17 @@ function T:Validate(target)
        GetLootSlotLink(row.slotIndex)~=row.itemLink then
         return false,"The exact item/loot slot changed in WoW."
     end
-    local leader=NLL.GuildLootReview:GetLeader()
-    if not leader or Key(leader)~=Key(row.leader) then
-        return false,"Raid leader changed or could not be uniquely verified."
+    local recipientKind=row.guildMaterial and "GUILD_MASTER" or "RAID_LEADER"
+    local leader=row.guildMaterial and
+        NLL.GuildLootReview:GetGuildMaster() or
+        NLL.GuildLootReview:GetLeader()
+    if not leader or
+       (row.guildMaterial and Key(leader)~=Key(row.guildMaster)) or
+       (not row.guildMaterial and Key(leader)~=Key(row.leader)) then
+        return false,row.guildMaterial and
+            "Guild master unavailable, offline or absent from this raid. "..
+            "Open the WoW Guild roster to refresh, then review again." or
+            "Raid leader changed or could not be uniquely verified."
     end
     local match,count=nil,0
     for i=1,40 do
@@ -168,11 +176,12 @@ function T:Validate(target)
         end
     end
     if count~=1 then
-        return false,"Raid leader must occur exactly once in this slot's Master Loot candidates."
+        return false,"Chosen guild/raid leader must occur exactly once in the current Master Loot candidates."
     end
     return true,{
         slot=row.slotIndex,itemID=row.itemID,link=row.itemLink,
-        quantity=row.quantity,leader=leader,candidate=match,
+        quantity=row.quantity,leader=leader,
+        recipientKind=recipientKind,candidate=match,
         startedAt=Now(),
     }
 end
@@ -180,7 +189,8 @@ end
 local function Same(a,b)
     return a and b and a.slot==b.slot and a.itemID==b.itemID and
         a.link==b.link and a.quantity==b.quantity and
-        Key(a.leader)==Key(b.leader) and a.candidate==b.candidate
+        Key(a.leader)==Key(b.leader) and a.candidate==b.candidate and
+        a.recipientKind==b.recipientKind
 end
 
 function T:Review(target)
@@ -192,7 +202,9 @@ function T:Review(target)
         itemLink=data.link,quantity=data.quantity,
     },context=data}
     return true,"Verified "..data.link.." x"..data.quantity..
-        " for raid leader "..data.leader..". ARM requires another click."
+        " for "..(data.recipientKind=="GUILD_MASTER" and
+        "guild master " or "raid leader ")..data.leader..
+        ". ARM requires another click."
 end
 
 function T:Arm()
@@ -236,6 +248,7 @@ function T:Commit()
     local row={
         itemID=fresh.itemID,itemLink=fresh.link,quantity=fresh.quantity,
         slotIndex=fresh.slot,recipient=fresh.leader,
+        recipientKind=fresh.recipientKind,
         operator=UnitName and UnitName("player") or nil,
         candidateIndex=fresh.candidate,
         status="AWARD_OUTCOME_UNKNOWN",

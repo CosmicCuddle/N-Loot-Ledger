@@ -45,6 +45,7 @@ itemRows[5].reason="Unverified Blizzard quality threshold"
 itemRows[6].guildMaterial=true
 itemRows[6].guildMaster="GuildBoss"
 itemRows[6].status="LOOT_INFO_UNKNOWN"
+itemRows[6].lootInfoKnown=false
 itemRows[6].reason="Unverified WoW loot stack count"
 local previewLive=true
 NaxxLootLottery={
@@ -118,8 +119,9 @@ ok(UI.guildLootRows[5].reviewButton.enabled==false and
     "unverifiable loot threshold shows concise reason and disables Guild")
 ok(UI.guildLootRows[6].reviewButton.enabled==false and
     UI.guildLootRows[6].reasonText.text:find(
-        "LOOT SLOT COUNT UNKNOWN",1,true),
-    "unknown live stack metadata is explained and cannot enable Guild")
+        "LOOT SLOT COUNT UNKNOWN",1,true) and
+    UI.guildLootRows[6].nameText.text:find(" x?",1,true),
+    "unknown stack size is shown as x? and cannot enable Guild")
 ok(UI.guildLootArm.label.text=="Arm Transfer",
     "before Review, transfer button makes no recipient claim")
 ok(UI.guildLootRows[1].reviewButton.width==90 and

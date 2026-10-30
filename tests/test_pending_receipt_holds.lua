@@ -20,6 +20,13 @@ GetRaidRosterInfo=function(i)
     if i==1 then return leader,2 end
     return "Raid"..i,0
 end
+GetNumGuildMembers=function()return 2 end
+GetGuildRosterInfo=function(i)
+    if i==1 then
+        return "Raid3","Guild Master",0,nil,nil,nil,nil,nil,true
+    end
+    return leader,"Member",2,nil,nil,nil,nil,nil,true
+end
 GetLootMethod=function()return masterMode,nil,masterIndex end
 UnitName=function()return actor end
 local pending={dropUID="L1:1:17010",itemID=17010,
@@ -97,8 +104,10 @@ records.reconciliationStatus="CLOSED_NO_RETRY"
 plan=P:Build()
 ok(plan.rows[1].decision=="HOLD_UNCERTAIN" and
    plan.rows[2].decision=="HOLD_UNCERTAIN" and
-   plan.rows[3].decision=="PROPOSE_TO_LEADER" and
-   plan.rows[4].decision=="PROPOSE_TO_LEADER",
+   plan.rows[3].decision=="PROPOSE_TO_GUILD_MASTER" and
+   plan.rows[3].proposedRecipient=="Raid3" and
+   plan.rows[4].decision=="PROPOSE_TO_LEADER" and
+   plan.rows[4].proposedRecipient==leader,
    "NO RETRY closes global gate but pending receipts remain held")
 ok(plan.rows[5].decision=="HOLD_UNCERTAIN" and
    plan.rows[6].decision=="HOLD_UNCERTAIN" and plan.proposed==2,
@@ -109,12 +118,14 @@ ok(plan.rows[2].decision=="HOLD_UNCERTAIN",
    "failed player notification still holds")
 ack.remoteSyncStatus="ACKNOWLEDGED"
 plan=P:Build()
-ok(plan.rows[2].decision=="PROPOSE_TO_LEADER",
-   "remote acknowledgment lifts its receipt-only hold")
+ok(plan.rows[2].decision=="PROPOSE_TO_GUILD_MASTER" and
+   plan.rows[2].proposedRecipient=="Raid3",
+   "remote acknowledgment only permits proposal to guild master")
 pending.status="OBTAINED"
 plan=P:Build()
-ok(plan.rows[1].decision=="PROPOSE_TO_LEADER",
-   "independent bot receipt clears pending hold")
+ok(plan.rows[1].decision=="PROPOSE_TO_GUILD_MASTER" and
+   plan.rows[1].proposedRecipient=="Raid3",
+   "independent bot receipt clears hold but never redirects to raid leader")
 pending.status="WON_AWAITING_ITEM"
 ack.remoteSyncStatus="AWAITING_PLAYER"
 local bad={itemID=17010,itemLink=rows[1].itemLink,
@@ -141,8 +152,9 @@ ok(plan.rows[3].decision=="HOLD_MASTER_LOOT",
    "acting client must match WoW Master Looter raid index")
 masterIndex=1
 plan=P:Build()
-ok(plan.rows[3].decision=="PROPOSE_TO_LEADER",
-   "verified master permits ONLY read-only human-reviewed proposal")
+ok(plan.rows[3].decision=="PROPOSE_TO_GUILD_MASTER" and
+   plan.rows[3].proposedRecipient=="Raid3",
+   "verified Master Looter permits only a dry-run guild-master proposal")
 N.LootDetection.lootOpen=false
 plan=P:Build()
 ok(#plan.rows==0 and plan.proposed==0,

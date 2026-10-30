@@ -30,6 +30,14 @@ Date: 2026-10-30 | Owner acceptance: PENDING | GitHub: DRAFT ONLY
   Leader** for other eligible items. A missing or unverified Guild Master
   disables the material Guild button before review. No transfer controls
   overlap.
+- `tests/test_guild_auto_preview.lua` now checks that a **read-only**
+  material proposal explicitly identifies the actual guild master, not a
+  different raid leader, and changes to **HOLD_GUILD_MASTER** when the
+  guild master goes offline. `tests/test_pending_receipt_holds.lua`
+  verifies that existing receipt/ACK/no-retry holds remain authoritative
+  and ordinary loot still uses its older raid-leader review policy.
+  A proposed recipient is never a validated Blizzard loot candidate or
+  proof of a possible or completed physical transfer.
 - **Never** make a live loot transfer during an automated test.
 
 ## Owner manual acceptance (backup before changing addon)
@@ -38,7 +46,7 @@ Date: 2026-10-30 | Owner acceptance: PENDING | GitHub: DRAFT ONLY
 3. In a safe non-live / expendable loot test, load addon and run `/nll version`, `/nll status`, `/nll directaward off`. Verify old Gear Plan counts, old receipts and award locks still present.
 4. For a Windseeker half, test with **read-only saved reservations first**: eligible present two characters in NEED -> Preview -> Prepare -> Start Roll. Confirm losing/offline/unreserved/invalid-class characters never join; after winner, item remains **pending item**. Do not perform a real test award with a rare legendary.
 5. Rehearse the existing receipt flow using a test consumable / controlled safe fixture: report award via **I Awarded It in WoW** only after actual manual Blizzard action, see the inventory-check review, confirm only after the recipient truly has item. Check only matching Gear Plans become OBTAINED; original receipts, locks preserved.
-6. Check Guild Loot with an expendable material while the **guild master and raid leader differ**. Before touching transfer toggles, confirm Guild row shows correct guild master; unavailable/offline/absent guild master must refuse. Review without giving; only do the physical test when owner has explicitly consented to consuming that actual item. After real test, confirm exact candidate and that repeated attempts are blocked.
+6. Check Guild Loot with an expendable material while the **guild master and raid leader differ**. Toggle **Dry Run: ON**: confirm a material says `PROPOSE_TO_GUILD_MASTER` and names the guild master, while unrelated ordinary loot retains `PROPOSE_TO_LEADER`. An offline/absent guild master must show `HOLD_GUILD_MASTER` rather than a raid-leader fallback. Dry Run must not send any loot. Before touching transfer toggles, confirm the physical Guild row shows the correct guild master; unavailable/offline/absent guild master must refuse. Review without giving; only do the physical test when owner has explicitly consented to consuming that actual item. After a real test, confirm exact candidate and that repeated attempts are blocked.
 
 ## Known constraints / no-deployment claims
 - Source/test CI success is NOT in-client 3.3.5a acceptance, no automation is live on user’s existing installed addon until they install the exact test build.

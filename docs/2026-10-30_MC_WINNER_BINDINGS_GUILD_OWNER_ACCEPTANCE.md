@@ -24,7 +24,12 @@ Date: 2026-10-30 | Owner acceptance: PENDING | GitHub: DRAFT ONLY
   exact-drop receipt can reconcile it without touching other plans/locks.
 - New `tests/test_windseeker_reserved_roll.lua`: both halves, equal reserved NEED, GREED after NEED, excluded class/unreserved, material still manual, no awarding.
 - New `tests/test_guild_master_materials.lua`: distinct guild master, guild roster and online/raid presence, candidate drift, once-only transfer, unknown outcomes.
-- Updated guild transfer fixture with a separately verified Guild Master and guild UI fixture verifying material-specific button label.
+- Updated guild transfer fixture with a separately verified Guild Master,
+  and guild UI + modal-geometry fixtures ensuring the action names the
+  actual recipient: **Arm Guild Master** for materials versus **Arm Raid
+  Leader** for other eligible items. A missing or unverified Guild Master
+  disables the material Guild button before review. No transfer controls
+  overlap.
 - **Never** make a live loot transfer during an automated test.
 
 ## Owner manual acceptance (backup before changing addon)

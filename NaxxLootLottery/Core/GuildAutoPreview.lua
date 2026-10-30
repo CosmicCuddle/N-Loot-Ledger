@@ -98,6 +98,12 @@ function P:Build()
             elseif not masterOK then
                 decision="HOLD_MASTER_LOOT"
                 reason="The acting character is not the verified WoW Master Looter"
+            elseif source.guildMaterial and not source.guildMaster then
+                decision="HOLD_GUILD_MASTER"
+                reason="Actual guild master is not verified online and present in raid; no fallback to raid leader"
+            elseif source.guildMaterial then
+                decision="PROPOSE_TO_GUILD_MASTER"
+                reason="Guild master identified; physical loot candidate and any unsent reservations need manual review"
             else
                 decision="PROPOSE_TO_LEADER"
                 reason="No SAVED reservation found; guild/other clients must verify first"
@@ -111,14 +117,20 @@ function P:Build()
         else
             decision="HOLD_UNCERTAIN"
         end
-        local proposed=decision=="PROPOSE_TO_LEADER"
+        local proposed=decision=="PROPOSE_TO_LEADER" or
+            decision=="PROPOSE_TO_GUILD_MASTER"
         if proposed then result.proposed=result.proposed+1
         else result.held=result.held+1 end
         result.rows[#result.rows+1]={
             itemID=source.itemID,itemName=source.itemName,
             itemLink=source.itemLink,quantity=source.quantity,
             slotIndex=source.slotIndex,category=source.category,
-            leader=source.leader,proposedRecipient=proposed and source.leader or nil,
+            leader=source.leader,guildMaster=source.guildMaster,
+            guildMaterial=source.guildMaterial==true,
+            recipientKind=proposed and (source.guildMaterial and
+                "GUILD_MASTER" or "RAID_LEADER") or nil,
+            proposedRecipient=proposed and (source.guildMaterial and
+                source.guildMaster or source.leader) or nil,
             sourceStatus=source.status,decision=decision,reason=reason,
             need=source.need,greed=source.greed,
             receiptPending=source.receiptPending or 0,
@@ -128,7 +140,7 @@ function P:Build()
         }
     end
     result.leader=scanned[1].leader
-    result.message="DRY RUN: "..result.proposed.." proposals for leader review; "..
-        result.held.." holds. ZERO automatic or physical item transfers."
+    result.message="DRY RUN: "..result.proposed.." proposal(s) for manual review; "..
+        result.held.." holds. Recipients are informational; no candidate verified. ZERO physical transfers."
     return result
 end

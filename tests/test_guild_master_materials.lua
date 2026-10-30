@@ -32,7 +32,8 @@ GetLootSlotLink=function(i)
     local id=slots[i]
     return id and ("|Hitem:"..id..":0|h[Item "..id.."]|h") or nil
 end
-GetLootSlotInfo=function()return nil,nil,1,2,false end
+local stackCount=1
+GetLootSlotInfo=function()return nil,nil,stackCount,2,false end
 local specialType=false
 local specialQuality=false
 GetItemInfo=function(id)
@@ -108,6 +109,21 @@ specialQuality=true
 assert(not T:Review(target),
     "transfer validation cannot bypass special rarity")
 specialQuality=false
+stackCount=nil
+assert(G:Scan()[1].status=="LOOT_INFO_UNKNOWN" and
+    not T:Review(target),
+    "missing loot stack count cannot silently be treated as one item")
+stackCount=1.5
+assert(G:Scan()[1].status=="LOOT_INFO_UNKNOWN" and
+    not T:Review(target),
+    "fractional/invalid stack count cannot enable physical transfer")
+stackCount=1
+local slotInfo=GetLootSlotInfo
+GetLootSlotInfo=nil
+assert(G:Scan()[1].status=="LOOT_INFO_UNKNOWN" and
+    not T:Review(target),
+    "missing GetLootSlotInfo API cannot enable Guild transfer")
+GetLootSlotInfo=slotInfo
 assert(T:Review(target))
 assert(T.review.context.recipientKind=="GUILD_MASTER" and
     T.review.context.leader=="GuildBoss")

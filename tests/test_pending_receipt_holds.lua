@@ -6,6 +6,7 @@ local calls=0
 GiveMasterLoot=function()calls=calls+1;error("NO physical awards")end
 RandomRoll=function()calls=calls+1;error("NO rolls")end
 local ids={17010,17011,17012,17013,17014,17015}
+GetLootThreshold=function()return 1 end
 GetNumLootItems=function()return #ids end
 GetLootSlotLink=function(slot)
     local id=ids[slot]

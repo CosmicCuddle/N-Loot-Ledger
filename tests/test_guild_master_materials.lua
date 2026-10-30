@@ -36,6 +36,8 @@ GetLootSlotInfo=function()return nil,nil,1,2,false end
 GetItemInfo=function(id)
     return "Item "..id,nil,id==18563 and 5 or 2,nil,nil,"Trade Goods"
 end
+local threshold=1
+GetLootThreshold=function() return threshold end
 GiveMasterLoot=function(slot,idx)
     count=count+1;given[#given+1]={slot=slot,idx=idx}
 end
@@ -67,6 +69,12 @@ assert(rows[1].status=="GUILD_REVIEW" and
 assert(rows[2].status=="GUILD_REVIEW" and
     rows[2].guildMaterial,"Core of Earth (7075) can be reviewed")
 assert(rows[3].status=="SPECIAL_HOLD","Windseeker never guild-routed")
+threshold=3
+local blocked=G:Scan()
+assert(blocked[1].status=="BELOW_THRESHOLD" and
+    blocked[2].status=="BELOW_THRESHOLD",
+    "ordinary materials below Master Loot threshold cannot be assigned")
+threshold=1
 local target={slotIndex=1,itemID=17011,quantity=1,
     itemLink=rows[1].itemLink}
 assert(T:Review(target))

@@ -8,7 +8,16 @@ local T=NLL.GuildLootTransfer
 T.review=nil
 T.liveRequests=T.liveRequests or {}
 local ARM_SECONDS=15
-local function Now() return GetTime and GetTime() or 0 end
+-- A missing or invalid client clock must NEVER leave an armed award
+-- permanently confirmable. Zero itself is a valid early uptime value.
+local function Now()
+    if type(GetTime)~="function" then return nil end
+    local value=GetTime()
+    if type(value)~="number" or value~=value or value<0 then
+        return nil
+    end
+    return value
+end
 local function Key(s) return string.lower((tostring(s or ""):match("^([^%-]+)") or "")) end
 local function ItemID(link)
     return type(link)=="string" and tonumber(link:match("item:(%d+)")) or nil
@@ -218,7 +227,12 @@ function T:Arm()
         self:Cancel()
         return false,"Recipient or loot slot changed; start review again."
     end
-    review.armedAt=Now()
+    local armedAt=Now()
+    if armedAt==nil then
+        self:Cancel()
+        return false,"WoW clock unavailable; cannot arm a physical loot request."
+    end
+    review.armedAt=armedAt
     return true,"ARMED for "..fresh.leader.." / "..fresh.link..
         ". Confirm GIVE ITEM within 15 seconds, otherwise cancel."
 end
@@ -228,9 +242,11 @@ function T:Commit()
     if not review or not review.armedAt then
         return false,"Guild item transfer has not been armed."
     end
-    if Now()-review.armedAt>ARM_SECONDS then
+    local now=Now()
+    if type(review.armedAt)~="number" or now==nil or
+       now<review.armedAt or now-review.armedAt>ARM_SECONDS then
         self:Cancel()
-        return false,"Confirmation expired; review and arm again."
+        return false,"Confirmation expired or WoW clock changed; review and arm again."
     end
     local ok,fresh=self:Validate(review.target)
     if not ok then self:Cancel();return false,fresh end

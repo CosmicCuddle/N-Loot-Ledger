@@ -175,6 +175,14 @@ function G:Classify(itemID, quality, itemType)
         (type(ITEM_CLASS_QUESTITEM)=="string" and
          itemType==ITEM_CLASS_QUESTITEM)
     if self:IsGuildMaterial(itemID) then
+        -- Whitelisting an item ID must never override a custom server's
+        -- quest/legendary/recipe classification or high-rarity safeguards.
+        if questType or (item and item.legendary) or
+           classification=="Recipe" or
+           (type(quality)=="number" and quality>=5) then
+            return "SPECIAL_HOLD",classification,
+                "Guild item is quest/legendary/recipe/special; manual only"
+        end
         if type(quality)~="number" or not itemType then
             return "INFORMATION_MISSING","Guild material",
                 "Item quality/type unavailable; open loot/item cache"
@@ -240,11 +248,6 @@ function G:Scan()
             if locked or quantity<1 then
                 status="LOCKED"
                 reason="Loot slot is locked or empty"
-            elseif self:IsGuildMaterial(id) and threshold and
-                   type(quality)=="number" and quality<threshold then
-                status="BELOW_THRESHOLD"
-                reason="Below WoW Master Loot threshold. Cannot assign "..
-                    "with Master Looter; loot normally, then trade if allowed."
             elseif category=="SPECIAL_HOLD" then
                 status="SPECIAL_HOLD"
             elseif summary.need>0 or summary.greed>0 then
@@ -259,6 +262,15 @@ function G:Scan()
                     "Unknown records/local wishlist/pending Inbox - do not auto-route"
             elseif category=="INFORMATION_MISSING" then
                 status="UNRESOLVED"
+            elseif self:IsGuildMaterial(id) and
+                   (not threshold or threshold<0 or threshold>7) then
+                status="THRESHOLD_UNKNOWN"
+                reason="Cannot verify WoW Master Loot threshold; no guild transfer"
+            elseif self:IsGuildMaterial(id) and
+                   type(quality)=="number" and quality<threshold then
+                status="BELOW_THRESHOLD"
+                reason="Below WoW Master Loot threshold. Cannot assign "..
+                    "with Master Looter; loot normally, then trade if allowed."
             else
                 status="GUILD_REVIEW"
                 reason="No saved NEED/GREED found; VERIFY with guild before directing to leader"

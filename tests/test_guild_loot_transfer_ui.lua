@@ -38,6 +38,10 @@ itemRows[1].guildMaterial=true
 itemRows[1].guildMaster="GuildBoss"
 itemRows[4].guildMaterial=true
 itemRows[4].guildMaster=nil -- guild master not in the verified roster
+itemRows[5].guildMaterial=true
+itemRows[5].guildMaster="GuildBoss"
+itemRows[5].status="THRESHOLD_UNKNOWN"
+itemRows[5].reason="Unverified Blizzard quality threshold"
 local previewLive=true
 NaxxLootLottery={
     UI={mainFrame=frame()},
@@ -104,6 +108,10 @@ ok(UI.guildLootRows[1].reviewButton.label.text=="Guild" and
     "only guild materials gain a labelled Guild review control")
 ok(UI.guildLootRows[4].reviewButton.enabled==false,
     "unverified/missing guild master disables material transfer button")
+ok(UI.guildLootRows[5].reviewButton.enabled==false and
+    UI.guildLootRows[5].reasonText.text:find(
+        "LOOT THRESHOLD UNKNOWN",1,true),
+    "unverifiable loot threshold shows concise reason and disables Guild")
 ok(UI.guildLootArm.label.text=="Arm Transfer",
     "before Review, transfer button makes no recipient claim")
 ok(UI.guildLootRows[1].reviewButton.width==90 and

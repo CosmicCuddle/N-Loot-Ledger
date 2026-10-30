@@ -927,6 +927,8 @@ function UI:RefreshGuildLootDialog()
                 summary="BELOW LOOT THRESHOLD - loot normally; cannot Master Loot."
             elseif item.status=="THRESHOLD_UNKNOWN" then
                 summary="LOOT THRESHOLD UNKNOWN - Guild transfer blocked."
+            elseif item.status=="LOOT_INFO_UNKNOWN" then
+                summary="LOOT SLOT COUNT UNKNOWN - Guild transfer blocked."
             elseif item.guildMaterial and item.status=="GUILD_REVIEW" then
                 summary="Guild material | Master: "..tostring(
                     item.guildMaster or "UNAVAILABLE - open Guild roster")

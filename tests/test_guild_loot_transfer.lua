@@ -15,6 +15,15 @@ local dualLeader=false
 GetRaidRosterInfo=function(i)
     return roster[i], (i==1 or (i==2 and dualLeader)) and 2 or 0
 end
+-- Guild master and raid leader intentionally match in the legacy fixture;
+-- a separate regression covers cases where they differ or the GM is absent.
+GetNumGuildMembers=function() return 2 end
+GetGuildRosterInfo=function(i)
+    if i==1 then
+        return "Leader","Guild Master",0,nil,nil,nil,nil,nil,true
+    end
+    return "Pikeotter","Member",2,nil,nil,nil,nil,nil,true
+end
 local master=1
 GetLootMethod=function()return "master",nil,master end
 local selectedSlot=1

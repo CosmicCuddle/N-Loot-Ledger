@@ -8,6 +8,8 @@ local function link(i)
     local id=ids[i]
     return id and id>0 and ("|Hitem:"..id..":0|h[Item "..id.."]|h") or nil
 end
+-- The 3.3.5a client exposes the current Master Loot quality threshold.
+GetLootThreshold=function()return 1 end
 GetNumLootItems=function()return #ids end
 GetLootSlotLink=function(i)return link(i)end
 GetLootSlotInfo=function(i)return nil,nil,i==1 and 3 or 1,4,false end

@@ -226,9 +226,15 @@ function G:Scan()
         local id=ItemID(link)
         if id then
             local quantity,locked=1,false
+            local lootInfoKnown=false
             if type(GetLootSlotInfo)=="function" then
                 local _,_,count,_,isLocked=GetLootSlotInfo(slot)
-                quantity=tonumber(count) or 1
+                local parsed=tonumber(count)
+                -- Never assume a missing/invalid live stack count is 1:
+                -- a later Master Loot request would be based on guesswork.
+                lootInfoKnown=parsed~=nil and parsed%1==0 and
+                    parsed>=0
+                if lootInfoKnown then quantity=parsed end
                 locked=isLocked==true
             end
             local name,quality,itemType
@@ -262,6 +268,9 @@ function G:Scan()
                     "Unknown records/local wishlist/pending Inbox - do not auto-route"
             elseif category=="INFORMATION_MISSING" then
                 status="UNRESOLVED"
+            elseif not lootInfoKnown then
+                status="LOOT_INFO_UNKNOWN"
+                reason="WoW loot-slot stack count unavailable; no transfer"
             elseif self:IsGuildMaterial(id) and
                    (not threshold or threshold<0 or threshold>7) then
                 status="THRESHOLD_UNKNOWN"
@@ -280,6 +289,7 @@ function G:Scan()
                 guildMaterial=self:IsGuildMaterial(id),
                 guildMaster=guildMaster,
                 itemLink=link,slotIndex=slot,quantity=quantity,
+                lootInfoKnown=lootInfoKnown,
                 category=itemType or "Unclassified item",status=status,
                 reason=reason or "Manual review",leader=leader,
                 need=summary.need,greed=summary.greed,

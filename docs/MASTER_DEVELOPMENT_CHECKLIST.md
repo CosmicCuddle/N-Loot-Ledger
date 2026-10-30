@@ -635,14 +635,17 @@ current SavedVariables inventory.
       GetLootSlotInfo is missing or provides an absent/fractional count.
       Shows 'x?' instead of a guessed stack of 1; GUILD_REVIEW and
       manual GiveMasterLoot validation fail closed until metadata is valid.
+- [x] Built: guild physical transfer cannot be armed if the 15-second
+      WoW uptime clock is missing/invalid, and cannot be confirmed if
+      that clock disappears, moves backwards or expires while armed.
+      Review/Arm/Confirm still require distinct owner clicks.
 - [x] Automated Lua 5.1 tests passed on code/test head
-      `4e9eac36f095dea352a762141c11459a194d2880` via
-      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41051971285)
-      and [Lua regression workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41051980829),
+      `c9767d955a423adda702a5503ea83b4b6c30a729` via
+      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41052558042)
       including real MC policy, manual receipt reconciliation, guild
       master/leader labels, special-item classification, missing threshold,
       distinct-recipient dry-run, unknown loot metadata, pending receipt
-      holds and modal geometry.
+      holds, clock rollback/expiry and modal geometry.
 - [ ] Maintenance read-only feasibility investigation opened at
       [coordination #2](https://github.com/CosmicCuddle/Naxxramas-Server-Coordination/issues/2):
       trusted unique loot-source evidence for distinct later material drops.

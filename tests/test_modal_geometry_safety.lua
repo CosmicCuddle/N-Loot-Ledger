@@ -141,14 +141,15 @@ ok(rightGap(UI.guildLootPrev,UI.guildLootNext)>=6,
    "guild Prev and Next never overlap")
 ok(rightGap(UI.guildLootNext,UI.guildLootInvestigate)>=20,
    "guild investigate action is separated from the pager")
--- Direct button refs only for actions the UI exports.
-local guildArm,guildGive,guildDry
-for _,f in ipairs(frames) do
-    if f.label and f.label.text=="Arm Leader Transfer" then guildArm=f end
-    if f.label and f.label.text=="CONFIRM GIVE ITEM" then guildGive=f end
-    if f.label and f.label.text=="Dry Run: OFF" then guildDry=f end
-end
-ok(guildArm and guildGive and guildDry,"all three manual/dry-run controls found")
+-- Resolve controls by their exported UI references, not a mutable
+-- recipient-specific button caption (Guild Master vs Raid Leader).
+local guildArm,guildGive,guildDry=
+    UI.guildLootArm,UI.guildLootConfirm,UI.guildLootDryRun
+ok(guildArm and guildGive and guildDry and
+   guildArm.label.text=="Arm Transfer" and
+   guildGive.label.text=="CONFIRM GIVE ITEM" and
+   guildDry.label.text=="Dry Run: OFF",
+   "all three labelled manual/dry-run controls found")
 ok(rightGap(guildArm,guildGive)>=6 and
    rightGap(guildGive,guildDry)>=6,
    "guild dangerous and preview controls remain separate")

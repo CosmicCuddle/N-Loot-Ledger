@@ -631,13 +631,22 @@ current SavedVariables inventory.
       propose ordinary unreserved loot to the raid leader. Candidate
       verification and physical loot requests still require separate
       manual review; preview never awards.
+- [x] Built: live Guild Loot scanner now holds entries if WoW
+      GetLootSlotInfo is missing or provides an absent/fractional count.
+      Shows 'x?' instead of a guessed stack of 1; GUILD_REVIEW and
+      manual GiveMasterLoot validation fail closed until metadata is valid.
 - [x] Automated Lua 5.1 tests passed on code/test head
-      `79b7812058b6ee26c158d90ec4cdb955ea5ffdf9` via
-      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41050340324)
-      and [Lua regression workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41050349981),
+      `4e9eac36f095dea352a762141c11459a194d2880` via
+      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41051971285)
+      and [Lua regression workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41051980829),
       including real MC policy, manual receipt reconciliation, guild
-      master/leader labels, custom item classification, missing threshold,
-      distinct-recipient dry-run, pending receipt holds and modal geometry.
+      master/leader labels, special-item classification, missing threshold,
+      distinct-recipient dry-run, unknown loot metadata, pending receipt
+      holds and modal geometry.
+- [ ] Maintenance read-only feasibility investigation opened at
+      [coordination #2](https://github.com/CosmicCuddle/Naxxramas-Server-Coordination/issues/2):
+      trusted unique loot-source evidence for distinct later material drops.
+      **No core change is approved**; preserve same-item-ID NO RETRY.
 - [ ] WoW 3.3.5a acceptance: Windseeker preview/tickets without a real
       legendary transfer; materials vs loot-quality threshold; guild
       master distinct from raid leader; receipt UI and no-retry behaviour.

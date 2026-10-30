@@ -625,13 +625,19 @@ current SavedVariables inventory.
       Missing/out-of-range GetLootThreshold now blocks all physical Guild
       material routing with an explanatory disabled UI state. Retained
       reserved, unknown-receipt, no-retry and no-release protections.
+- [x] Built: read-only Guild dry-run now proposes whitelisted
+      materials to the actual verified guild master (not raid leader),
+      holds them when guild master is offline/absent, and continues to
+      propose ordinary unreserved loot to the raid leader. Candidate
+      verification and physical loot requests still require separate
+      manual review; preview never awards.
 - [x] Automated Lua 5.1 tests passed on code/test head
-      `8f00b2667c49f456f8ebb473064cca392882a52b` via
-      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41047295866)
-      and [Lua regression workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41047301869),
+      `79b7812058b6ee26c158d90ec4cdb955ea5ffdf9` via
+      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41050340324)
+      and [Lua regression workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41050349981),
       including real MC policy, manual receipt reconciliation, guild
       master/leader labels, custom item classification, missing threshold,
-      dry-run holds and modal geometry.
+      distinct-recipient dry-run, pending receipt holds and modal geometry.
 - [ ] WoW 3.3.5a acceptance: Windseeker preview/tickets without a real
       legendary transfer; materials vs loot-quality threshold; guild
       master distinct from raid leader; receipt UI and no-retry behaviour.

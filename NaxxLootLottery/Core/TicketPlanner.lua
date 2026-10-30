@@ -8,6 +8,27 @@ local function ByName(a, b)
     return string.lower(a.character or "") < string.lower(b.character or "")
 end
 
+local function CharacterKey(name)
+    return string.lower((tostring(name or ""):match("^([^%-]+)") or ""))
+end
+
+-- Only saved NEED/GREED interests, never a guess or a UI-added candidate.
+-- The two Windseeker halves have a separate equal-ticket reservation policy.
+local function HasSavedLegendaryReservation(itemID,match)
+    local character=CharacterKey(match.character)
+    for _,plan in pairs(NLL.db and NLL.db.gearNeeds or {}) do
+        if type(plan)=="table" and
+           tonumber(plan.itemID)==tonumber(itemID) and
+           plan.raidKey=="MOLTEN_CORE" and
+           plan.status==match.interestStatus and
+           (plan.status=="NEEDED" or plan.status=="GREED") and
+           CharacterKey(plan.character)==character then
+            return true
+        end
+    end
+    return false
+end
+
 function Planner:BuildPreview(entry, matches, options)
     options = options or {}
     -- Simulated entries are accepted ONLY by the explicit sandbox caller.
@@ -38,9 +59,12 @@ function Planner:BuildPreview(entry, matches, options)
         return result
     end
     local item = NLL.Data.MoltenCore:GetItem(entry.itemID)
-    if entry.manualOnly or item.manualOnly or
+    local legendaryReservation=not sandbox and item.legendary and
+        item.reservationLottery==true and
+        (item.itemID==18563 or item.itemID==18564)
+    if (not legendaryReservation and (entry.manualOnly or item.manualOnly)) or
         (not sandbox and NLL.PriorityEngine:GetState(raidKey, entry.itemID) ==
-        NLL.PriorityEngine.STATUS.MANUAL_ONLY) then
+        NLL.PriorityEngine.STATUS.MANUAL_ONLY and not legendaryReservation) then
         result.message = "Guild/manual item: no normal lottery."
         return result
     end
@@ -51,7 +75,8 @@ function Planner:BuildPreview(entry, matches, options)
             result.message = "Simulation needs a complete priority rule or suggestion."
             return result
         end
-    elseif NLL.PriorityEngine:GetState(raidKey, entry.itemID) ~=
+    elseif not legendaryReservation and
+        NLL.PriorityEngine:GetState(raidKey, entry.itemID) ~=
         NLL.PriorityEngine.STATUS.CONFIGURED then
         result.message = "Priority rule must be fully configured first."
         return result
@@ -93,15 +118,28 @@ function Planner:BuildPreview(entry, matches, options)
                 NLL.CandidateReview:IsExcluded(entry,m.character) then
                 table.insert(result.excluded, {match=m, reason="Leader exclusion: " ..
                     tostring(NLL.CandidateReview:IsExcluded(entry,m.character))})
+            elseif legendaryReservation and
+                not HasSavedLegendaryReservation(entry.itemID,m) then
+                table.insert(result.excluded,
+                    {match=m, reason="No saved legendary reservation"})
             elseif not m.inRaid or not m.online or m.eligiblePresence == false then
                 table.insert(result.excluded, {match=m, reason="Not present/online"})
             elseif not m.classFile or not NLL:IsValidClass(m.classFile) then
                 table.insert(unresolved, {match=m, reason="Class unknown"})
-            elseif not m.role or not NLL.roleLabels[m.role] then
+            elseif legendaryReservation and
+                not NLL.PriorityEngine:IsClassEligible(
+                    raidKey,entry.itemID,m.classFile) then
+                table.insert(result.excluded,
+                    {match=m, reason="Legendary class restriction"})
+            elseif not legendaryReservation and
+                (not m.role or not NLL.roleLabels[m.role]) then
                 table.insert(unresolved, {match=m, reason="Role unassigned"})
             else
                 local tier, explanation
-                if sandbox then
+                if legendaryReservation then
+                    tier=1 -- equally weighted reserved eligible characters
+                    explanation="Equal reserved Windseeker ticket"
+                elseif sandbox then
                     if not NLL.PriorityEngine:IsClassEligible(
                         raidKey, entry.itemID, m.classFile, options.rule) then
                         tier = NLL.PriorityEngine.EXCLUDE
@@ -180,6 +218,13 @@ function Planner:BuildPreview(entry, matches, options)
         return result
     end
     result.ready = true
+    if legendaryReservation then
+        result.message="WINDSEEKER RESERVATIONS: equal "..result.selectionType..
+            " tickets for "..#result.current..
+            " saved, present, eligible character(s). Manual award and "..
+            "recipient receipt required AFTER the roll."
+        return result
+    end
     if result.selectionType == "GREED" then
         result.message = "GREED lottery: " .. #result.current ..
             " equal-interest candidate(s), after all NEED tiers are empty. " ..

@@ -87,7 +87,18 @@ function UI:CreateAwardReview()
         end
         local ok,msg=NLL.AwardWorkflow:Confirm()
         NLL:Print(msg)
-        if ok then frame:Hide() end
+        if ok then
+            frame:Hide()
+            -- Winning a ticket alone is NOT delivery. Once the leader has
+            -- explicitly reported the separate WoW award, immediately
+            -- present the existing receipt check. The second confirmation
+            -- alone marks matching Gear Plans OBTAINED.
+            if not entry.simulationOnly and UI.OpenReceiptReview and
+               NLL.LootReceiptTracker and
+               NLL.LootReceiptTracker:Get(entry.dropUID) then
+                UI:OpenReceiptReview(entry)
+            end
+        end
         if UI.RefreshCurrentLootPanel then UI:RefreshCurrentLootPanel() end
         if UI.RefreshOverview then UI:RefreshOverview() end
     end)

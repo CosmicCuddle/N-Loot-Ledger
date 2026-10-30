@@ -19,6 +19,48 @@ local function LinkName(link)
     return type(link)=="string" and link:match("%[([^%]]+)%]") or nil
 end
 
+-- Explicit guild-store whitelist; never infer that every item with no
+-- NLL reservation should be automatically sent to the guild master.
+local GUILD_MATERIALS={
+    [17011]=true, -- Lava Core
+    [17010]=true, -- Fiery Core
+    [17012]=true, -- Core Leather
+    [11382]=true, -- Blood of the Mountain
+    [7075]=true,  -- Core of Earth (may be absent from MC curated list)
+}
+function G:IsGuildMaterial(itemID)
+    return GUILD_MATERIALS[tonumber(itemID)]==true
+end
+
+-- This is the GUILD MASTER (rankIndex 0), not the raid leader (rank 2).
+-- Roster might be missing/stale on 3.3.5a; fail closed instead of
+-- guessing. Verify one online guild master is in the current raid.
+function G:GetGuildMaster()
+    if type(GetNumGuildMembers)~="function" or
+       type(GetGuildRosterInfo)~="function" or
+       type(GetNumRaidMembers)~="function" or
+       type(GetRaidRosterInfo)~="function" then
+        return nil
+    end
+    local master
+    for i=1,(GetNumGuildMembers() or 0) do
+        local name,_,rank,_,_,_,_,_,online=GetGuildRosterInfo(i)
+        if name and rank==0 then
+            if master or online~=true then return nil end
+            master=name
+        end
+    end
+    if not master then return nil end
+    local count=0
+    for i=1,(GetNumRaidMembers() or 0) do
+        local member=GetRaidRosterInfo(i)
+        if member and NameKey(member)==NameKey(master) then
+            count=count+1
+        end
+    end
+    return count==1 and master or nil
+end
+
 function G:GetLeader()
     if type(GetNumRaidMembers)~="function" or
        type(GetRaidRosterInfo)~="function" or
@@ -132,6 +174,21 @@ function G:Classify(itemID, quality, itemType)
     local questType=itemType=="Quest" or
         (type(ITEM_CLASS_QUESTITEM)=="string" and
          itemType==ITEM_CLASS_QUESTITEM)
+    if self:IsGuildMaterial(itemID) then
+        -- Whitelisting an item ID must never override a custom server's
+        -- quest/legendary/recipe classification or high-rarity safeguards.
+        if questType or (item and item.legendary) or
+           classification=="Recipe" or
+           (type(quality)=="number" and quality>=5) then
+            return "SPECIAL_HOLD",classification,
+                "Guild item is quest/legendary/recipe/special; manual only"
+        end
+        if type(quality)~="number" or not itemType then
+            return "INFORMATION_MISSING","Guild material",
+                "Item quality/type unavailable; open loot/item cache"
+        end
+        return nil,"Guild material",nil
+    end
     if (item and (item.legendary or item.manualOnly)) or questType or
        (type(quality)=="number" and quality>=5) then
         return "SPECIAL_HOLD",classification,
@@ -158,6 +215,7 @@ function G:Scan()
         return rows,"WoW loot-slot APIs unavailable"
     end
     local leader=self:GetLeader()
+    local guildMaster=self:GetGuildMaster()
     if not leader then
         return rows,"Raid leader unavailable/ambiguous - no allocation decisions"
     end
@@ -168,9 +226,15 @@ function G:Scan()
         local id=ItemID(link)
         if id then
             local quantity,locked=1,false
+            local lootInfoKnown=false
             if type(GetLootSlotInfo)=="function" then
                 local _,_,count,_,isLocked=GetLootSlotInfo(slot)
-                quantity=tonumber(count) or 1
+                local parsed=tonumber(count)
+                -- Never assume a missing/invalid live stack count is 1:
+                -- a later Master Loot request would be based on guesswork.
+                lootInfoKnown=parsed~=nil and parsed%1==0 and
+                    parsed>=0
+                if lootInfoKnown then quantity=parsed end
                 locked=isLocked==true
             end
             local name,quality,itemType
@@ -185,6 +249,8 @@ function G:Scan()
             category,_,reason=self:Classify(id,quality,itemType)
             local summary=self:GetReservationSummary(id)
             local status
+            local threshold=type(GetLootThreshold)=="function" and
+                tonumber(GetLootThreshold()) or nil
             if locked or quantity<1 then
                 status="LOCKED"
                 reason="Loot slot is locked or empty"
@@ -202,13 +268,28 @@ function G:Scan()
                     "Unknown records/local wishlist/pending Inbox - do not auto-route"
             elseif category=="INFORMATION_MISSING" then
                 status="UNRESOLVED"
+            elseif not lootInfoKnown then
+                status="LOOT_INFO_UNKNOWN"
+                reason="WoW loot-slot stack count unavailable; no transfer"
+            elseif self:IsGuildMaterial(id) and
+                   (not threshold or threshold<0 or threshold>7) then
+                status="THRESHOLD_UNKNOWN"
+                reason="Cannot verify WoW Master Loot threshold; no guild transfer"
+            elseif self:IsGuildMaterial(id) and
+                   type(quality)=="number" and quality<threshold then
+                status="BELOW_THRESHOLD"
+                reason="Below WoW Master Loot threshold. Cannot assign "..
+                    "with Master Looter; loot normally, then trade if allowed."
             else
                 status="GUILD_REVIEW"
                 reason="No saved NEED/GREED found; VERIFY with guild before directing to leader"
             end
             rows[#rows+1]={
                 itemID=id,itemName=name or LinkName(link) or ("Item "..id),
+                guildMaterial=self:IsGuildMaterial(id),
+                guildMaster=guildMaster,
                 itemLink=link,slotIndex=slot,quantity=quantity,
+                lootInfoKnown=lootInfoKnown,
                 category=itemType or "Unclassified item",status=status,
                 reason=reason or "Manual review",leader=leader,
                 need=summary.need,greed=summary.greed,

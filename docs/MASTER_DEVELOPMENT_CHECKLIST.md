@@ -585,6 +585,92 @@ not authorisations for a live server change or actual item award.
 - [ ] Fix [#39 UI foreground buff overlap](https://github.com/CosmicCuddle/N-Loot-Ledger/issues/39) in a **new** draft only after functional tests. 
 - [ ] Full multi-client receipt and release acceptance remain open; public prerelease is not a stable release or PR merge.
 
+## 30 October 2026 live-raid feedback and C16 draft status (PRs #40/#41)
+
+**Status addendum, NOT a new full audit.** Earlier master audit date is
+18 October 2026. Current installed addon build/version has not been
+independently reconfirmed after the owner's latest raid feedback.
+Never substitute historical 604-plan or 636-plan screenshot counts for a
+current SavedVariables inventory.
+
+**NLL-040 — Live UI/Playerbot OBTAINED emergency; draft [#40](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/40)**
+- [x] Built: empty Delivery Investigations explains no recorded attempt;
+      stale overlay disarmed on navigation; exact bot/item manual ownership
+      attestation logs evidence without forging an independent receipt.
+- [x] CI passed on PR head `d2e787cc8e84b05284811afecec0f4292a9c2ae2`
+      (Lua 5.1 and no-release test artifact).
+- [x] Owner reported the prior emergency correction worked in game;
+      this is **limited functional feedback**, not full PR acceptance or
+      independent verification of all receipt and no-retry paths.
+- [ ] Complete exact-build 3.3.5a UI and preservation regression
+      (large Gear Plans, Escape/navigation, old receipts/history).
+- [ ] Owner-approved merge/release. Keep draft and no auto awards.
+
+**NLL-041 — Reserved Windseeker/guild-material C16; stacked draft [#41](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/41)**
+- [x] Built: 18563/18564 use saved class-eligible reservation pools,
+      NEED before GREED with equal tickets; manual award still separate.
+- [x] Built: Lava/Fiery Core, Core Leather, Blood of Mountain, Core of Earth
+      use Guild review; verified guild master (not assumed raid leader),
+      separate opt-ins, exact candidate and no-retry locks.
+- [x] Built: leader-reported manual WoW award opens the existing receipt
+      confirmation; a roll itself never marks a plan OBTAINED.
+- [x] Built: a previously manually attested OBTAINED bot plan can later
+      complete an exact award-backed human receipt review if its
+      original saved attestation audit matches; never bypass no-retry.
+- [x] Built: Guild modal now shows "Arm Guild Master" only when
+      verified, "Arm Raid Leader" on ordinary item reviews, and disables
+      material transfer when the guild master is unavailable.
+- [x] Built: explicit Guild material IDs cannot override quest,
+      recipe, legendary or high-rarity special holds on custom servers.
+      Missing/out-of-range GetLootThreshold now blocks all physical Guild
+      material routing with an explanatory disabled UI state. Retained
+      reserved, unknown-receipt, no-retry and no-release protections.
+- [x] Built: read-only Guild dry-run now proposes whitelisted
+      materials to the actual verified guild master (not raid leader),
+      holds them when guild master is offline/absent, and continues to
+      propose ordinary unreserved loot to the raid leader. Candidate
+      verification and physical loot requests still require separate
+      manual review; preview never awards.
+- [x] Built: live Guild Loot scanner now holds entries if WoW
+      GetLootSlotInfo is missing or provides an absent/fractional count.
+      Shows 'x?' instead of a guessed stack of 1; GUILD_REVIEW and
+      manual GiveMasterLoot validation fail closed until metadata is valid.
+- [x] Built: guild physical transfer cannot be armed if the 15-second
+      WoW uptime clock is missing/invalid, and cannot be confirmed if
+      that clock disappears, moves backwards or expires while armed.
+      Review/Arm/Confirm still require distinct owner clicks.
+- [x] Automated Lua 5.1 tests passed on code/test head
+      `c9767d955a423adda702a5503ea83b4b6c30a729` via
+      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41052558042)
+      including real MC policy, manual receipt reconciliation, guild
+      master/leader labels, special-item classification, missing threshold,
+      distinct-recipient dry-run, unknown loot metadata, pending receipt
+      holds, clock rollback/expiry and modal geometry.
+- [ ] Maintenance read-only feasibility investigation opened at
+      [coordination #2](https://github.com/CosmicCuddle/Naxxramas-Server-Coordination/issues/2):
+      trusted unique loot-source evidence for distinct later material drops.
+      **No core change is approved**; preserve same-item-ID NO RETRY.
+- [ ] Owner first-pass C16 read-only client check (no live transfer):
+      use the exact passing #41 test-only artifact + its BUILD_INFO SHA,
+      back up the *current* installed addon and all relevant SavedVariables,
+      confirm preserved Gear Plan count (owner's earlier 636 screenshot is
+      historical, not a constant), /nll status, old history and all physical
+      consent toggles OFF. The old dev19/604 guide is NOT this package.
+      [Short owner instructions](2026-10-30_MC_WINNER_BINDINGS_GUILD_OWNER_ACCEPTANCE.md#first-controlled-client-session--read-only-gate-no-raid-loot)
+- [ ] WoW 3.3.5a acceptance after the read-only gate: Windseeker
+      preview/tickets without a real legendary transfer; materials vs
+      loot-quality threshold; guild master distinct from raid leader;
+      receipt UI and no-retry behaviour. Owner separately approves any
+      expendable-item physical test.
+- [ ] Owner-approved merge/release. PR #41 depends on draft #40.
+- [ ] Unresolved design limitation: independent same-item-ID guild material
+      copies from different corpses remain blocked by conservative
+      no-retry rule until trustworthy source identity can be verified.
+
+Continue existing release gates: **Built / CI / WoW / Release** separately.
+Do not infer a server receipt from a /roll, cleared slot or successful
+`GiveMasterLoot` API call.
+
 ## Next-development handover rule
 
 Before starting another NLL feature, read this document first,

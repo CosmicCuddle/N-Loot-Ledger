@@ -1,0 +1,67 @@
+name: NLL MC Reserved Legendary + Guild Materials Acceptance (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - fix/nll-reserved-bindings-guild-materials-20261030
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  owner-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact emergency branch
+        uses: actions/checkout@v4
+      - name: Check fixed version and live consent defaults
+        run: |
+          grep -Fxq '## Interface: 30300' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fxq '## SavedVariables: NaxxLootLotteryDB' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fxq '## Version: 0.1.0.29-rc.1-dev20' NaxxLootLottery/NaxxLootLottery.toc
+          grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
+      - name: Install WoW Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.1
+      - name: Parse every addon and test module as Lua 5.1
+        run: find NaxxLootLottery tests -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Protect manual ownership notes and old pending receipts
+        run: lua5.1 tests/test_manual_bot_obtained.lua
+      - name: Run historical and integrated regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in tests/test_*.lua; do echo "Running $f"; lua5.1 "$f"; done
+      - name: Validate deterministic release ZIP format without releasing
+        run: python3 tests/test_release_packaging.py
+      - name: Build emergency test-only artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          python3 scripts/build_release_zip.py --output dist/NLL-MC-bindings-guild-test-ONLY.zip
+          cd dist
+          sha256sum NLL-MC-bindings-guild-test-ONLY.zip > SHA256SUMS.txt
+          {
+            echo 'TEST ONLY - NOT A PUBLISHED RELEASE'
+            echo "Source commit: $GITHUB_SHA"
+            echo 'Based on dev/nll-live-ui-feedback (dev20)'
+            echo 'Back up the live addon folder AND current account SavedVariables first.'
+            echo 'Do not replace addon files in the middle of an encounter.'
+            echo 'Manual OBTAINED: leader-attested Gear Plan only; DOES NOT verify independent delivery, unlock old loot or grant items.'
+            echo 'The TOC/Core version remains dev20; identify this candidate by its SHA256 and source commit.'
+          } > BUILD_INFO.txt
+      - name: Upload owner-controlled test package only
+        uses: actions/upload-artifact@v4
+        with:
+          name: NLL-MC-bindings-guild-${{ github.run_number }}
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            dist/NLL-MC-bindings-guild-test-ONLY.zip
+            dist/SHA256SUMS.txt
+            dist/BUILD_INFO.txt

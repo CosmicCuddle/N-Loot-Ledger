@@ -8,7 +8,16 @@ local T=NLL.GuildLootTransfer
 T.review=nil
 T.liveRequests=T.liveRequests or {}
 local ARM_SECONDS=15
-local function Now() return GetTime and GetTime() or 0 end
+-- A missing or invalid client clock must NEVER leave an armed award
+-- permanently confirmable. Zero itself is a valid early uptime value.
+local function Now()
+    if type(GetTime)~="function" then return nil end
+    local value=GetTime()
+    if type(value)~="number" or value~=value or value<0 then
+        return nil
+    end
+    return value
+end
 local function Key(s) return string.lower((tostring(s or ""):match("^([^%-]+)") or "")) end
 local function ItemID(link)
     return type(link)=="string" and tonumber(link:match("item:(%d+)")) or nil
@@ -155,9 +164,17 @@ function T:Validate(target)
        GetLootSlotLink(row.slotIndex)~=row.itemLink then
         return false,"The exact item/loot slot changed in WoW."
     end
-    local leader=NLL.GuildLootReview:GetLeader()
-    if not leader or Key(leader)~=Key(row.leader) then
-        return false,"Raid leader changed or could not be uniquely verified."
+    local recipientKind=row.guildMaterial and "GUILD_MASTER" or "RAID_LEADER"
+    local leader=row.guildMaterial and
+        NLL.GuildLootReview:GetGuildMaster() or
+        NLL.GuildLootReview:GetLeader()
+    if not leader or
+       (row.guildMaterial and Key(leader)~=Key(row.guildMaster)) or
+       (not row.guildMaterial and Key(leader)~=Key(row.leader)) then
+        return false,row.guildMaterial and
+            "Guild master unavailable, offline or absent from this raid. "..
+            "Open the WoW Guild roster to refresh, then review again." or
+            "Raid leader changed or could not be uniquely verified."
     end
     local match,count=nil,0
     for i=1,40 do
@@ -168,11 +185,12 @@ function T:Validate(target)
         end
     end
     if count~=1 then
-        return false,"Raid leader must occur exactly once in this slot's Master Loot candidates."
+        return false,"Chosen guild/raid leader must occur exactly once in the current Master Loot candidates."
     end
     return true,{
         slot=row.slotIndex,itemID=row.itemID,link=row.itemLink,
-        quantity=row.quantity,leader=leader,candidate=match,
+        quantity=row.quantity,leader=leader,
+        recipientKind=recipientKind,candidate=match,
         startedAt=Now(),
     }
 end
@@ -180,7 +198,8 @@ end
 local function Same(a,b)
     return a and b and a.slot==b.slot and a.itemID==b.itemID and
         a.link==b.link and a.quantity==b.quantity and
-        Key(a.leader)==Key(b.leader) and a.candidate==b.candidate
+        Key(a.leader)==Key(b.leader) and a.candidate==b.candidate and
+        a.recipientKind==b.recipientKind
 end
 
 function T:Review(target)
@@ -192,7 +211,9 @@ function T:Review(target)
         itemLink=data.link,quantity=data.quantity,
     },context=data}
     return true,"Verified "..data.link.." x"..data.quantity..
-        " for raid leader "..data.leader..". ARM requires another click."
+        " for "..(data.recipientKind=="GUILD_MASTER" and
+        "guild master " or "raid leader ")..data.leader..
+        ". ARM requires another click."
 end
 
 function T:Arm()
@@ -206,7 +227,12 @@ function T:Arm()
         self:Cancel()
         return false,"Recipient or loot slot changed; start review again."
     end
-    review.armedAt=Now()
+    local armedAt=Now()
+    if armedAt==nil then
+        self:Cancel()
+        return false,"WoW clock unavailable; cannot arm a physical loot request."
+    end
+    review.armedAt=armedAt
     return true,"ARMED for "..fresh.leader.." / "..fresh.link..
         ". Confirm GIVE ITEM within 15 seconds, otherwise cancel."
 end
@@ -216,9 +242,11 @@ function T:Commit()
     if not review or not review.armedAt then
         return false,"Guild item transfer has not been armed."
     end
-    if Now()-review.armedAt>ARM_SECONDS then
+    local now=Now()
+    if type(review.armedAt)~="number" or now==nil or
+       now<review.armedAt or now-review.armedAt>ARM_SECONDS then
         self:Cancel()
-        return false,"Confirmation expired; review and arm again."
+        return false,"Confirmation expired or WoW clock changed; review and arm again."
     end
     local ok,fresh=self:Validate(review.target)
     if not ok then self:Cancel();return false,fresh end
@@ -236,6 +264,7 @@ function T:Commit()
     local row={
         itemID=fresh.itemID,itemLink=fresh.link,quantity=fresh.quantity,
         slotIndex=fresh.slot,recipient=fresh.leader,
+        recipientKind=fresh.recipientKind,
         operator=UnitName and UnitName("player") or nil,
         candidateIndex=fresh.candidate,
         status="AWARD_OUTCOME_UNKNOWN",

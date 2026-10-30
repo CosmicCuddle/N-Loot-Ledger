@@ -34,6 +34,19 @@ for i=1,8 do
         status=(i==2 and "RESERVED" or "GUILD_REVIEW"),
         reason=(i==2 and "Existing NEED" or "No accepted wishes")}
 end
+itemRows[1].guildMaterial=true
+itemRows[1].guildMaster="GuildBoss"
+itemRows[4].guildMaterial=true
+itemRows[4].guildMaster=nil -- guild master not in the verified roster
+itemRows[5].guildMaterial=true
+itemRows[5].guildMaster="GuildBoss"
+itemRows[5].status="THRESHOLD_UNKNOWN"
+itemRows[5].reason="Unverified Blizzard quality threshold"
+itemRows[6].guildMaterial=true
+itemRows[6].guildMaster="GuildBoss"
+itemRows[6].status="LOOT_INFO_UNKNOWN"
+itemRows[6].lootInfoKnown=false
+itemRows[6].reason="Unverified WoW loot stack count"
 local previewLive=true
 NaxxLootLottery={
     UI={mainFrame=frame()},
@@ -53,7 +66,10 @@ NaxxLootLottery={
         end,
         Review=function(self,target)
             calls.review=calls.review+1
-            self.review={target=target,context={leader="Leader"}}
+            self.review={target=target,context={
+                leader=target.itemID==17001 and "GuildBoss" or "Leader",
+                recipientKind=target.itemID==17001 and
+                    "GUILD_MASTER" or "RAID_LEADER"}}
             return true,"Reviewed exact item "..target.itemID
         end,
         Arm=function(self)
@@ -91,6 +107,23 @@ ok(UI.guildLootArm.enabled==false and UI.guildLootConfirm.enabled==false,
     "no Arm/Confirm actions until a reviewed item is selected")
 ok(UI.guildLootRows[2].reviewButton.enabled==false,
     "reserved gear cannot invoke Review")
+ok(UI.guildLootRows[1].reviewButton.label.text=="Guild" and
+    UI.guildLootRows[1].reasonText.text:find("GuildBoss",1,true) and
+    UI.guildLootRows[3].reviewButton.label.text=="Review",
+    "only guild materials gain a labelled Guild review control")
+ok(UI.guildLootRows[4].reviewButton.enabled==false,
+    "unverified/missing guild master disables material transfer button")
+ok(UI.guildLootRows[5].reviewButton.enabled==false and
+    UI.guildLootRows[5].reasonText.text:find(
+        "LOOT THRESHOLD UNKNOWN",1,true),
+    "unverifiable loot threshold shows concise reason and disables Guild")
+ok(UI.guildLootRows[6].reviewButton.enabled==false and
+    UI.guildLootRows[6].reasonText.text:find(
+        "LOOT SLOT COUNT UNKNOWN",1,true) and
+    UI.guildLootRows[6].nameText.text:find(" x?",1,true),
+    "unknown stack size is shown as x? and cannot enable Guild")
+ok(UI.guildLootArm.label.text=="Arm Transfer",
+    "before Review, transfer button makes no recipient claim")
 ok(UI.guildLootRows[1].reviewButton.width==90 and
     UI.guildLootRows[1].nameText.width==540,
     "review control reserves room in each loot row")
@@ -100,8 +133,9 @@ ok(target.itemID==17001 and target.slotIndex==1,
 UI.guildLootRows[1].reviewButton.events.OnClick(
     UI.guildLootRows[1].reviewButton)
 ok(calls.review==1 and UI.guildLootArm.enabled==true and
-    UI.guildLootConfirm.enabled==false,
-    "Review alone enables Arm, not Give Item")
+    UI.guildLootConfirm.enabled==false and
+    UI.guildLootArm.label.text=="Arm Guild Master",
+    "reviewed material clearly says its actual guild-master recipient")
 ok(calls.commit==0,"no transfer action on opening, browsing, or Review")
 UI.guildLootArm.events.OnClick()
 ok(calls.arm==1 and calls.commit==0 and
@@ -116,8 +150,9 @@ ok(UI.guildLootPageText.text=="Page 2/2" and
     "pagination updates the exact selected recipient target")
 UI.guildLootRows[1].reviewButton.events.OnClick(
     UI.guildLootRows[1].reviewButton)
-ok(calls.review==2 and calls.commit==1,
-    "pagination and reviewing another item does not silently transfer")
+ok(calls.review==2 and calls.commit==1 and
+    UI.guildLootArm.label.text=="Arm Raid Leader",
+    "ordinary unrelated guild-loot review remains raid-leader-labelled")
 previewLive=false
 NaxxLootLottery.GuildLootTransfer:Cancel()
 UI:RefreshGuildLootDialog()

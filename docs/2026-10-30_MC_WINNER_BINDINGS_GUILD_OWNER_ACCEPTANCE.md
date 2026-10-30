@@ -1,0 +1,111 @@
+# NLL Molten Core: reserved Windseeker rolls, bot receipts, guild materials
+Date: 2026-10-30 | Owner acceptance: PENDING | GitHub: DRAFT ONLY
+
+## Live owner findings
+- User reports manual Master Loot succeeded; actual bots now have awarded items.
+- The previous emergency draft lets the leader attest an exact bot/item as locally OBTAINED without rewriting physical receipts.
+- Some saved reservations (both Windseeker binding halves) never opened tickets.
+- Lava Core, Core of Earth and similar reagent drops need a distinct Guild route targeting the real guild master.
+
+## Exact implementation
+1. **Existing normal winner lock is unchanged.** Completing a server roll creates WON_AWAITING_ITEM and captures the winner's saved active NEEDED/GREED Gear Plans. It does **not** mark OBTAINED or call GiveMasterLoot.
+2. After the leader separately records an already-performed WoW manual Master Loot award in Award Winner, NLL now immediately opens the existing two-step **I Checked Inventory -> MARK OBTAINED** receipt UI if this real win has a receipt record. Only after that deliberate confirmation does LootReceiptTracker update matching saved needs and (for the local player only) local wishlist data. This is **not automatic on rolling**; NLL has no independent proof of bot inventory.
+3. For Molten Core item IDs **18563 and 18564**, a controlled reservation-only (NEED first, GREED second) equal-ticket lottery is permitted despite their existing manualOnly data label and missing role-priority configuration. A participant must have an actual saved matching need/greed, be present and online in the raid, have known live/saved class and pass the inherent Warrior/Paladin/Hunter/Rogue class restriction. Leader review/exclusions and all duplicate-winner locks still apply. No legendary is awarded automatically; no unreserved character may be pulled into tickets by UI addition.
+4. Explicit guild material item IDs: **17011 Lava Core, 17010 Fiery Core, 17012 Core Leather, 11382 Blood of the Mountain, 7075 Core of Earth**. A cached, unlocked, unreserved item appears in Guild Loot with a **Guild** review button, not a regular normal ticket. Reserved/uncertain records and other special/legendary/quest items remain held.
+5. Guild material transfer requires the guild member with **rankIndex=0 (actual guild master)** to be online, in the current raid once, and present exactly once in the current Blizzard Master Loot candidate list. If guild master != raid leader, use the guild master; never guess or fallback. The operator must be the designated WoW Master Looter, with BOTH direct-award and guild-transfer toggles explicitly opted in. Review -> Arm -> Confirm rechecks exact item link/slot/quantity/recipient/candidate each time. A physical attempt is auditable before GiveMasterLoot; request success is not receipt evidence; no retry of the same item ID without future trusted server-side instance evidence.
+
+## Testing
+- Lua 5.1 full historic suite + all source/test syntax + deterministic test-only ZIP.
+- `tests/test_real_mc_windseeker_policy.lua` checks both halves against the
+  **real catalog and priority engine**, not only mock policy fixtures.
+- `tests/test_manual_obtained_receipt_reconciliation.lua` checks the
+  leader's manual bot-ownership note remains separate from pending receipt,
+  that missing award evidence still blocks, and that a later explicit
+  exact-drop receipt can reconcile it without touching other plans/locks.
+- New `tests/test_windseeker_reserved_roll.lua`: both halves, equal reserved NEED, GREED after NEED, excluded class/unreserved, material still manual, no awarding.
+- New `tests/test_guild_master_materials.lua`: distinct guild master, guild roster and online/raid presence, candidate drift, once-only transfer, unknown outcomes.
+- Updated guild transfer fixture with a separately verified Guild Master,
+  and guild UI + modal-geometry fixtures ensuring the action names the
+  actual recipient: **Arm Guild Master** for materials versus **Arm Raid
+  Leader** for other eligible items. A missing or unverified Guild Master
+  disables the material Guild button before review. No transfer controls
+  overlap.
+- `tests/test_guild_auto_preview.lua` now checks that a **read-only**
+  material proposal explicitly identifies the actual guild master, not a
+  different raid leader, and changes to **HOLD_GUILD_MASTER** when the
+  guild master goes offline. `tests/test_pending_receipt_holds.lua`
+  verifies that existing receipt/ACK/no-retry holds remain authoritative
+  and ordinary loot still uses its older raid-leader review policy.
+  A proposed recipient is never a validated Blizzard loot candidate or
+  proof of a possible or completed physical transfer.
+- **Never** make a live loot transfer during an automated test.
+
+## First controlled client session — read-only gate (no raid loot)
+
+**This section applies to PR #41's current test-only package, NOT the old dev19
+Phase 1 artifact or the stable published addon.** The old
+[`OWNER_TEST_ONLY_HANDOFF.md`](OWNER_TEST_ONLY_HANDOFF.md) is an
+**historical dev19** handoff and its hard-coded 604-record baseline/checksum
+must not be used to install or verify a newer dev20 draft. A real owner's
+18 October screenshot showed **636** Gear Plans at that time; confirm the
+actual *present* SavedVariables count before and after testing instead of
+assuming either historical number is still current.
+
+1. **Make a matching backup before any install.** Exit WoW completely.
+   Keep a dated copy **outside the live WoW folders** of the entire current
+   `Interface/AddOns/NaxxLootLottery/` folder plus
+   `WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua` and its
+   `.lua.bak` if present. Include other active accounts' matching files.
+   Do not import, rewrite or reset existing Gear Plans.
+2. **Verify the exact artifact before using it.** Open the latest successful
+   [NLL MC test-only workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/workflows/nll-mc-legendary-guild-test.yml)
+   for **the intended PR #41 head**. The artifact contains an inner
+   `NLL-MC-bindings-guild-test-ONLY.zip`, `SHA256SUMS.txt`, and
+   `BUILD_INFO.txt`. Verify the inner ZIP's SHA-256 equals the provided
+   checksum and the build-info source SHA equals the exact GitHub Actions
+   run's commit SHA. Artifacts currently expire after **7 days**.
+   **Stop** on a mismatch or missing artifact.
+3. **Install on one controlled client only.** With backups saved, replace
+   the addon directory in full using the *inner* ZIP, rather than copying
+   new Lua on top of old Lua. The result must be
+   `Interface/AddOns/NaxxLootLottery/NaxxLootLottery.toc` (no nested
+   duplicate folder). Do **not** move or replace the SavedVariables
+   file. No AzerothCore, IP, Playerbots or SQL changes are involved.
+4. **Observe only.** Outside a raid encounter, use `/nll version`,
+   `/nll status`, and `/nll`. The TOC **still reports dev20**, so that
+   version string alone is *not* proof of this draft: use the exact
+   `BUILD_INFO` SHA. Confirm `READY`, the *current* existing Gear Plans,
+   saved winner/history/receipts, and clean UI. In Settings, confirm
+   **Direct Master Loot OFF, Guild transfers OFF and Guild Dry Run OFF**.
+   With loot closed, Guild Loot must refuse transfers. Do not start a
+   real lottery, import data, mark OBTAINED or issue an award in this
+   first session.
+5. **Record the result before advancing.** Save one screenshot of
+   `/nll status` and the existing Gear Plans count; note any Lua error.
+   Stop and restore your matched addon folder + SavedVariables backups
+   if a preservation or startup error appears. A subsequent physical
+   material test requires a **separate owner go-ahead** and expendable
+   loot; no first-session test authorises a real item transfer.
+
+**Gate:** Until this no-transfer session passes, the live-loot steps below
+are *instructions for later controlled acceptance*, not an instruction
+to perform rare legendary rolls or Guild transfers now.
+
+## Owner manual acceptance (backup before changing addon)
+1. **Outside combat** exit WoW normally. Save a separate copy of the CURRENT `Interface/AddOns/NaxxLootLottery` and current `WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua` (plus account-specific backups if relevant). Do not merge an older SavedVariables into a newer profile.
+2. Download the ZIP + SHA256 from the exact passing Actions artifact. It is a **test build based on C15 dev20 + emergency fix**, not a public release. Extract the nested ZIP to `Interface/AddOns/NaxxLootLottery` with exactly one addon folder. The in-client version remains dev20, so use BUILD_INFO source SHA to identify the hotfix.
+3. In a safe non-live / expendable loot test, load addon and run `/nll version`, `/nll status`, `/nll directaward off`. Verify old Gear Plan counts, old receipts and award locks still present.
+4. For a Windseeker half, test with **read-only saved reservations first**: eligible present two characters in NEED -> Preview -> Prepare -> Start Roll. Confirm losing/offline/unreserved/invalid-class characters never join; after winner, item remains **pending item**. Do not perform a real test award with a rare legendary.
+5. Rehearse the existing receipt flow using a test consumable / controlled safe fixture: report award via **I Awarded It in WoW** only after actual manual Blizzard action, see the inventory-check review, confirm only after the recipient truly has item. Check only matching Gear Plans become OBTAINED; original receipts, locks preserved.
+6. Check Guild Loot with an expendable material while the **guild master and raid leader differ**. Toggle **Dry Run: ON**: confirm a material says `PROPOSE_TO_GUILD_MASTER` and names the guild master, while unrelated ordinary loot retains `PROPOSE_TO_LEADER`. An offline/absent guild master must show `HOLD_GUILD_MASTER` rather than a raid-leader fallback. Dry Run must not send any loot. Before touching transfer toggles, confirm the physical Guild row shows the correct guild master; unavailable/offline/absent guild master must refuse. Review without giving; only do the physical test when owner has explicitly consented to consuming that actual item. After a real test, confirm exact candidate and that repeated attempts are blocked.
+
+## Known constraints / no-deployment claims
+- Source/test CI success is NOT in-client 3.3.5a acceptance, no automation is live on user’s existing installed addon until they install the exact test build.
+- An actual bot’s bags are **not visible via standard WoW addon API**. Winner alone and loot slot clearing do not prove item delivery.
+- WoW Master Loot only exposes candidate assignment for items **at or above** the active loot threshold. Even Core of Earth or Lava Core can be below it. This branch labels that material `BELOW_THRESHOLD` and does not let the Guild review send a non-assignable item. **Unknown/missing/out-of-range loot threshold** also blocks Guild review (`THRESHOLD_UNKNOWN`) with a readable reason. No automatic change to raid loot settings; for low-quality drops loot normally and trade separately when allowed. Changing the threshold after a corpse spawned may not retroactively unlock the drop.
+- The exact Guild material ID whitelist is *not* permission to redirect a custom-server quest, recipe, legendary or high-rarity special item. The scanner holds such items as `SPECIAL_HOLD`, including when their IDs match originally common crafting materials. New read-only fixtures exercise the explicit hold and missing-threshold paths.
+- WoW `GetLootSlotInfo` must provide a usable integer stack count. Missing API, missing count, or fractional count puts the item into `LOOT_INFO_UNKNOWN` and disables physical Guild review. The item line shows `x?`, never guesses `x1`. The UI test checks the disabled and explicit reason states.
+- The separate Guild **Review → Arm → Confirm** action uses a 15-second client-uptime window. If WoW `GetTime` is missing/invalid while arming, or disappears, moves backwards or exceeds 15 seconds after arming, **no GiveMasterLoot call** is made; the arm is cleared and a new review is required. The Lua 5.1 regression simulates all those cases without transferring any item. This is defensive API handling, not a replacement for in-game timing acceptance.
+- Multiple physically different *copies* of the same guild material are not safely distinguishable by standard 3.3.5a APIs. The existing conservative item-ID no-retry lock deliberately blocks subsequent same-ID requests until a future authenticated item-instance source bridge exists. A **read-only feasibility request** to Server-Side-Maintenance is tracked at [coordination Issue #2](https://github.com/CosmicCuddle/Naxxramas-Server-Coordination/issues/2). No server change or removal of the lock is authorised.
+- Other legendary/manual item IDs remain excluded from the special binding lottery.
+- No release/tag/merge/SQL/core/server work. All changes live in a separate draft branch.

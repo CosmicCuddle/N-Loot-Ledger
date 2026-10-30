@@ -66,6 +66,42 @@ function R:ObserveWinner(result)
     return true,row
 end
 
+-- A previously attested bot item is already OBTAINED in the local Gear
+-- Plan. Later human receipt review must be able to complete the original
+-- pending drop without treating the manual edit as a fabricated receipt.
+-- Require the exact persisted attestation audit, not merely a status flag.
+local function MatchesManualAttestation(need,snapshot,receipt)
+    if type(need)~="table" or type(snapshot)~="table" or
+       type(receipt)~="table" or
+       need.status~="OBTAINED" or need.obtainedDropUID~=nil or
+       need.source~="BOT_GEAR_PLAN" or
+       need.characterType~="PLAYERBOT" or
+       need.manualObtainedEvidence~="LEADER_ATTESTED_BOT_HAS_ITEM" or
+       type(need.manualObtainedBy)~="string" or
+       (snapshot.from~="NEEDED" and snapshot.from~="GREED") then
+        return false
+    end
+    if Key(need.character)~=Key(receipt.character) or
+       tonumber(need.itemID)~=receipt.itemID or
+       need.raidKey~=receipt.raidKey then
+        return false
+    end
+    for _,audit in ipairs(NLL.db.manualObtainedEvidence or {}) do
+        if type(audit)=="table" and
+           audit.kind=="LEADER_ATTESTED_BOT_HAS_ITEM" and
+           audit.gearKey==snapshot.key and
+           Key(audit.character)==Key(receipt.character) and
+           tonumber(audit.itemID)==receipt.itemID and
+           audit.oldStatus==snapshot.from and
+           audit.newStatus=="OBTAINED" and
+           audit.by==need.manualObtainedBy and
+           audit.receiptVerified==false then
+            return true
+        end
+    end
+    return false
+end
+
 function R:CanConfirm(dropUID)
     local row=self:Get(dropUID)
     if not row then return false,"This win has no tracked receipt; do not guess." end
@@ -115,7 +151,8 @@ function R:CanConfirm(dropUID)
             need.raidKey~=row.raidKey or
             (need.status~=snapshot.from and
              not (need.status=="OBTAINED" and
-                  need.obtainedDropUID==dropUID))) then
+                  need.obtainedDropUID==dropUID) and
+             not MatchesManualAttestation(need,snapshot,row))) then
             return false,"A Gear Plan has changed since the roll. Review "..
                 "the plan before confirming receipt."
         end
@@ -130,12 +167,19 @@ function R:ConfirmReceipt(dropUID)
     local ok,row=self:CanConfirm(dropUID)
     if not ok then return false,row end
     local changed=0
+    local linked=0
     for _,snapshot in ipairs(row.needs or {}) do
         local need=NLL.db.gearNeeds[snapshot.key]
         if need and (need.status=="NEEDED" or need.status=="GREED") then
             need.status="OBTAINED"
             need.obtainedDropUID=dropUID
             changed=changed+1
+        elseif MatchesManualAttestation(need,snapshot,row) then
+            -- Independent confirmation links this previously attested
+            -- local plan to the reviewed drop; preserve the original
+            -- manual-attestation audit as historical evidence.
+            need.obtainedDropUID=dropUID
+            linked=linked+1
         end
     end
     -- Only the local character's SavedVariables are writable. A remote
@@ -166,5 +210,6 @@ function R:ConfirmReceipt(dropUID)
     end
     return true,"Recipient receipt CONFIRMED for "..row.character..
         " / "..tostring(row.itemName or row.itemID)..
-        ". "..changed.." active Gear Plan(s) -> OBTAINED."
+        ". "..changed.." active Gear Plan(s) -> OBTAINED; "..
+        linked.." earlier manual attestation(s) linked to this receipt."
 end

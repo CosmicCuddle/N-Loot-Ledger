@@ -15,6 +15,15 @@ local dualLeader=false
 GetRaidRosterInfo=function(i)
     return roster[i], (i==1 or (i==2 and dualLeader)) and 2 or 0
 end
+-- Guild master and raid leader intentionally match in the legacy fixture;
+-- a separate regression covers cases where they differ or the GM is absent.
+GetNumGuildMembers=function() return 2 end
+GetGuildRosterInfo=function(i)
+    if i==1 then
+        return "Leader","Guild Master",0,nil,nil,nil,nil,nil,true
+    end
+    return "Pikeotter","Member",2,nil,nil,nil,nil,nil,true
+end
 local master=1
 GetLootMethod=function()return "master",nil,master end
 local selectedSlot=1
@@ -25,6 +34,8 @@ local itemIDs={17010,17011,16800,18259,17204}
 local names={"Fiery Core","Lava Core","Arcanist Boots","Enchant Formula","Eye of Sulfuras"}
 local locked={}
 local quantities={2,1,1,1,1}
+-- The 3.3.5a client exposes the current Master Loot quality threshold.
+GetLootThreshold=function()return 1 end
 GetNumLootItems=function()return #itemIDs end
 GetLootSlotLink=function(slot)
     local id=itemIDs[slot]
@@ -153,6 +164,30 @@ t=t+16
 sent,msg=T:Commit()
 ok(not sent and msg:find("expired") and #given==0,
     "15-second confirmation expiration fails closed")
+-- No clock can never imply perpetual confirmation eligibility. The
+-- same rule applies after arming if GetTime vanishes or goes backwards.
+local originalClock=GetTime
+GetTime=nil
+ok(T:Review(target),"read-only review may still inspect an item")
+armed,armMessage=T:Arm()
+ok(not armed and armMessage:find("clock") and T.review==nil and
+    #given==0,"missing WoW clock blocks physical transfer arming")
+GetTime=function()return nil end
+ok(T:Review(target) and not T:Arm() and T.review==nil and
+    #given==0,"nil WoW clock cannot be treated as time zero")
+GetTime=originalClock
+ok(T:Review(target) and T:Arm(),"can arm with restored valid WoW clock")
+t=t-1
+sent,msg=T:Commit()
+ok(not sent and msg:find("clock changed") and T.review==nil and
+    #given==0,"backwards clock jump blocks an armed transfer")
+t=t+1
+ok(T:Review(target) and T:Arm(),"fresh deliberate arm after clock change")
+GetTime=nil
+sent,msg=T:Commit()
+ok(not sent and msg:find("clock changed") and T.review==nil and
+    #given==0,"clock disappearing after arm cannot allow an award")
+GetTime=originalClock
 ok(T:Review(target) and T:Arm(),"explicit fresh review+arm possible")
 locked[1]=true
 sent=T:Commit()

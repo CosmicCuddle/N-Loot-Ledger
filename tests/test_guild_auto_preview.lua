@@ -8,6 +8,8 @@ local function link(i)
     local id=ids[i]
     return id and id>0 and ("|Hitem:"..id..":0|h[Item "..id.."]|h") or nil
 end
+-- The 3.3.5a client exposes the current Master Loot quality threshold.
+GetLootThreshold=function()return 1 end
 GetNumLootItems=function()return #ids end
 GetLootSlotLink=function(i)return link(i)end
 GetLootSlotInfo=function(i)return nil,nil,i==1 and 3 or 1,4,false end
@@ -21,10 +23,18 @@ GetNumRaidMembers=function()return 3 end
 GetLootMethod=function()return "master",nil,1 end
 UnitName=function()return "Leader" end
 local duplicate=false
+local guildMasterOnline=true
 GetRaidRosterInfo=function(i)
     if i==1 then return "Leader",2 end
     if i==2 and duplicate then return "Other",2 end
     return "Other"..i,0
+end
+GetNumGuildMembers=function()return 2 end
+GetGuildRosterInfo=function(i)
+    if i==1 then
+        return "Other3","Guild Master",0,nil,nil,nil,nil,nil,guildMasterOnline
+    end
+    return "Leader","Member",2,nil,nil,nil,nil,nil,true
 end
 local simulation=false
 local transfersOn=0
@@ -79,12 +89,24 @@ for _,row in ipairs(plan.rows) do
        not row.leaderCandidateVerified and not row.physicalReceiptVerified,
        "no plan row is an automatic award instruction")
 end
-ok(decisions[17010].decision=="PROPOSE_TO_LEADER" and
+ok(decisions[17010].decision=="PROPOSE_TO_GUILD_MASTER" and
     decisions[17010].quantity==3 and
-    decisions[17010].proposedRecipient=="Leader",
-    "three crafting materials proposed to the verified raid leader")
-ok(decisions[17011].decision=="PROPOSE_TO_LEADER",
-    "another unreserved material also proposed")
+    decisions[17010].proposedRecipient=="Other3" and
+    decisions[17010].recipientKind=="GUILD_MASTER" and
+    decisions[17010].leader=="Leader" and
+    not decisions[17010].leaderCandidateVerified,
+    "crafting materials proposed only to the different verified guild master")
+ok(decisions[17011].decision=="PROPOSE_TO_GUILD_MASTER" and
+    decisions[17011].proposedRecipient=="Other3",
+    "second material uses actual guild master, never raid leader")
+guildMasterOnline=false
+local absent=P:Build()
+ok(absent.proposed==0 and
+    absent.rows[1].decision=="HOLD_GUILD_MASTER" and
+    absent.rows[4].decision=="HOLD_GUILD_MASTER" and
+    absent.rows[1].proposedRecipient==nil,
+    "offline guild master holds material proposals without raid leader fallback")
+guildMasterOnline=true
 ok(decisions[16800].decision=="HOLD_RESERVED" and
     decisions[16800].need==1,"offline bot NEED is never auto-routed")
 ok(decisions[18259].decision=="HOLD_UNCERTAIN",
@@ -104,7 +126,7 @@ guildHistory[1].status="AWARD_OUTCOME_UNKNOWN"
 guildHistory[1].reconciliationStatus=nil
 plan=P:Build()
 ok(plan.proposed==0 and
-    decisions[17010].decision=="PROPOSE_TO_LEADER" and
+    decisions[17010].decision=="PROPOSE_TO_GUILD_MASTER" and
     plan.rows[1].decision=="HOLD_UNRESOLVED_REQUEST",
     "one unresolved transfer blocks every new allocation proposal")
 guildHistory[1].reconciliationStatus="CLOSED_NO_RETRY"
@@ -166,8 +188,9 @@ assert(loadfile("NaxxLootLottery/UI/CurrentLootFrame.lua"))()
 N.UI:OpenGuildLootReview()
 ok(N.UI.guildLootDialog.shown and N.UI.guildLootDryRun.label.text=="Dry Run: ON",
     "guild review shows visible preview-only ON control")
-ok(N.UI.guildLootRows[1].nameText.text:find("PROPOSE_TO_LEADER",1,true),
-    "first crafting material proposal shown next to actual loot slot")
+ok(N.UI.guildLootRows[1].nameText.text:find("PROPOSE_TO_GUILD_MASTER",1,true) and
+    N.UI.guildLootRows[1].reasonText.text:find("Other3",1,true),
+    "crafting material preview shows actual guild-master proposal and name")
 N.UI.guildLootDryRun.scripts.OnClick()
 ok(not P:IsEnabled() and N.UI.guildLootDryRun.label.text=="Dry Run: OFF",
     "button safely disables preview without touching physical controls")

@@ -6,6 +6,8 @@ local transfers=0
 GiveMasterLoot=function()transfers=transfers+1;error("never award")end
 local itemIDs={16800,18821,17010,18259,17204,17011,17012,17013,17014,17015,0}
 local locked=false
+-- The 3.3.5a client exposes the current Master Loot quality threshold.
+GetLootThreshold=function()return 1 end
 GetNumLootItems=function()return #itemIDs end
 GetLootSlotLink=function(i)
     if itemIDs[i]==0 then return nil end

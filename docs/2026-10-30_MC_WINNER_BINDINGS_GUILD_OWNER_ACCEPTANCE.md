@@ -40,6 +40,57 @@ Date: 2026-10-30 | Owner acceptance: PENDING | GitHub: DRAFT ONLY
   proof of a possible or completed physical transfer.
 - **Never** make a live loot transfer during an automated test.
 
+## First controlled client session — read-only gate (no raid loot)
+
+**This section applies to PR #41's current test-only package, NOT the old dev19
+Phase 1 artifact or the stable published addon.** The old
+[`OWNER_TEST_ONLY_HANDOFF.md`](OWNER_TEST_ONLY_HANDOFF.md) is an
+**historical dev19** handoff and its hard-coded 604-record baseline/checksum
+must not be used to install or verify a newer dev20 draft. A real owner's
+18 October screenshot showed **636** Gear Plans at that time; confirm the
+actual *present* SavedVariables count before and after testing instead of
+assuming either historical number is still current.
+
+1. **Make a matching backup before any install.** Exit WoW completely.
+   Keep a dated copy **outside the live WoW folders** of the entire current
+   `Interface/AddOns/NaxxLootLottery/` folder plus
+   `WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua` and its
+   `.lua.bak` if present. Include other active accounts' matching files.
+   Do not import, rewrite or reset existing Gear Plans.
+2. **Verify the exact artifact before using it.** Open the latest successful
+   [NLL MC test-only workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/workflows/nll-mc-legendary-guild-test.yml)
+   for **the intended PR #41 head**. The artifact contains an inner
+   `NLL-MC-bindings-guild-test-ONLY.zip`, `SHA256SUMS.txt`, and
+   `BUILD_INFO.txt`. Verify the inner ZIP's SHA-256 equals the provided
+   checksum and the build-info source SHA equals the exact GitHub Actions
+   run's commit SHA. Artifacts currently expire after **7 days**.
+   **Stop** on a mismatch or missing artifact.
+3. **Install on one controlled client only.** With backups saved, replace
+   the addon directory in full using the *inner* ZIP, rather than copying
+   new Lua on top of old Lua. The result must be
+   `Interface/AddOns/NaxxLootLottery/NaxxLootLottery.toc` (no nested
+   duplicate folder). Do **not** move or replace the SavedVariables
+   file. No AzerothCore, IP, Playerbots or SQL changes are involved.
+4. **Observe only.** Outside a raid encounter, use `/nll version`,
+   `/nll status`, and `/nll`. The TOC **still reports dev20**, so that
+   version string alone is *not* proof of this draft: use the exact
+   `BUILD_INFO` SHA. Confirm `READY`, the *current* existing Gear Plans,
+   saved winner/history/receipts, and clean UI. In Settings, confirm
+   **Direct Master Loot OFF, Guild transfers OFF and Guild Dry Run OFF**.
+   With loot closed, Guild Loot must refuse transfers. Do not start a
+   real lottery, import data, mark OBTAINED or issue an award in this
+   first session.
+5. **Record the result before advancing.** Save one screenshot of
+   `/nll status` and the existing Gear Plans count; note any Lua error.
+   Stop and restore your matched addon folder + SavedVariables backups
+   if a preservation or startup error appears. A subsequent physical
+   material test requires a **separate owner go-ahead** and expendable
+   loot; no first-session test authorises a real item transfer.
+
+**Gate:** Until this no-transfer session passes, the live-loot steps below
+are *instructions for later controlled acceptance*, not an instruction
+to perform rare legendary rolls or Guild transfers now.
+
 ## Owner manual acceptance (backup before changing addon)
 1. **Outside combat** exit WoW normally. Save a separate copy of the CURRENT `Interface/AddOns/NaxxLootLottery` and current `WTF/Account/<account>/SavedVariables/NaxxLootLottery.lua` (plus account-specific backups if relevant). Do not merge an older SavedVariables into a newer profile.
 2. Download the ZIP + SHA256 from the exact passing Actions artifact. It is a **test build based on C15 dev20 + emergency fix**, not a public release. Extract the nested ZIP to `Interface/AddOns/NaxxLootLottery` with exactly one addon folder. The in-client version remains dev20, so use BUILD_INFO source SHA to identify the hotfix.

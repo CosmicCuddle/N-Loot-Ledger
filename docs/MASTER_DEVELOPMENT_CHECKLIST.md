@@ -614,10 +614,13 @@ current SavedVariables inventory.
       separate opt-ins, exact candidate and no-retry locks.
 - [x] Built: leader-reported manual WoW award opens the existing receipt
       confirmation; a roll itself never marks a plan OBTAINED.
-- [x] CI passed on exact head
-      `61b5f49b863e21f3a83d7e63bad7d78beb6167d4` through
-      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41043286334),
-      including new real Molten Core catalog/PriorityEngine regression.
+- [x] Built: a previously manually attested OBTAINED bot plan can later
+      complete an exact award-backed human receipt review if its
+      original saved attestation audit matches; never bypass no-retry.
+- [x] CI passed on source/test head
+      `a1037cd447bf083142a0acf908e9fee144c9e4c5` through
+      [full no-release workflow](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41043748270),
+      including real MC policy and manual-attestation receipt regressions.
 - [ ] WoW 3.3.5a acceptance: Windseeker preview/tickets without a real
       legendary transfer; materials vs loot-quality threshold; guild
       master distinct from raid leader; receipt UI and no-retry behaviour.

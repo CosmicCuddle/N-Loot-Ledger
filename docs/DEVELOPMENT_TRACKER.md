@@ -34,7 +34,7 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 | #38 | Owner dev19 live UI follow-up: Inbox archive/paging, roll winners vs physical attempts, new run display, Wishlist footer | Dedicated/complete Lua 5.1 + TEST-ONLY ZIP checks passed (PR #38) | Owner dev20 screenshot/retest pending | Draft only |
 
 | #40 | Live Delivery Investigations overlay and manually attested bot OBTAINED | Lua 5.1 and no-release ZIP passed at `d2e787cc` | Owner says manual Obtained worked; full UI/receipt test pending | Draft only, stacked on #38 |
-| #41 | Windseeker reserved rolls, guild-master materials, receipt reconciliation after prior bot manual attestation | Source/test Lua 5.1 + real MC and manual-receipt regressions passed at `a1037cd4` ([run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41043748270)) | Pending real 3.3.5a; exact guild recipient, UI and no-retry holds | Draft only, stacked on #40 |
+| #41 | Windseeker reserved rolls, guild-master materials, receipt reconciliation after prior bot manual attestation | Lua 5.1 full/packaging tests passed at `88fd8eb5` ([run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41046200783)); dynamic guild recipient labels, GM-block and geometry tests | Pending real 3.3.5a; exact guild recipient, UI and no-retry holds | Draft only, stacked on #40 |
 
 **Parallel, separately stacked drafts #18–#21** are inventoried in the master checklist; see [review decisions](REVIEW_PARALLEL_DRAFTS.md) for the safe findings forwarded into #27. The alternative reconciliation branches remain separate drafts.
 

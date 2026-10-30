@@ -915,11 +915,19 @@ function UI:RefreshGuildLootDialog()
             row.nameText:SetText(
                 "Slot "..item.slotIndex..": "..item.itemName..
                 " x"..item.quantity.." ["..state.."]")
-            row.reasonText:SetText(tostring(proposal and proposal.reason or item.reason)..
-                (item.guildMaterial and
-                  (" | Guild master: "..tostring(item.guildMaster or
-                    "UNAVAILABLE (open Guild roster)")) or
-                  (" | Raid leader: "..tostring(item.leader))))
+            local summary=tostring(proposal and proposal.reason or item.reason)
+            if item.status=="BELOW_THRESHOLD" then
+                summary="BELOW LOOT THRESHOLD - loot normally; cannot Master Loot."
+            elseif item.guildMaterial and item.status=="GUILD_REVIEW" then
+                summary="Guild material | Master: "..tostring(
+                    item.guildMaster or "UNAVAILABLE - open Guild roster")
+            elseif item.guildMaterial then
+                summary=summary.." | Guild: "..tostring(
+                    item.guildMaster or "unavailable")
+            else
+                summary=summary.." | Raid leader: "..tostring(item.leader)
+            end
+            row.reasonText:SetText(summary)
             row.reviewButton.label:SetText(
                 item.guildMaterial and "Guild" or "Review")
             row.reviewButton.target={

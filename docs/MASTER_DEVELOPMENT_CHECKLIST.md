@@ -650,9 +650,18 @@ current SavedVariables inventory.
       [coordination #2](https://github.com/CosmicCuddle/Naxxramas-Server-Coordination/issues/2):
       trusted unique loot-source evidence for distinct later material drops.
       **No core change is approved**; preserve same-item-ID NO RETRY.
-- [ ] WoW 3.3.5a acceptance: Windseeker preview/tickets without a real
-      legendary transfer; materials vs loot-quality threshold; guild
-      master distinct from raid leader; receipt UI and no-retry behaviour.
+- [ ] Owner first-pass C16 read-only client check (no live transfer):
+      use the exact passing #41 test-only artifact + its BUILD_INFO SHA,
+      back up the *current* installed addon and all relevant SavedVariables,
+      confirm preserved Gear Plan count (owner's earlier 636 screenshot is
+      historical, not a constant), /nll status, old history and all physical
+      consent toggles OFF. The old dev19/604 guide is NOT this package.
+      [Short owner instructions](2026-10-30_MC_WINNER_BINDINGS_GUILD_OWNER_ACCEPTANCE.md#first-controlled-client-session--read-only-gate-no-raid-loot)
+- [ ] WoW 3.3.5a acceptance after the read-only gate: Windseeker
+      preview/tickets without a real legendary transfer; materials vs
+      loot-quality threshold; guild master distinct from raid leader;
+      receipt UI and no-retry behaviour. Owner separately approves any
+      expendable-item physical test.
 - [ ] Owner-approved merge/release. PR #41 depends on draft #40.
 - [ ] Unresolved design limitation: independent same-item-ID guild material
       copies from different corpses remain blocked by conservative

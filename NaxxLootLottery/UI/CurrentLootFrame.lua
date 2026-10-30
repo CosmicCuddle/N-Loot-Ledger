@@ -919,9 +919,13 @@ function UI:RefreshGuildLootDialog()
         if item then
             local proposal=proposalBySlot[item.slotIndex]
             local state=proposal and proposal.decision or item.status
+            -- A missing stack count is NOT one item; do not display
+            -- a misleading guessed quantity while the slot is held.
+            local countLabel=item.lootInfoKnown==false and "?" or
+                tostring(item.quantity)
             row.nameText:SetText(
                 "Slot "..item.slotIndex..": "..item.itemName..
-                " x"..item.quantity.." ["..state.."]")
+                " x"..countLabel.." ["..state.."]")
             local summary=tostring(proposal and proposal.reason or item.reason)
             if item.status=="BELOW_THRESHOLD" then
                 summary="BELOW LOOT THRESHOLD - loot normally; cannot Master Loot."

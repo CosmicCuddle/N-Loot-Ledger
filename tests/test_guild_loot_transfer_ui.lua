@@ -34,6 +34,8 @@ for i=1,8 do
         status=(i==2 and "RESERVED" or "GUILD_REVIEW"),
         reason=(i==2 and "Existing NEED" or "No accepted wishes")}
 end
+itemRows[1].guildMaterial=true
+itemRows[1].guildMaster="GuildBoss"
 local previewLive=true
 NaxxLootLottery={
     UI={mainFrame=frame()},
@@ -91,6 +93,10 @@ ok(UI.guildLootArm.enabled==false and UI.guildLootConfirm.enabled==false,
     "no Arm/Confirm actions until a reviewed item is selected")
 ok(UI.guildLootRows[2].reviewButton.enabled==false,
     "reserved gear cannot invoke Review")
+ok(UI.guildLootRows[1].reviewButton.label.text=="Guild" and
+    UI.guildLootRows[1].reasonText.text:find("GuildBoss",1,true) and
+    UI.guildLootRows[3].reviewButton.label.text=="Review",
+    "only guild materials gain a labelled Guild review control")
 ok(UI.guildLootRows[1].reviewButton.width==90 and
     UI.guildLootRows[1].nameText.width==540,
     "review control reserves room in each loot row")

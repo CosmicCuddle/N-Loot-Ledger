@@ -33,6 +33,9 @@ Never confuse draft code, automated checks, real WoW acceptance or release.
 | #37 | C14 combined 604-plan regression + stale review/import modal disarming on navigation, Escape and close | Dedicated no-release + complete Lua 5.1 CI passed (PR #37) | Partial owner dev19 UI screenshots received: 636 saved plans; overlaps discovered | Draft only |
 | #38 | Owner dev19 live UI follow-up: Inbox archive/paging, roll winners vs physical attempts, new run display, Wishlist footer | Dedicated/complete Lua 5.1 + TEST-ONLY ZIP checks passed (PR #38) | Owner dev20 screenshot/retest pending | Draft only |
 
+| #40 | Live Delivery Investigations overlay and manually attested bot OBTAINED | Lua 5.1 and no-release ZIP passed at `d2e787cc` | Owner says manual Obtained worked; full UI/receipt test pending | Draft only, stacked on #38 |
+| #41 | Windseeker reservation-only rolls, guild-master materials, immediate post-award receipt review | Exact-head full Lua 5.1 / integrated real MC catalog test passed at `61b5f49b` ([run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41043286334)) | Pending live 3.3.5a, especially exact transfer and repeat-copy holds | Draft only, stacked on #40 |
+
 **Parallel, separately stacked drafts #18–#21** are inventoried in the master checklist; see [review decisions](REVIEW_PARALLEL_DRAFTS.md) for the safe findings forwarded into #27. The alternative reconciliation branches remain separate drafts.
 
 ## Hard safety rules

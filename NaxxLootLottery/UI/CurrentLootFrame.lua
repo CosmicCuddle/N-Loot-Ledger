@@ -754,7 +754,7 @@ function UI:CreateGuildLootDialog()
 
     local heading=f:CreateFontString(nil,"OVERLAY","GameFontNormalLarge")
     heading:SetPoint("TOP",f,"TOP",0,-23)
-    heading:SetText("GUILD LOOT - MANUAL TWO-CLICK REVIEW")
+    heading:SetText("GUILD LOOT - REVIEW / ARM / CONFIRM")
     local status=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
     status:SetPoint("TOP",heading,"BOTTOM",0,-13)
     status:SetWidth(670)
@@ -813,7 +813,7 @@ function UI:CreateGuildLootDialog()
     self.guildLootInvestigate=investigate
     -- The Review button above is read-only; neither of these controls
     -- can ever send an item without the player's two extra clicks.
-    local arm=self:CreateTextButton(f,"Arm Leader Transfer",181)
+    local arm=self:CreateTextButton(f,"Arm Transfer",181)
     -- Leave a readable gutter between the last loot row and both
     -- action rows (before: only 2px above this 22px button).
     arm:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",24,49)
@@ -888,6 +888,13 @@ function UI:RefreshGuildLootDialog()
     self.guildLootStatus:SetText(tostring(label))
     if self.guildLootArm and self.guildLootConfirm then
         local review=T and T.review
+        if self.guildLootArm.label then
+            local kind=review and review.context and
+                review.context.recipientKind
+            self.guildLootArm.label:SetText(
+                kind=="GUILD_MASTER" and "Arm Guild Master" or
+                (review and "Arm Raid Leader" or "Arm Transfer"))
+        end
         if review and review.armedAt then
             self.guildLootArm:Disable()
             self.guildLootConfirm:Enable()
@@ -934,7 +941,8 @@ function UI:RefreshGuildLootDialog()
                 slotIndex=item.slotIndex,itemID=item.itemID,
                 itemLink=item.itemLink,quantity=item.quantity,
             }
-            if item.status=="GUILD_REVIEW" then
+            if item.status=="GUILD_REVIEW" and
+                (not item.guildMaterial or item.guildMaster) then
                 row.reviewButton:Enable()
             else row.reviewButton:Disable() end
             row:Show()

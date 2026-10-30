@@ -235,9 +235,16 @@ function G:Scan()
             category,_,reason=self:Classify(id,quality,itemType)
             local summary=self:GetReservationSummary(id)
             local status
+            local threshold=type(GetLootThreshold)=="function" and
+                tonumber(GetLootThreshold()) or nil
             if locked or quantity<1 then
                 status="LOCKED"
                 reason="Loot slot is locked or empty"
+            elseif self:IsGuildMaterial(id) and threshold and
+                   type(quality)=="number" and quality<threshold then
+                status="BELOW_THRESHOLD"
+                reason="Below WoW Master Loot threshold. Cannot assign "..
+                    "with Master Looter; loot normally, then trade if allowed."
             elseif category=="SPECIAL_HOLD" then
                 status="SPECIAL_HOLD"
             elseif summary.need>0 or summary.greed>0 then

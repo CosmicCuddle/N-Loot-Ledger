@@ -200,11 +200,11 @@ entry.itemName="Lava Core"
 entry.itemLink="|Hitem:17011:0|h[Lava Core]|h"
 entry.quantity=1
 actualLink=entry.itemLink
-finished.dropUID=entry.dropUID
-finished.itemID=entry.itemID
-finished.itemName=entry.itemName
-finished.selectionType="GUILD"
-finished.awardStatus=nil
+winner.dropUID=entry.dropUID
+winner.itemID=entry.itemID
+winner.itemName=entry.itemName
+winner.selectionType="GUILD"
+winner.awardStatus=nil
 local liveLeader="Other"
 N.GuildLootReview={
     IsGuildMaterial=function(_,id)return id==17011 end,

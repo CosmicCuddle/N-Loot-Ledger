@@ -8,6 +8,13 @@ local R=NLL.LootReceiptTracker
 local function Key(name)
     return string.lower((tostring(name or ""):match("^([^%-]+)") or ""))
 end
+local function ExactName(a,b)
+    -- A short-name match is not evidence of the same physical recipient.
+    -- The persistent drop/award ledger must preserve the full identity
+    -- (including a realm suffix if one is present).
+    return type(a)=="string" and type(b)=="string" and
+        a~="" and b~="" and string.lower(a)==string.lower(b)
+end
 local function Now()
     return date and date("%Y-%m-%d %H:%M:%S") or "unknown"
 end
@@ -32,7 +39,7 @@ function R:ObserveWinner(result)
     if not book then return false,"Saved receipt ledger unavailable." end
     local old=book[result.dropUID]
     if old then
-        if Key(old.character)==Key(result.winner) and
+        if ExactName(old.character,result.winner) and
             old.itemID==tonumber(result.itemID) then return true,old end
         return false,"This physical loot opportunity is locked to another winner."
     end
@@ -130,7 +137,7 @@ function R:CanConfirm(dropUID)
     for _,a in ipairs(NLL.db.lootAwardHistory or {}) do
         if a.dropUID==dropUID and
            tonumber(a.itemID)==row.itemID and
-           Key(a.winner)==Key(row.character) and
+           ExactName(a.winner,row.character) and
            (a.status=="LEADER_REPORTED" or
             a.status=="LOOT_SLOT_CLEARED") then
             awarded=true

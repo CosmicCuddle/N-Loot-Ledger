@@ -96,60 +96,43 @@ assert(legendary[1].status=="SPECIAL_HOLD",
     "an ID reused as a legendary/special item remains held")
 specialQuality=false
 local target={slotIndex=1,itemID=17011,quantity=1,
-    itemLink=rows[1].itemLink}
-threshold=nil
-assert(not T:Review(target),
-    "transfer validation cannot bypass an unavailable threshold")
+    itemLink=rows[1].itemLink,state="DETECTED",
+    dropUID="LIVE-MATERIAL:1"}
+-- Earlier Guild Master transfer behavior was superseded by CosmicCuddle's
+-- 31 Oct owner decision. A guild-material item is NEVER physically sent
+-- through the old Guild Transfer modal, even when both consents are ON.
+local allowed,message=T:Review(target)
+assert(not allowed and message:find("leader%-only") and count==0,
+    "owner's raid-leader ticket policy disables superseded Guild Master physical route")
+local leader,why=G:LeaderTicketRecipient(target)
+assert(leader=="RaidLeader" and why:find("Leader%-only") and
+    G:GetGuildMaster()=="GuildBoss",
+    "leader-only ticket picks actual raid leader despite distinct Guild Master")
+online=false
+leader=G:LeaderTicketRecipient(target)
+assert(leader=="RaidLeader",
+    "guild master offline is no longer a prerequisite to raid leader tickets")
+online=true
+threshold=3
+leader,why=G:LeaderTicketRecipient(target)
+assert(not leader and why:find("Below WoW",1,true),
+    "material below Master Loot threshold cannot start ticket route")
 threshold=1
 specialType=true
-assert(not T:Review(target),
-    "transfer validation cannot bypass a quest material classification")
+leader,why=G:LeaderTicketRecipient(target)
+assert(not leader and why:find("special",1,true),
+    "custom server quest material cannot enter leader ticket route")
 specialType=false
-specialQuality=true
-assert(not T:Review(target),
-    "transfer validation cannot bypass special rarity")
-specialQuality=false
 stackCount=nil
-assert(G:Scan()[1].status=="LOOT_INFO_UNKNOWN" and
-    not T:Review(target),
-    "missing loot stack count cannot silently be treated as one item")
-stackCount=1.5
-assert(G:Scan()[1].status=="LOOT_INFO_UNKNOWN" and
-    not T:Review(target),
-    "fractional/invalid stack count cannot enable physical transfer")
+leader,why=G:LeaderTicketRecipient(target)
+assert(not leader and why:find("stack count",1,true),
+    "unknown actual live stack prevents ticket preparation")
 stackCount=1
-local slotInfo=GetLootSlotInfo
-GetLootSlotInfo=nil
-assert(G:Scan()[1].status=="LOOT_INFO_UNKNOWN" and
-    not T:Review(target),
-    "missing GetLootSlotInfo API cannot enable Guild transfer")
-GetLootSlotInfo=slotInfo
-assert(T:Review(target))
-assert(T.review.context.recipientKind=="GUILD_MASTER" and
-    T.review.context.leader=="GuildBoss")
-assert(count==0,"review has no physical action")
-online=false
-assert(not T:Arm() and count==0,"offline guild master blocks transfer")
-online=true
-candidates={"RaidLeader","MasterLooter"}
-assert(not T:Review(target),"raid leader is never an allowed fallback")
-candidates={"GuildBoss","RaidLeader"}
-assert(T:Review(target) and T:Arm())
-raid[3]="SomeoneElse"
-assert(not T:Commit() and count==0,
-    "guild master leaving raid blocks previously armed transfer")
-raid[3]="GuildBoss"
-assert(T:Review(target) and T:Arm())
-candidates={"RaidLeader","GuildBoss"}
-assert(not T:Commit() and count==0,
-    "Master Loot candidate order changed; restart exact confirmation")
-candidates={"GuildBoss","RaidLeader"}
-assert(T:Review(target) and T:Arm())
-assert(T:Commit() and count==1 and given[1].slot==1 and given[1].idx==1)
-assert(N.db.guildLootTransferAudit[1].recipient=="GuildBoss" and
-    N.db.guildLootTransferAudit[1].recipientKind=="GUILD_MASTER" and
-    N.db.guildLootTransferAudit[1].status=="AWARD_REQUESTED")
-assert(not T:Commit() and count==1)
-assert(not T:Review(target) and count==1,
-    "same material cannot auto retry after a physical request")
-print("PASS: guild master distinct from raid leader, exact no-retry material routing")
+N.db.guildLootTransferAudit={{itemID=17011,status="LOOT_SLOT_CLEARED",
+    reconciliationStatus="CLOSED_NO_RETRY"}}
+leader,why=G:LeaderTicketRecipient(target)
+assert(not leader and why:find("NO RETRY",1,true),
+    "historic Guild Master transfer attempt stays locked by material ID")
+assert(count==0 and #given==0,
+    "superseded Guild Master physical route makes ZERO GiveMasterLoot calls")
+print("PASS: guild material owner routing superseded; guarded leader-only tickets") 

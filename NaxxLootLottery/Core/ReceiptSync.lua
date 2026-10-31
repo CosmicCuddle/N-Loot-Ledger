@@ -47,6 +47,19 @@ function S:IsTrustedLeader(sender)
     end
     return leaders==1 and ExactName(sender,fullLeader)
 end
+-- A legacy wishlist roster check strips realm suffixes. R1 is stricter:
+-- a receipt notification or ACK needs exactly ONE matching full-name
+-- human recipient in the live raid. Never infer presence from a lookalike.
+function S:IsExactRaidRecipient(name)
+    if type(name)~="string" or name=="" or
+       not GetNumRaidMembers or not GetRaidRosterInfo then return false end
+    local matches=0
+    for i=1,(GetNumRaidMembers() or 0) do
+        local candidate=GetRaidRosterInfo(i)
+        if ExactName(candidate,name) then matches=matches+1 end
+    end
+    return matches==1
+end
 function S:IsSelfExactLeader()
     local C=NLL.Communication
     if not C or not C.IsSelfRaidLeader or
@@ -82,7 +95,7 @@ function S:SendConfirmed(row)
     if ExactName(row.character,LocalName()) then
         return false,"This was the leader's own local wishlist."
     end
-    if not NLL.Communication:IsSenderInRaid(row.character) then
+    if not self:IsExactRaidRecipient(row.character) then
         row.remoteSyncStatus="WAITING_FOR_PLAYER"
         return false,"Winner not currently in raid. Retry when they return."
     end
@@ -221,7 +234,7 @@ end
 function S:HandleAck(sender,fields)
     if #fields~=5 or not NLL.Communication or
         not self:IsSelfExactLeader() or
-        not NLL.Communication:IsSenderInRaid(sender) then return false end
+        not self:IsExactRaidRecipient(sender) then return false end
     local uid,itemID,raidKey=fields[3],tonumber(fields[4]),fields[5]
     if raidKey~="MOLTEN_CORE" or
        not itemID or not ValidDrop(uid,itemID) then return false end

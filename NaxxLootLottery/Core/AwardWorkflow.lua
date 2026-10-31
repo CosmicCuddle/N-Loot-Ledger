@@ -88,7 +88,8 @@ function A:ValidateLiveContext(entry, winner)
             return false,'Unknown guild-material allocation. No physical award.'
         end
         local leader,reason=G:LeaderTicketRecipient(entry)
-        if not leader or Key(leader)~=Key(winner) then
+        if type(leader)~='string' or
+           string.lower(leader)~=string.lower(tostring(winner)) then
             return false,'Guild allocation no longer matches live raid leader: '..
                 tostring(reason or 'leader changed')
         end

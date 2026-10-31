@@ -1,5 +1,5 @@
--- NLL 0.1.0.21: A visual result popup, not an award window.
--- No code in this file changes SavedVariables or gives loot.
+-- Winner popup: a result display plus an explicitly opted-in Master Loot
+-- button. Showing the result alone never awards loot or marks OBTAINED.
 local NLL = NaxxLootLottery
 local UI = NLL.UI
 
@@ -113,19 +113,19 @@ function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated, se
     if not self.mainFrame:IsShown() then
         self:ShowMainFrame("currentloot")
     end
-    local interest = selectionType == 'GUILD' and
-        'GUILD ALLOCATION - RAID LEADER ONLY' or
-        (selectionType == 'GREED' and 'GREED' or
-        ('NEED' .. (tier and (' - Tier '..tostring(tier)) or '')))
+    local interest = selectionType == 'GREED' and 'GREED' or
+        ('NEED' .. (tier and (' - Tier '..tostring(tier)) or ''))
+    -- Keep the large heading short for 3.3.5a clients using larger fonts;
+    -- show the raid-leader-only restriction separately in the ticket line.
     local label = selectionType=='GUILD' and
-        'GUILD ALLOCATION - RAID LEADER ONLY' or
+        'GUILD ALLOCATION' or
         ((simulated and 'SIMULATION' or 'LOTTERY') ..
         ' WINNER - ' .. interest)
     self.winnerAnnouncementTitle:SetText("|cffffd568" .. label .. "|r")
     self.winnerAnnouncementName:SetText("|cff66ff99" .. tostring(winner) .. "|r")
     self.winnerAnnouncementItem:SetText(tostring(itemName))
     self.winnerAnnouncementTicket:SetText((selectionType=="GUILD" and
-        "Guild allocation ticket #" or "Winning ticket #")..
+        "Raid leader only - Guild ticket #" or "Winning ticket #")..
         tostring(ticketNumber))
     self.winnerAnnouncementDropUID=not simulated and dropUID or nil
     self.winnerAnnouncementWinner=not simulated and winner or nil

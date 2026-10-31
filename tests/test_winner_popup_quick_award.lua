@@ -124,7 +124,17 @@ candidates={"Pikeotter","Pikeotter"}
 show(false)
 UI.winnerQuickAwardButton.scripts.OnClick()
 ok(#sends==0,"duplicate same-name candidates cannot be guessed")
+candidates={"Pikeotter-OtherRealm"}
+show(false)
+UI.winnerQuickAwardButton.scripts.OnClick()
+ok(#sends==0,"realm-stripped recipient alias is not exact proof")
 candidates={"Pikeotter"}
+local savedClock=GetTime
+GetTime=function()return nil end
+show(false)
+UI.winnerQuickAwardButton.scripts.OnClick()
+ok(#sends==0,"missing client clock fails closed")
+GetTime=savedClock
 lootOpen=false
 show(false)
 UI.winnerQuickAwardButton.scripts.OnClick()
@@ -159,4 +169,13 @@ ok(A:SetDirectEnabled(false) and not A:IsQuickEnabled() and
 show(false)
 ok(not UI.winnerQuickAwardButton.enabled and #sends==1,
    "popup quick control cannot remain enabled after consent revoked")
+-- A SavedVariables reload never restores a previous dangerous opt-in.
+NaxxLootLotteryDB=db
+N.databaseVersion=1
+assert(loadfile("NaxxLootLottery/Storage/Database.lua"))()
+N.Database:Initialize()
+ok(N.db==db and not db.settings.directMasterLootEnabled and
+   not db.settings.winnerQuickAwardEnabled and
+   db.gearNeeds.old.status=="NEEDED" and #sends==1,
+   "login/reload revokes both physical consent flags and preserves Gear Plans")
 print("PASS: "..n.." one-click physical award opt-in, wrong-target, fake, no-retry checks")

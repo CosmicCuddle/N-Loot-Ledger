@@ -844,6 +844,27 @@ Do not infer a server receipt from a /roll, cleared slot or successful
       contains the checksum and no-award client plan.
       **Test-only; not installed, merged, released or proven in WoW.**
       Keep the last installed Build 60 for an imminent raid.
+- [x] **R1 exact live recipient roster proof before whisper and ACK**:
+      audit of `Core/ReceiptSync.lua` found the outgoing, human-only
+      receipt notification and leader-side ACK still depended on legacy
+      `Communication:IsSenderInRaid`, which strips realm suffixes.
+      This could treat `Pikeotter-OtherRealm` as proof that the
+      intended `Pikeotter` was still present. `IsExactRaidRecipient`
+      now requires **exactly one FULL-name match** in the current
+      `GetRaidRosterInfo` list; otherwise the R1 notice is withheld
+      as `WAITING_FOR_PLAYER` and an ACK cannot be accepted.
+      General V1/V2 wishlist transport, historical records, physical
+      award/NO RETRY and the existing full-name R1 leader checks
+      were NOT modified. A missing or inconsistent realm suffix
+      remains a safe HOLD pending real client verification.
+- [x] [R1 code `aa7ecbb`](https://github.com/CosmicCuddle/N-Loot-Ledger/commit/aa7ecbbe7dac86eb6a452fea301e39d25d4de5b2)
+      and [regression `48d1593`](https://github.com/CosmicCuddle/N-Loot-Ledger/commit/48d1593f0fd5559fdf374f198b622b64acc988fe)
+      confirmed by [Lua 5.1 SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41212579008)
+      and [NO-RELEASE integration SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41212575151).
+      Tests prove false legacy short-name membership never sends a
+      recipient notification or validates an old recipient's ACK;
+      a duplicated exact name is refused and the unique correct
+      recipient path remains passing. No actual WoW messaging tested.
 - [ ] Phase 1 owner-controlled client install, backups, live-data validation,
       enlarged-font screenshots and real WoW 3.3.5a compatibility evidence.
       Phase 2 ticket-record testing and Phase 3 physical delivery need

@@ -805,6 +805,31 @@ Do not infer a server receipt from a /roll, cleared slot or successful
       exact original-leader authority is required when raid authority
       is absent, and one recipient cannot set another client's
       local Wishlist OBTAINED. No live test or server inventory proof.
+- [x] **Part 17 remote human receipt hardening (R1 protocol)**:
+      the optional recipient-side receipt whisper/ACK now independently
+      validates **full exact sender/current raid leader** identity and
+      full exact named recipient. The ordinary legacy wishlist
+      communication protocol was intentionally NOT changed. Separate
+      leader-only send and remote ACK paths fail closed on mismatching
+      realm suffixes. A spoofed lookalike, replay or wrong recipient
+      cannot silently mark another player's local wishlist OBTAINED.
+      Actual custom WoW 3.3.5a sender/roster naming remains to be
+      verified in an authorised two-client test.
+- [x] The remote player **I Have the Item → MARK OBTAINED** dialog
+      refuses a missing/non-numeric/negative/NaN/infinite or backwards
+      WoW clock, enforces the 15-second window, and pins the exact
+      pending offer key, row object, full recipient, sender, drop UID
+      and item ID across both clicks. Changed offer identity disarms;
+      the existing receipt core independently revalidates at Accept.
+- [x] **Source/test commit `60964fadadefda48d701656569240c78bbba3795`:**
+      [Lua 5.1 SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209617578)
+      and [full NO-RELEASE SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209612517).
+      Tested alternate-realm leader, recipient and ACK sender,
+      invalid/rollback clocks, and switching or modifying a pending
+      receipt between inspection and final click. This is mock CI,
+      **not** proof of a live client message or physical receipt.
+      [First-client guide](2026-10-31_PART17_FIRST_CLIENT_NON_AWARDING_ACCEPTANCE.md)
+      includes separately owner-approved two-human-client acceptance.
 - [ ] Phase 1 owner-controlled client install, backups, live-data validation,
       enlarged-font screenshots and real WoW 3.3.5a compatibility evidence.
       Phase 2 ticket-record testing and Phase 3 physical delivery need

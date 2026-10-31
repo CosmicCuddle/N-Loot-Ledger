@@ -107,10 +107,12 @@ ok(UI.guildLootArm.enabled==false and UI.guildLootConfirm.enabled==false,
     "no Arm/Confirm actions until a reviewed item is selected")
 ok(UI.guildLootRows[2].reviewButton.enabled==false,
     "reserved gear cannot invoke Review")
-ok(UI.guildLootRows[1].reviewButton.label.text=="Guild" and
-    UI.guildLootRows[1].reasonText.text:find("GuildBoss",1,true) and
-    UI.guildLootRows[3].reviewButton.label.text=="Review",
-    "only guild materials gain a labelled Guild review control")
+ok(UI.guildLootRows[1].reviewButton.label.text=="Tickets" and
+    UI.guildLootRows[1].reasonText.text:find("Leader%-only") and
+    not UI.guildLootRows[1].reviewButton.enabled and
+    UI.guildLootRows[3].reviewButton.label.text=="Review" and
+    UI.guildLootRows[3].reviewButton.enabled,
+    "five guild materials direct to leader tickets, never old Guild Master transfer")
 ok(UI.guildLootRows[4].reviewButton.enabled==false,
     "unverified/missing guild master disables material transfer button")
 ok(UI.guildLootRows[5].reviewButton.enabled==false and
@@ -127,15 +129,15 @@ ok(UI.guildLootArm.label.text=="Arm Transfer",
 ok(UI.guildLootRows[1].reviewButton.width==90 and
     UI.guildLootRows[1].nameText.width==540,
     "review control reserves room in each loot row")
-local target=UI.guildLootRows[1].reviewButton.target
-ok(target.itemID==17001 and target.slotIndex==1,
-    "per-row review target uses exact actual WoW item index")
-UI.guildLootRows[1].reviewButton.events.OnClick(
-    UI.guildLootRows[1].reviewButton)
+local target=UI.guildLootRows[3].reviewButton.target
+ok(target.itemID==17003 and target.slotIndex==3,
+    "nonmaterial review target uses exact WoW item index")
+UI.guildLootRows[3].reviewButton.events.OnClick(
+    UI.guildLootRows[3].reviewButton)
 ok(calls.review==1 and UI.guildLootArm.enabled==true and
     UI.guildLootConfirm.enabled==false and
-    UI.guildLootArm.label.text=="Arm Guild Master",
-    "reviewed material clearly says its actual guild-master recipient")
+    UI.guildLootArm.label.text=="Arm Raid Leader",
+    "nonmaterial manual review keeps raid-leader recipient")
 ok(calls.commit==0,"no transfer action on opening, browsing, or Review")
 UI.guildLootArm.events.OnClick()
 ok(calls.arm==1 and calls.commit==0 and

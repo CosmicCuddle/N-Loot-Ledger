@@ -29,7 +29,12 @@ GetLootThreshold=function()return threshold end
 GetNumLootItems=function()return 1 end
 GetLootMethod=function()return "master",nil,2 end
 local currentInstance=409
+local legacyNoMapID=false
 GetInstanceInfo=function()
+    if legacyNoMapID then
+        return currentInstance==409 and "Molten Core" or "Other",
+            "raid",1,"Normal",40,0,false,nil
+    end
     return currentInstance==409 and "Molten Core" or "Other",
         "raid",1,"Normal",40,0,false,currentInstance
 end
@@ -172,6 +177,14 @@ leader="RaidLeader"
 currentInstance=249
 hold("Not inside verified Molten Core")
 currentInstance=409
+legacyNoMapID=true
+local oldClient=P:BuildPreview(entry)
+ok(oldClient.ready and oldClient.selectionType=="GUILD",
+   "3.3.5 client without eighth map-ID return can use exact Molten Core raid name")
+currentInstance=249
+hold("Not inside verified Molten Core")
+currentInstance=409
+legacyNoMapID=false
 db.guildLootTransferAudit[1]={itemID=17011,status="AWARD_REQUESTED"}
 hold("unresolved")
 db.guildLootTransferAudit[1].reconciliationStatus="CLOSED_NO_RETRY"

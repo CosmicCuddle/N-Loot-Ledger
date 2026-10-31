@@ -226,6 +226,9 @@ liveLeader="BLOCKED"
 sent,why=A:QuickAward("UID-GUILD","Pikeotter")
 ok(not sent and why:find("NO RETRY",1,true) and #sends==1,
     "previous material attempt guard enforced again at physical transfer")
+liveLeader="Pikeotter-OtherRealm"
+ok(not A:Review(entry) and #sends==1,
+    "winner cannot impersonate leader sharing realm-stripped nickname")
 liveLeader="Pikeotter"
 candidates={"Pikeotter-OtherRealm"}
 ok(not A:Review(entry) and #sends==1,

@@ -144,6 +144,26 @@ UI.awardReviewCheck.scripts.OnClick()
 UI.awardReviewDirect.scripts.OnClick()
 ok(awards==0 and a.verification and a.verification.armedAt==now,
     "new explicit review and arm required after selection drift")
+-- Rechecking at Arm time is not enough: the physical link and recipient
+-- can drift BEFORE the final click and must be checked again at Commit.
+liveLink="|Hitem:16800:2|h[Arcanist Boots]|h"
+UI.awardReviewDirect.scripts.OnClick()
+ok(awards==0 and not a.verification and
+    finished.awardStatus==nil,
+    "final confirm rejects link changed AFTER arming; no transfer")
+liveLink=physicalLink
+UI.awardReviewCheck.scripts.OnClick()
+UI.awardReviewDirect.scripts.OnClick()
+candidates={"Pikeotter","Pikeotter"}
+UI.awardReviewDirect.scripts.OnClick()
+ok(awards==0 and not a.verification and
+    finished.awardStatus==nil,
+    "final confirm rejects duplicate candidate appearing AFTER arming")
+candidates={"Pikeotter"}
+UI.awardReviewCheck.scripts.OnClick()
+UI.awardReviewDirect.scripts.OnClick()
+ok(awards==0 and a.verification and a.verification.armedAt==now,
+    "fresh review and arm required before an actual transfer")
 UI.awardReviewDirect.scripts.OnClick()
 ok(awards==1 and finished.awardStatus=="AWARD_REQUESTED",
     "second deliberate click requests exact transfer once")

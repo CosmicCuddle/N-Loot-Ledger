@@ -240,11 +240,11 @@ ok(A:SetDirectEnabled(true) and A:SetQuickEnabled(true),
     "guild physical award still requires both opt-ins")
 ok(UI:ShowWinnerAnnouncement("Lava Core","Pikeotter",1,false,
         "GUILD",nil,"UID-GUILD") and
-   UI.winnerAnnouncementTitle.text:find("GUILD ALLOCATION",1,true) and
-   UI.winnerAnnouncementTicket.text=="Guild allocation ticket #1" and
+   UI.winnerAnnouncementTitle.text=="|cffffd568GUILD ALLOCATION|r" and
+   UI.winnerAnnouncementTicket.text=="Raid leader only - Guild ticket #1" and
    UI.winnerAnnouncementDisclaimer.text:find("Select THIS item",1,true) and
    #sends==1,
-   "guild popup explains deterministic allocation and actual WoW loot selection")
+   "short guild popup heading and separate leader-only ticket line; no automatic award")
 local sent,why=A:QuickAward("UID-GUILD","Pikeotter")
 ok(not sent and why:find("raid leader",1,true) and #sends==1,
     "leader changed after guild ticket: no real award")

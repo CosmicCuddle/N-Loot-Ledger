@@ -105,8 +105,10 @@ function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated, se
     if not self.mainFrame:IsShown() then
         self:ShowMainFrame("currentloot")
     end
-    local interest = selectionType == 'GREED' and 'GREED' or
-        ('NEED' .. (tier and (' - Tier '..tostring(tier)) or ''))
+    local interest = selectionType == 'GUILD' and
+        'GUILD ALLOCATION - RAID LEADER ONLY' or
+        (selectionType == 'GREED' and 'GREED' or
+        ('NEED' .. (tier and (' - Tier '..tostring(tier)) or '')))
     local label = (simulated and 'SIMULATION' or 'LOTTERY') ..
         ' WINNER - ' .. interest
     self.winnerAnnouncementTitle:SetText("|cffffd568" .. label .. "|r")

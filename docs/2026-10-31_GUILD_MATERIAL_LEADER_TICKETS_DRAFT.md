@@ -42,9 +42,16 @@ leader are the same person.
    history **before** requesting `GiveMasterLoot`.
 5. A successful API request **does not prove delivery**, so the Leader's
    Gear Plan/wishlist is not set to OBTAINED by a roll or Master Loot
-   request. Separate **human-confirmed receipt** remains the only path
-   to OBTAINED. (Guild materials normally have no matching Gear Plan
-   because any saved NEED/GREED blocks this leader-only route.)
+   request. The popup now opens the **existing Confirm Item Receipt**
+   review for the exact saved drop automatically after a successful
+   AWARD ITEM request. This is a **read-only next step**, NOT proof of
+   delivery. Until the loot slot is observed cleared, the review is
+   `NOT READY`; the operator must independently verify recipient
+   inventory and click **I Checked Inventory → MARK OBTAINED**.
+   Those two explicit clicks alone can update a matching local plan;
+   a remote player's own wishlist still needs synchronization.
+   Guild materials usually have no matching Gear Plan because any
+   saved NEED/GREED blocks this leader-only route.
 6. The older Guild Loot window remains a **read-only all-item review**
    and may still support ordinary unreserved non-material review, but
    material controls are labelled **Tickets**, with old Guild Master
@@ -62,6 +69,11 @@ leader are the same person.
   verified translation. Recognition of item 7075 or other materials in
   outdoor/unrelated loot alone can never create guild tickets.
   In-game client confirmation of the location API is still pending.
+- **Practical single-click limitation:** on this client the matching
+  item must already be **selected in the Blizzard Master Loot window**
+  before pressing the NLL popup's AWARD ITEM. A fully self-selecting
+  loot action is NOT yet verified. The popup now explains this requirement
+  instead of promising a completely untouched-window one-click action.
 - **Receipt-created-before-award special case:** `TicketLottery:Finish`
   creates a real `WON_AWAITING_ITEM` receipt before the operator can press
   AWARD ITEM. The recheck now excludes **only the exact, completed, same-UID,

@@ -865,6 +865,33 @@ Do not infer a server receipt from a /roll, cleared slot or successful
       recipient notification or validates an old recipient's ACK;
       a duplicated exact name is refused and the unique correct
       recipient path remains passing. No actual WoW messaging tested.
+- [x] **Part 17 synthetic 638-record legacy SavedVariables preservation gate**:
+      new [Lua 5.1 fixture](../tests/test_638_legacy_savedvariables_reload.lua)
+      creates **638 synthetic** Gear Plans across 38 mock Playerbot names
+      (NEEDED/GREED/OBTAINED/DISABLED), legacy history and uncertain
+      award/receipt records, old no-retry audit locks, custom priority,
+      original wishlist NEED/GREED/OBTAINED tables, pending remote
+      receipts, owner preferences and arbitrary old custom fields.
+      After `Database:Initialize` and a simulated `/reload`, ALL
+      original Gear Plan row identities, 638 entries, statuses,
+      history/receipt/audit/wishlist table references and custom
+      settings remain intact. Only the established session-only four
+      consent toggles reset OFF, and a legacy non-DARK skin setting
+      normalizes to DARK by existing design. No in-game data was read.
+- [x] [638 fixture commit `d70c006`](https://github.com/CosmicCuddle/N-Loot-Ledger/commit/d70c00687b904aee6edb65195ec15d3cafe22fa8):
+      [Lua 5.1 regression SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41213030752)
+      and [whole integration/NO-RELEASE SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41213026399).
+      Actual GitHub Actions **test-only Build 147** artifact
+      `NLL-MC-leader-ticket-award-147` (ID `13046792089`)
+      was downloaded and CRC/SHA256 checked.
+      **Its inner addon ZIP is BYTE-IDENTICAL to Build 146**;
+      SHA256 `b7eef2b4f2b2415317873b0bac174eaed196a0e4dfc6f59ed7964eaa39a532c2`.
+      Verified inner 51 Lua + 1 TOC, one `NaxxLootLottery/` root,
+      3.3.5a Interface 30300, unchanged SavedVariables identity
+      `NaxxLootLotteryDB`. The only code change in this checkpoint
+      is the offline regression test. This is NOT proof of actual
+      owner's 638 records: their last reported count needs controlled
+      read-only in-client verification after backups.
 - [ ] Phase 1 owner-controlled client install, backups, live-data validation,
       enlarged-font screenshots and real WoW 3.3.5a compatibility evidence.
       Phase 2 ticket-record testing and Phase 3 physical delivery need

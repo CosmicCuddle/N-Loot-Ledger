@@ -5,6 +5,7 @@ on:
     branches:
       - fix/nll-reserved-bindings-guild-materials-20261030
       - feat/nll-winner-popup-quick-award-20261031
+      - feat/nll-guild-material-leader-tickets-20261031
   workflow_dispatch:
 
 permissions:

@@ -58,6 +58,13 @@ leader are the same person.
   map ID **409**. Recognition of item 7075 or the other material IDs in an
   unrelated outdoor/dungeon loot window must not create guild tickets.
   Missing location APIs fail closed.
+- **Receipt-created-before-award special case:** `TicketLottery:Finish`
+  creates a real `WON_AWAITING_ITEM` receipt before the operator can press
+  AWARD ITEM. The recheck now excludes **only the exact, completed, same-UID,
+  same-item, same-full-winner guild receipt** when determining eligibility for
+  that item's first physical award. A missing/mismatched receipt, any older
+  unverified receipt or any other pending human ACK remains a HOLD. The
+  ordinary read-only Guild Loot summary still shows the pending receipt.
 - **All physical award routes re-check policy:** even if a one-ticket guild
   winner has already been recorded, standard Review Award and opt-in
   winner-popup AWARD ITEM must re-confirm that the live recipient remains

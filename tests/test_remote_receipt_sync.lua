@@ -72,6 +72,24 @@ ok(#whispers==1 and whispers[1].from=="Leader" and
 local leaderRow=R:Get(fake.dropUID)
 ok(leaderRow.remoteSyncStatus=="AWAITING_PLAYER",
     "leader status awaits recipient acknowledgement")
+-- Legacy wishlist transport strips realms when checking who is in the
+-- raid. R1 must NOT send a confirmed-item whisper to an absent target
+-- merely because an alternate-realm name shares the short form.
+members[2]="Pikeotter-OtherRealm"
+ok(C:IsSenderInRaid("Pikeotter"),
+    "fixture demonstrates legacy short-name roster match still succeeds")
+local aliasSent=S:SendConfirmed(leaderRow)
+ok(not aliasSent and #whispers==1 and
+   leaderRow.remoteSyncStatus=="WAITING_FOR_PLAYER",
+   "R1 full-name recipient absent: no outbound receipt notification")
+members[2]="Pikeotter"
+leaderRow.remoteSyncStatus="AWAITING_PLAYER"
+members[3]="Pikeotter"
+ok(not S:IsExactRaidRecipient("Pikeotter") and #whispers==1,
+   "duplicate exact recipient roster entries cannot authorise whisper")
+members[3]="Other"
+ok(S:IsExactRaidRecipient("Pikeotter"),
+   "unique exact recipient is recognised for normal messaging")
 local savedLeader=leaderDB.gearNeeds[key]
 -- Separate client with a distinct WTF SavedVariables table.
 NaxxLootLotteryDB={}
@@ -155,6 +173,11 @@ receive("Pikeotter","R1|ACK|L1:1:18821|16800|MOLTEN_CORE")
 receive("Pikeotter-OtherRealm",whispers[2].message)
 ok(leaderRow.remoteSyncStatus=="AWAITING_PLAYER",
     "wrong item or alternate-realm lookalike cannot acknowledge recipient ownership")
+members[2]="Pikeotter-OtherRealm"
+receive("Pikeotter",whispers[2].message)
+ok(leaderRow.remoteSyncStatus=="AWAITING_PLAYER",
+   "old recipient leaves raid: same-short-name substitute cannot supply ACK proof")
+members[2]="Pikeotter"
 receive("Pikeotter",whispers[2].message)
 ok(leaderRow.remoteSyncStatus=="ACKNOWLEDGED",
     "leader records independent recipient-side confirmation")

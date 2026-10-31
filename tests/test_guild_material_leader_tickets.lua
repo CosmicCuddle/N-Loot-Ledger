@@ -138,6 +138,15 @@ hold("unresolved")
 db.guildLootTransferAudit[1].reconciliationStatus="CLOSED_NO_RETRY"
 hold("NO RETRY")
 db.guildLootTransferAudit={}
+-- Reconciliation cannot make a real earlier material request retryable.
+db.lootAwardHistory[1]={itemID=17011,status="AWARD_REQUESTED",
+    reconciliationStatus="CLOSED_NO_RETRY"}
+hold("NO RETRY")
+db.lootAwardHistory={}
+db.awardAttemptLocks={["older-physical-drop"]={
+    itemID=17011,status="AWARD_OUTCOME_UNKNOWN"}}
+hold("NO RETRY")
+db.awardAttemptLocks={}
 N.LootDetection.lootOpen=false
 hold("absent")
 N.LootDetection.lootOpen=true

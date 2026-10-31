@@ -44,17 +44,19 @@ function G:LeaderTicketRecipient(entry)
        type(entry.slotIndex)~="number" or entry.slotIndex<1 then
         return nil,"Not an unambiguous live guild-material drop."
     end
-    -- Map 409 is Molten Core in WoW 3.3.5a. A common material item
-    -- can appear in other instances or the open world; recognizing its
-    -- item ID alone MUST NOT authorize a Molten Core guild allocation.
-    -- GetInstanceInfo's 8th value is the instance map ID in Wrath.
+    -- Client API revisions disagree about when GetInstanceInfo()
+    -- exposed its 8th map-ID return. Use verified 409 when supplied,
+    -- otherwise accept the exact English client instance name with
+    -- raid type. Never guess from a material itemID alone.
     if entry.raidKey~="MOLTEN_CORE" or
        type(GetInstanceInfo)~="function" then
         return nil,"Molten Core instance identity unavailable; guild ticket blocked."
     end
-    local _,instanceType,_,_,_,_,_,instanceID=GetInstanceInfo()
-    if instanceType~="raid" or tonumber(instanceID)~=409 then
-        return nil,"Not inside verified Molten Core (map 409). Guild ticket blocked."
+    local instanceName,instanceType,_,_,_,_,_,instanceID=GetInstanceInfo()
+    if instanceType~="raid" or
+       not ((tonumber(instanceID)==409) or
+            (instanceID==nil and instanceName=="Molten Core")) then
+        return nil,"Not inside verified Molten Core; guild ticket blocked."
     end
     if type(GetLootMethod)~="function" or GetLootMethod()~="master" then
         return nil,"WoW Master Loot must be active for raid-leader guild tickets."

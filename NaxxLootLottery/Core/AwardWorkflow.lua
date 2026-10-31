@@ -468,6 +468,18 @@ function A:OnLootSlotCleared(slot)
             if NLL.LootIdentity then NLL.LootIdentity:MarkAward(uid,request.result.awardStatus) end
             self.liveRequests[uid] = nil
             RefreshUI()
+            -- A successful AWARD ITEM click opens the existing human
+            -- receipt review in NOT READY state. When the real slot clears,
+            -- refresh ONLY that still-open exact-UID dialog so it now
+            -- explains that a separate inventory check is required.
+            -- This never calls ConfirmReceipt or marks plans OBTAINED.
+            local UI=NLL.UI
+            if UI and UI.receiptReviewUID==uid and
+               UI.receiptReviewFrame and UI.receiptReviewFrame.IsShown and
+               UI.receiptReviewFrame:IsShown() and
+               type(UI.OpenReceiptReview)=="function" then
+                UI:OpenReceiptReview(uid)
+            end
             break
         end
     end

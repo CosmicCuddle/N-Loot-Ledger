@@ -71,7 +71,11 @@ NaxxLootLottery={
     UI={currentLootSelected=1,mainFrame=frame(),
         ShowMainFrame=function(self)self.mainFrame:Show()end,
         RefreshCurrentLootPanel=function()end,
-        RefreshOverview=function()end},
+        RefreshOverview=function()end,
+        OpenReceiptReview=function(self,uid)
+            self.receiptOpenUID=uid
+            return true
+        end},
 }
 local N=NaxxLootLottery
 local UI=N.UI
@@ -94,7 +98,8 @@ ok(show(false) and not UI.winnerQuickAwardButton.enabled,
     "quick physical award is invisible to consent until separately enabled")
 ok(UI.winnerReviewAwardButton.enabled,
     "previous Review Award workflow remains available")
-ok(#sends==0,"popup showing NEVER awards loot")
+ok(#sends==0 and UI.receiptOpenUID==nil,
+    "popup showing NEVER awards loot or opens receipt confirmation")
 ok(not A:SetQuickEnabled(true),
     "Master Loot selection alone cannot authorise quick award")
 ok(A:SetDirectEnabled(true) and not A:IsQuickEnabled(),
@@ -165,8 +170,9 @@ UI.winnerQuickAwardButton.scripts.OnClick()
 ok(#sends==1 and sends[1].slot==1 and sends[1].candidate==1,
     "one deliberate click sends ONLY exact selected item to exact winner")
 ok(not UI.winnerAnnouncement.shown and
-    winner.awardStatus=="AWARD_REQUESTED",
-    "winner popup closes only after real request is recorded")
+    winner.awardStatus=="AWARD_REQUESTED" and
+    UI.receiptOpenUID=="UID-QUICK",
+    "winner popup closes and offers existing read-only receipt review after successful physical request")
 ok(#N.db.lootAwardHistory==1 and
    N.db.lootAwardHistory[1].status=="AWARD_REQUESTED" and
    N.db.awardAttemptLocks["UID-QUICK"] and

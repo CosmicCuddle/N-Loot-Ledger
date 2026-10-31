@@ -227,6 +227,13 @@ sent,why=A:QuickAward("UID-GUILD","Pikeotter")
 ok(not sent and why:find("NO RETRY",1,true) and #sends==1,
     "previous material attempt guard enforced again at physical transfer")
 liveLeader="Pikeotter"
+candidates={"Pikeotter-OtherRealm"}
+ok(not A:Review(entry) and #sends==1,
+    "guild Review Award refuses same short name from another realm")
+candidates={"Pikeotter","Pikeotter"}
+ok(not A:Review(entry) and #sends==1,
+    "guild Review Award refuses duplicate exact recipient candidates")
+candidates={"Pikeotter"}
 sent,why=A:QuickAward("UID-GUILD","Pikeotter")
 ok(sent and #sends==2 and sends[2].slot==1 and
    sends[2].candidate==1 and db.gearNeeds.old.status=="NEEDED",

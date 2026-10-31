@@ -82,10 +82,7 @@ function P:Build()
     for _,source in ipairs(scanned) do
         local decision,reason="HOLD",source.reason
         if source.status=="GUILD_REVIEW" then
-            if source.guildMaterial then
-                decision="USE_LEADER_TICKETS"
-                reason="Guild material now uses sole raid-leader ticket in Current Loot; no Guild Master transfer"
-            elseif unresolved then
+            if unresolved then
                 decision="HOLD_UNRESOLVED_REQUEST"
                 reason="Another Master Loot outcome is uncertain; manual reconciliation first"
             elseif NLL.GuildLootTransfer and
@@ -98,6 +95,9 @@ function P:Build()
             elseif lotteryBusy then
                 decision="HOLD_ACTIVE_ROLL"
                 reason="A ticket lottery is pending; no guild allocation proposal"
+            elseif source.guildMaterial then
+                decision="USE_LEADER_TICKETS"
+                reason="Guild material uses Prepare Tickets / Start Roll, sole raid leader; NO transfer here"
             elseif not masterOK then
                 decision="HOLD_MASTER_LOOT"
                 reason="The acting character is not the verified WoW Master Looter"

@@ -88,7 +88,31 @@ function G:LeaderTicketRecipient(entry)
             return nil,"Previous winner Master Loot request for this material ID. NO RETRY."
         end
     end
-    local rows=self:Scan()
+    -- After this exact guild leader ticket finishes, receipt tracking
+    -- correctly creates WON_AWAITING_ITEM. Ignore ONLY that one pending
+    -- receipt for the first physical award of the SAME pinned winner.
+    -- Every other pending/unknown human or bot receipt remains a HOLD.
+    local ownReceipt=nil
+    local completed=NLL.TicketLottery and
+        NLL.TicketLottery:GetActiveFor(entry)
+    if completed and completed.status=="COMPLETE" and
+       completed.selectionType=="GUILD" and
+       completed.test~=true and
+       completed.dropUID==entry.dropUID and
+       tonumber(completed.itemID)==tonumber(entry.itemID) and
+       type(completed.winner)=="string" then
+        local book=NLL.db and NLL.db.lootReceiptTracker
+        local r=type(book)=="table" and book[entry.dropUID]
+        if type(r)=="table" and r.dropUID==entry.dropUID and
+           tonumber(r.itemID)==tonumber(entry.itemID) and
+           r.selectionType=="GUILD" and
+           r.status=="WON_AWAITING_ITEM" and
+           type(r.character)=="string" and
+           string.lower(r.character)==string.lower(completed.winner) then
+            ownReceipt=r
+        end
+    end
+    local rows=self:Scan(ownReceipt)
     for _,row in ipairs(rows or {}) do
         if row.slotIndex==entry.slotIndex and
            row.itemID==entry.itemID then
@@ -102,6 +126,11 @@ function G:LeaderTicketRecipient(entry)
             local leader=row.leader
             if type(leader)~="string" or leader=="" then
                 return nil,"The raid leader cannot be uniquely verified."
+            end
+            if completed and completed.selectionType=="GUILD" and
+               (type(completed.winner)~="string" or
+                string.lower(completed.winner)~=string.lower(leader)) then
+                return nil,"Completed guild ticket belongs to a different raid leader."
             end
             return leader,"Leader-only guild-material ticket."
         end
@@ -155,7 +184,7 @@ function G:GetLeader()
     return leader
 end
 
-function G:GetReservationSummary(itemID)
+function G:GetReservationSummary(itemID,ignoreOwnGuildReceipt)
     local db=NLL.db
     local summary={need=0,greed=0,unknown=0,localCount=0,
         incoming=0,receiptPending=0,activeNames={}}
@@ -201,7 +230,13 @@ function G:GetReservationSummary(itemID)
             local awaitingReceipt=status~="OBTAINED"
             local awaitingPlayer=status=="OBTAINED" and
                 remote~=nil and remote~="" and remote~="ACKNOWLEDGED"
-            if awaitingReceipt or awaitingPlayer then
+            -- Identity must be the exact validated in-memory receipt,
+            -- never just a matching itemID or character name. Other
+            -- pending entries for the same material remain blocking.
+            if (awaitingReceipt or awaitingPlayer) and
+               not (receipt==ignoreOwnGuildReceipt and
+                    receipt.selectionType=="GUILD" and
+                    receipt.status=="WON_AWAITING_ITEM") then
                 summary.receiptPending=summary.receiptPending+1
             end
         end
@@ -277,7 +312,7 @@ function G:Classify(itemID, quality, itemType)
     return nil,classification,nil
 end
 
-function G:Scan()
+function G:Scan(ignoreOwnGuildReceipt)
     local rows={}
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
         return rows,"Fake raid active: guild loot requires live WoW corpse"
@@ -324,7 +359,7 @@ function G:Scan()
             end
             local category,reason
             category,_,reason=self:Classify(id,quality,itemType)
-            local summary=self:GetReservationSummary(id)
+            local summary=self:GetReservationSummary(id,ignoreOwnGuildReceipt)
             local status
             local threshold=type(GetLootThreshold)=="function" and
                 tonumber(GetLootThreshold()) or nil

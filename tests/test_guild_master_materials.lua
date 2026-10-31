@@ -24,6 +24,7 @@ end
 local candidates={"GuildBoss","RaidLeader"}
 GetMasterLootCandidate=function(i) return candidates[i] end
 GetLootMethod=function()return "master",nil,2 end
+GetInstanceInfo=function()return "Molten Core","raid",1,"40 Player",40,0,false,409 end
 local selected=1
 LootFrame={IsShown=function()return true end,selectedSlot=1}
 local slots={17011,7075,18563}
@@ -97,7 +98,7 @@ assert(legendary[1].status=="SPECIAL_HOLD",
 specialQuality=false
 local target={slotIndex=1,itemID=17011,quantity=1,
     itemLink=rows[1].itemLink,state="DETECTED",
-    dropUID="LIVE-MATERIAL:1"}
+    dropUID="LIVE-MATERIAL:1",raidKey="MOLTEN_CORE"}
 -- Earlier Guild Master transfer behavior was superseded by CosmicCuddle's
 -- 31 Oct owner decision. A guild-material item is NEVER physically sent
 -- through the old Guild Transfer modal, even when both consents are ON.

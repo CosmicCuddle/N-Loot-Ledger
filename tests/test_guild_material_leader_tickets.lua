@@ -5,6 +5,11 @@ local function ok(v,m)assert(v,m);n=n+1 end
 local awards,randomRolls=0,0
 GiveMasterLoot=function()awards=awards+1;error("NEVER GRANT")end
 RandomRoll=function()randomRolls=randomRolls+1;error("NEVER ROLL")end
+-- Core TicketLottery.lua registers client event handlers at load time.
+-- The mock is inert; these tests never fire gameplay events.
+CreateFrame=function()
+    return {RegisterEvent=function()end, SetScript=function()end}
+end
 GetTime=function()return 100 end
 date=function()return "2026-10-31" end
 UnitName=function()return "Operator" end

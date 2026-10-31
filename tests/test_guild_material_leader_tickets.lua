@@ -22,6 +22,7 @@ local lootOpen=true
 local threshold=1
 GetLootThreshold=function()return threshold end
 GetNumLootItems=function()return 1 end
+GetLootMethod=function()return "master",nil,2 end
 local function link(id)return "|Hitem:"..id..":0|h[Material "..id.."]|h"end
 GetLootSlotLink=function()return link(itemID)end
 GetLootSlotInfo=function()return nil,nil,qty,2,false end

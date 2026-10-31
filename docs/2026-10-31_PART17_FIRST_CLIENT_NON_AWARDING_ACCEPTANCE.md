@@ -3,7 +3,23 @@
 **Owner:** CosmicCuddle  
 **State:** DRAFT / test-only. **Not an installed update, approved merge or release.**  
 **Code:** [PR #43](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/43), stacked on [#42](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/42), [#41](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/41) and [#40](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/40).  
-**Last source/test code checkpoint:** `60964fadadefda48d701656569240c78bbba3795`; [Lua 5.1 green](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209617578) and [full NO-RELEASE green](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209612517). This is mocked/source evidence only; any later documentation commit must be checked against latest PR HEAD before testing.
+**Verified source/test code checkpoint:** `35917594eb15283fba35a88274217a80cedaf61f`; [Lua 5.1 green](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209745595) and [full NO-RELEASE green](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209742036). This is mocked/source evidence only. Later documentation-only commits do not alter Build 141's packaged Lua, but always compare the installed artifact's own source commit, never just the TOC version.
+
+## Verified Build 141 test-only artifact (31 October 2026)
+
+- [Successful exact-source packaging run](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209742036) → **Artifacts** → `NLL-MC-leader-ticket-award-141` (GitHub artifact ID `13046300143`). It may expire after seven days.
+- The downloaded outer archive contains exactly `NLL-MC-leader-ticket-award-test-ONLY.zip`, `SHA256SUMS.txt` and `BUILD_INFO.txt`. **Do not install this outer archive as an addon.**
+- Exact SHA-256 for the **inner addon ZIP** `NLL-MC-leader-ticket-award-test-ONLY.zip`:
+  `896571baca5360a6f0c7d19e4485e5a22066b32ef82876bc0c5f0be8300e81f2`
+- Independently inspected the actual downloaded GitHub Actions artifact on 31 October 2026: both ZIP CRC tests passed, inner ZIP has **51 Lua modules + one TOC**, exactly matches every TOC-listed file, has exactly one root folder `NaxxLootLottery/`, and its SHA-256 matches `SHA256SUMS.txt`. The inner TOC confirms `## Interface: 30300` and `## SavedVariables: NaxxLootLotteryDB`.
+- On Windows, after extracting the **outer** archive outside the WoW directory, you can verify the **inner** ZIP using PowerShell (with PowerShell opened in that extraction directory):
+
+  ```powershell
+  Get-FileHash ".\\NLL-MC-leader-ticket-award-test-ONLY.zip" -Algorithm SHA256
+  ```
+
+  It must match the exact digest above. Missing files, an unexpected hash, a different `BUILD_INFO.txt` commit or an unexpected directory layout means **STOP; do not install**.
+- **Raid-day decision:** stay on the previously installed Build 60 for any imminent raid. Build 141 is cleared for the *first owner-controlled, backed-up, non-awarding client smoke test*, preferably after the raid or on a separate test client. This verification does **not** authorise a real roll, physical item award, merger or production deployment.
 
 ## Before touching the installed addon
 

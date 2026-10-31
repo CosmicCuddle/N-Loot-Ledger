@@ -7,8 +7,11 @@ local NLL=NaxxLootLottery
 NLL.ReceiptSync=NLL.ReceiptSync or {}
 local S=NLL.ReceiptSync
 S.protocol="R1"
-local function Key(name)
-    return string.lower((tostring(name or ""):match("^([^%-]+)") or ""))
+local function ExactName(a,b)
+    -- Remote OBTAINED is an ownership-changing message. Never strip
+    -- realms: an alias with the same short name is not the same client.
+    return type(a)=="string" and type(b)=="string" and
+        a~="" and b~="" and string.lower(a)==string.lower(b)
 end
 local function LocalName()return UnitName and UnitName("player") or nil end
 local function Book()
@@ -18,7 +21,7 @@ local function Acks()
     return NLL.db and NLL.db.localReceiptSyncDone
 end
 local function ReceiptID(sender,dropUID)
-    return Key(sender)..":"..tostring(dropUID or "")
+    return string.lower(tostring(sender or ""))..":"..tostring(dropUID or "")
 end
 local function ValidDrop(uid,itemID)
     return type(uid)=="string" and #uid<=64 and
@@ -33,27 +36,39 @@ function S:IsTrustedLeader(sender)
     if not C or not C.IsSenderCurrentRaidLeader or
        not C:IsSenderCurrentRaidLeader(sender) or
        not C:IsSenderInRaid(sender) then return false end
-    -- Refuse split/ambiguous raid leadership before ever offering a
-    -- player-controlled SavedVariables write. CHAT_MSG_ADDON sender names
-    -- alone are not cryptographic proof of item delivery.
+    -- The general wishlist transport can accept short-name aliases.
+    -- A remote receipt MUST independently match the sole leader's
+    -- FULL name from the current live raid roster, exactly once.
     if not GetNumRaidMembers or not GetRaidRosterInfo then return false end
-    local leaders=0
+    local leaders,fullLeader=0,nil
     for i=1,(GetNumRaidMembers() or 0) do
-        local _,rank=GetRaidRosterInfo(i)
-        if rank==2 then leaders=leaders+1 end
+        local name,rank=GetRaidRosterInfo(i)
+        if rank==2 then leaders=leaders+1; fullLeader=name end
     end
-    return leaders==1
+    return leaders==1 and ExactName(sender,fullLeader)
+end
+function S:IsSelfExactLeader()
+    local C=NLL.Communication
+    if not C or not C.IsSelfRaidLeader or
+       not C:IsSelfRaidLeader() or
+       not GetNumRaidMembers or not GetRaidRosterInfo then return false end
+    local count,leader=0,nil
+    for i=1,(GetNumRaidMembers() or 0) do
+        local name,rank=GetRaidRosterInfo(i)
+        if rank==2 then count=count+1;leader=name end
+    end
+    return count==1 and ExactName(LocalName(),leader)
 end
 function S:EligibleHuman(row)
     if not row or type(row.needs)~="table" or
-       Key(row.character)=="" then return false end
+       type(row.character)~="string" or row.character=="" then return false end
     for _,snapshot in ipairs(row.needs) do
         local need=NLL.db and NLL.db.gearNeeds and
             NLL.db.gearNeeds[snapshot.key]
         if type(need)=="table" and
             (need.source=="PLAYER_SUBMITTED" or
              need.characterType=="PLAYER") and
-            Key(need.character)==Key(row.character) then return true end
+            ExactName(need.character,row.character) then return true end
     end
     return false
 end
@@ -61,11 +76,10 @@ function S:SendConfirmed(row)
     if not row or row.status~="OBTAINED" or
        not ValidDrop(row.dropUID,tonumber(row.itemID)) or
        not self:EligibleHuman(row) or not NLL.Communication or
-       not NLL.Communication:IsSelfRaidLeader() then
+       not self:IsSelfExactLeader() then
         return false,"Only a current leader can notify a verified human recipient."
     end
-    local recipient=Key(row.character)
-    if recipient==Key(LocalName()) then
+    if ExactName(row.character,LocalName()) then
         return false,"This was the leader's own local wishlist."
     end
     if not NLL.Communication:IsSenderInRaid(row.character) then
@@ -102,7 +116,7 @@ function S:HandleReceipt(sender,fields)
     if raidKey~="MOLTEN_CORE" or
        not itemID or itemID%1~=0 or
        not ValidDrop(uid,itemID) or
-       Key(recipient)~=Key(LocalName()) then return false end
+       not ExactName(recipient,LocalName()) then return false end
     local person=LocalName()
     local key=ReceiptID(sender,uid)
     local already=Acks()[key]
@@ -111,7 +125,7 @@ function S:HandleReceipt(sender,fields)
         -- original receipt pending. An identical replay can re-send only
         -- the ACK, never mark a second item OBTAINED.
         if already.itemID==itemID and
-           Key(already.leader)==Key(sender) and
+           ExactName(already.leader,sender) and
            NLL.Communication and NLL.Communication.SendWhisper then
             return NLL.Communication:SendWhisper(sender,
                 "R1|ACK|"..uid.."|"..itemID.."|"..raidKey)
@@ -128,7 +142,7 @@ function S:HandleReceipt(sender,fields)
     local previous=Book()[key]
     if previous then
         return previous.itemID==itemID and
-            Key(previous.recipient)==Key(recipient)
+            ExactName(previous.recipient,recipient)
     end
     Book()[key]={
         key=key,leader=sender,recipient=person,dropUID=uid,
@@ -144,10 +158,10 @@ function S:HandleReceipt(sender,fields)
     return true
 end
 function S:GetPendingForLocal()
-    local rows,person={},Key(LocalName())
+    local rows,person={},LocalName()
     for key,row in pairs(Book() or {}) do
         if type(row)=="table" and row.status=="AWAITING_PLAYER" and
-            Key(row.recipient)==person then
+            ExactName(row.recipient,person) then
             row.key=key
             rows[#rows+1]=row
         end
@@ -161,7 +175,7 @@ function S:CanAccept(key)
         return false,"Receipt offer missing or already handled."
     end
     if not self:IsTrustedLeader(record.leader) or
-       Key(record.recipient)~=Key(LocalName()) or
+       not ExactName(record.recipient,LocalName()) or
        not ValidDrop(record.dropUID,record.itemID) then
         return false,"Original raid leader/recipient not currently verified."
     end
@@ -206,7 +220,7 @@ function S:Accept(key)
 end
 function S:HandleAck(sender,fields)
     if #fields~=5 or not NLL.Communication or
-        not NLL.Communication:IsSelfRaidLeader() or
+        not self:IsSelfExactLeader() or
         not NLL.Communication:IsSenderInRaid(sender) then return false end
     local uid,itemID,raidKey=fields[3],tonumber(fields[4]),fields[5]
     if raidKey~="MOLTEN_CORE" or
@@ -215,7 +229,7 @@ function S:HandleAck(sender,fields)
         NLL.LootReceiptTracker:Get(uid)
     if not row or row.status~="OBTAINED" or
        row.itemID~=itemID or row.raidKey~=raidKey or
-       Key(row.character)~=Key(sender) or
+       not ExactName(row.character,sender) or
        (row.remoteSyncStatus~="AWAITING_PLAYER" and
         row.remoteSyncStatus~="ACKNOWLEDGED") then return false end
     row.remoteSyncStatus="ACKNOWLEDGED"

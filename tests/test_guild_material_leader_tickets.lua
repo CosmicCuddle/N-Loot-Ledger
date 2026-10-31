@@ -144,4 +144,40 @@ N.LootDetection.lootOpen=true
 entry.identityUncertain=true
 hold("unambiguous")
 ok(awards==0 and randomRolls==0,"all leader policy tests remain non-awarding")
+
+-- Whitelist scope is exact and stable; no other MC items inherit
+-- deterministic raid-leader tickets from their unreserved state.
+entry.identityUncertain=false
+for _,id in ipairs({17011,17010,17012,11382,7075}) do
+    itemID=id
+    entry.itemID=id
+    entry.itemLink=link(id)
+    entry.dropUID="LIVE:whitelist:"..id
+    local v=P:BuildPreview(entry)
+    ok(G:IsGuildMaterial(id) and v.ready and
+       v.selectionType=="GUILD" and #v.current==1 and
+       v.current[1].character=="RaidLeader",
+       "only current leader enters whitelisted guild material "..id)
+end
+itemID=18821
+entry.itemID=18821
+entry.itemLink=link(18821)
+entry.dropUID="LIVE:non-guild"
+local ordinary=P:BuildPreview(entry)
+ok(not G:IsGuildMaterial(18821) and not ordinary.guildLeaderOnly and
+   not ordinary.ready,"unreserved unrelated loot is NOT leader-only")
+
+-- After preparing a material for one leader, the leadership roster must
+-- still match at Start Roll, not just at the earlier preview.
+itemID=17010
+entry.itemID=17010
+entry.itemLink=link(17010)
+entry.dropUID="LIVE:leadership-drift:17010"
+ok(L:Prepare(entry),"new material with current leader can prepare")
+leader="SomeoneElse"
+local allowed,reason=L:StartRoll(entry)
+ok(not allowed and reason:find("Roster/priority changed",1,true) and
+   L.active.status=="PREPARED" and randomRolls==0 and awards==0,
+   "leadership change after Prepare prevents former leader award")
+leader="RaidLeader"
 print("PASS: "..n.." sole-leader guild tickets and reservation/identity safety")

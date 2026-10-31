@@ -80,7 +80,7 @@ ok(db.settings.directMasterLootEnabled==false and
 ok(P:SetEnabled(true),"explicit preview-only enable")
 plan=P:Build()
 ok(plan.mode=="DRY_RUN" and #plan.rows==9 and
-    plan.proposed==2 and plan.held==7 and plan.autoEligible==0,
+    plan.proposed==0 and plan.held==9 and plan.autoEligible==0,
     "materials included; every reserved/uncertain/special/attempted item held")
 local decisions={}
 for _,row in ipairs(plan.rows) do
@@ -89,23 +89,23 @@ for _,row in ipairs(plan.rows) do
        not row.leaderCandidateVerified and not row.physicalReceiptVerified,
        "no plan row is an automatic award instruction")
 end
-ok(decisions[17010].decision=="PROPOSE_TO_GUILD_MASTER" and
+ok(decisions[17010].decision=="USE_LEADER_TICKETS" and
     decisions[17010].quantity==3 and
-    decisions[17010].proposedRecipient=="Other3" and
-    decisions[17010].recipientKind=="GUILD_MASTER" and
+    decisions[17010].proposedRecipient==nil and
+    decisions[17010].recipientKind==nil and
     decisions[17010].leader=="Leader" and
     not decisions[17010].leaderCandidateVerified,
-    "crafting materials proposed only to the different verified guild master")
-ok(decisions[17011].decision=="PROPOSE_TO_GUILD_MASTER" and
-    decisions[17011].proposedRecipient=="Other3",
-    "second material uses actual guild master, never raid leader")
+    "guild material is guided to leader-only tickets, not directly granted")
+ok(decisions[17011].decision=="USE_LEADER_TICKETS" and
+    decisions[17011].proposedRecipient==nil,
+    "second material uses leader tickets; legacy guild master proposal retired")
 guildMasterOnline=false
 local absent=P:Build()
 ok(absent.proposed==0 and
-    absent.rows[1].decision=="HOLD_GUILD_MASTER" and
-    absent.rows[4].decision=="HOLD_GUILD_MASTER" and
+    absent.rows[1].decision=="USE_LEADER_TICKETS" and
+    absent.rows[4].decision=="USE_LEADER_TICKETS" and
     absent.rows[1].proposedRecipient==nil,
-    "offline guild master holds material proposals without raid leader fallback")
+    "offline guild master no longer determines owner's leader-ticket routing")
 guildMasterOnline=true
 ok(decisions[16800].decision=="HOLD_RESERVED" and
     decisions[16800].need==1,"offline bot NEED is never auto-routed")
@@ -126,12 +126,12 @@ guildHistory[1].status="AWARD_OUTCOME_UNKNOWN"
 guildHistory[1].reconciliationStatus=nil
 plan=P:Build()
 ok(plan.proposed==0 and
-    decisions[17010].decision=="PROPOSE_TO_GUILD_MASTER" and
+    decisions[17010].decision=="USE_LEADER_TICKETS" and
     plan.rows[1].decision=="HOLD_UNRESOLVED_REQUEST",
     "one unresolved transfer blocks every new allocation proposal")
 guildHistory[1].reconciliationStatus="CLOSED_NO_RETRY"
 plan=P:Build()
-ok(plan.proposed==2 and
+ok(plan.proposed==0 and
     plan.rows[8].decision=="HOLD_PREVIOUS_ATTEMPT",
     "manual NO-RETRY closure restores unrelated proposals but never old item")
 duplicate=true
@@ -188,14 +188,16 @@ assert(loadfile("NaxxLootLottery/UI/CurrentLootFrame.lua"))()
 N.UI:OpenGuildLootReview()
 ok(N.UI.guildLootDialog.shown and N.UI.guildLootDryRun.label.text=="Dry Run: ON",
     "guild review shows visible preview-only ON control")
-ok(N.UI.guildLootRows[1].nameText.text:find("PROPOSE_TO_GUILD_MASTER",1,true) and
-    N.UI.guildLootRows[1].reasonText.text:find("Other3",1,true),
-    "crafting material preview shows actual guild-master proposal and name")
+ok(N.UI.guildLootRows[1].nameText.text:find("USE_LEADER_TICKETS",1,true) and
+    N.UI.guildLootRows[1].reasonText.text:find("Prepare Tickets",1,true) and
+    not N.UI.guildLootRows[1].reviewButton.enabled,
+    "preview routes guild material to tickets, not manual guild transfer")
 N.UI.guildLootDryRun.scripts.OnClick()
 ok(not P:IsEnabled() and N.UI.guildLootDryRun.label.text=="Dry Run: OFF",
     "button safely disables preview without touching physical controls")
-ok(N.UI.guildLootRows[1].nameText.text:find("GUILD_REVIEW",1,true),
-    "disabled preview restores ordinary manual review")
+ok(N.UI.guildLootRows[1].nameText.text:find("GUILD_REVIEW",1,true) and
+    not N.UI.guildLootRows[1].reviewButton.enabled,
+    "disabled preview still cannot arm superseded Guild Master transfer")
 N.UI.guildLootDryRun.scripts.OnClick()
 ok(P:IsEnabled() and awards==0,"UI preview toggle never calls GiveMasterLoot")
 N.Database:Initialize()

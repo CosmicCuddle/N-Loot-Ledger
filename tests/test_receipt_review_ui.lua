@@ -133,6 +133,33 @@ ok(confirms==0 and not UI.receiptReviewComplete.enabled and
    UI.receiptReviewArmedAt==nil,
     "selected loot changes after verification: no receipt")
 current=drop
+-- A receipt is a specific person's physical inventory assertion. An
+-- edited or swapped ledger row with the SAME drop UID must require a
+-- fresh review instead of inheriting the prior human confirmation.
+UI.receiptReviewCheck.scripts.OnClick()
+ok(UI.receiptReviewComplete.enabled,"original recipient can arm receipt")
+ledger.character="WrongRealmRecipient"
+UI.receiptReviewComplete.scripts.OnClick()
+ok(confirms==0 and not UI.receiptReviewComplete.enabled and
+   ledger.status=="WON_AWAITING_ITEM",
+   "winner changed after inventory check: cannot mark another person OBTAINED")
+ledger.character="Throgar"
+UI.receiptReviewCheck.scripts.OnClick()
+ledger.itemID=16800
+UI.receiptReviewComplete.scripts.OnClick()
+ok(confirms==0 and not UI.receiptReviewComplete.enabled,
+   "item changed after inventory check: cannot mark another item OBTAINED")
+ledger.itemID=16866
+UI.receiptReviewCheck.scripts.OnClick()
+local original=ledger
+ledger={dropUID="D1",itemID=16866,character="Throgar",
+    itemName="Helm of Might",selectionType="NEED",
+    status="WON_AWAITING_ITEM"}
+UI.receiptReviewComplete.scripts.OnClick()
+ok(confirms==0 and not UI.receiptReviewComplete.enabled and
+   ledger.status=="WON_AWAITING_ITEM",
+   "replaced receipt ledger row cannot inherit stale inventory confirmation")
+ledger=original
 UI.receiptReviewCheck.scripts.OnClick()
 ok(UI.receiptReviewComplete.enabled and confirms==0,
     "same original drop may be reviewed again")

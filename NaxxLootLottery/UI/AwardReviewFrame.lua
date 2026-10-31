@@ -266,10 +266,11 @@ function UI:CreateReceiptReview()
         local entry=not UI.receiptReviewHistorical and
             NLL.LootDetection:GetCurrentLoot()[
                 UI.currentLootSelected or 1] or nil
-        if not row or
+        if not row or row~=UI.receiptReviewRow or
+            row.character~=UI.receiptReviewWinner or
+            tonumber(row.itemID)~=UI.receiptReviewItemID or
             (not UI.receiptReviewHistorical and
-             (not entry or entry.dropUID~=row.dropUID)) or
-            row.character~=UI.receiptReviewWinner then
+             (not entry or entry.dropUID~=row.dropUID)) then
             warning:SetText("Item selection changed. Reopen receipt review.")
             UI.receiptReviewArmedAt=nil
             UI.receiptReviewComplete:Disable()
@@ -300,8 +301,15 @@ function UI:CreateReceiptReview()
         local entry=NLL.LootDetection:GetCurrentLoot()[
             UI.currentLootSelected or 1]
         local now=ReceiptUptime()
-        if (not UI.receiptReviewHistorical and
-            (not entry or entry.dropUID~=UI.receiptReviewUID)) or
+        -- The human attested to one EXACT pinned recipient and item.
+        -- Never carry that assertion onto a mutated or replaced ledger
+        -- record with the same drop UID, especially from Award History.
+        local row=NLL.LootReceiptTracker:Get(UI.receiptReviewUID)
+        if not row or row~=UI.receiptReviewRow or
+            row.character~=UI.receiptReviewWinner or
+            tonumber(row.itemID)~=UI.receiptReviewItemID or
+            (not UI.receiptReviewHistorical and
+             (not entry or entry.dropUID~=UI.receiptReviewUID)) or
             type(UI.receiptReviewArmedAt)~='number' or
             now==nil or now<UI.receiptReviewArmedAt or
             now-UI.receiptReviewArmedAt>15 then
@@ -354,6 +362,8 @@ function UI:OpenReceiptReview(entry)
     self:CreateReceiptReview()
     self.receiptReviewUID=row.dropUID
     self.receiptReviewWinner=row.character
+    self.receiptReviewItemID=tonumber(row.itemID)
+    self.receiptReviewRow=row
     self.receiptReviewHistorical=historical
     self.receiptReviewArmedAt=nil
     self.receiptReviewComplete:Disable()

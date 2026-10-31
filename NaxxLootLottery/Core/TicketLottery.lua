@@ -215,8 +215,14 @@ function L:Finish(roll,method)
         ': sole guild leader ticket ' or ': winning ticket ')..
         roll .. ' = ' .. a.winner .. '. Item not yet awarded.')
     if not a.test then
-        self:Announce("NLL WINNER: "..a.itemName.." -> "..a.winner..
-            " (ticket #"..roll.."). Item not yet awarded.")
+        if a.selectionType=='GUILD' then
+            self:Announce("NLL GUILD ALLOCATION (LEADER ONLY): "..
+                a.itemName.." -> "..a.winner..
+                " (sole ticket #1). Item not yet awarded.")
+        else
+            self:Announce("NLL WINNER: "..a.itemName.." -> "..a.winner..
+                " (ticket #"..roll.."). Item not yet awarded.")
+        end
     end
     if NLL.UI and NLL.UI.RefreshCurrentLootPanel then
         NLL.UI:RefreshCurrentLootPanel()

@@ -69,11 +69,15 @@ NaxxLootLottery={
     LootIdentity={GetRow=function()return nil end,
         MarkAward=function()end},
     UI={currentLootSelected=1,mainFrame=frame(),
+        receiptReviewFrame=frame(), receiptReviewOpenCount=0,
         ShowMainFrame=function(self)self.mainFrame:Show()end,
         RefreshCurrentLootPanel=function()end,
         RefreshOverview=function()end,
         OpenReceiptReview=function(self,uid)
+            self.receiptReviewUID=uid
             self.receiptOpenUID=uid
+            self.receiptReviewOpenCount=self.receiptReviewOpenCount+1
+            self.receiptReviewFrame:Show()
             return true
         end},
 }
@@ -181,6 +185,17 @@ ok(#N.db.lootAwardHistory==1 and
 show(false)
 UI.winnerQuickAwardButton.scripts.OnClick()
 ok(#sends==1,"same popup/drop cannot send a second Master Loot request")
+A:OnLootSlotCleared(1)
+ok(UI.receiptReviewOpenCount==2 and
+   UI.receiptReviewUID=="UID-QUICK" and
+   winner.awardStatus=="LOOT_SLOT_CLEARED" and
+   N.db.gearNeeds.old.status=="NEEDED" and
+   #sends==1,
+   "slot clear refreshes only open exact-drop receipt review; NEVER automatically marks OBTAINED")
+UI.receiptReviewFrame:Hide()
+A:OnLootSlotCleared(1)
+ok(UI.receiptReviewOpenCount==2 and #sends==1,
+   "hidden receipt dialogs are not reopened by other slot events")
 ok(A:SetDirectEnabled(false) and not A:IsQuickEnabled() and
    not db.settings.winnerQuickAwardEnabled,
    "disabling direct award immediately disarms quick transfer")

@@ -46,13 +46,14 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          python3 scripts/build_release_zip.py --output dist/NLL-MC-bindings-guild-test-ONLY.zip
+          python3 scripts/build_release_zip.py --output dist/NLL-MC-leader-ticket-award-test-ONLY.zip
           cd dist
-          sha256sum NLL-MC-bindings-guild-test-ONLY.zip > SHA256SUMS.txt
+          sha256sum NLL-MC-leader-ticket-award-test-ONLY.zip > SHA256SUMS.txt
           {
             echo 'TEST ONLY - NOT A PUBLISHED RELEASE'
             echo "Source commit: $GITHUB_SHA"
-            echo 'Based on dev/nll-live-ui-feedback (dev20)'
+            echo 'DRAFT PR #43: five guild materials use sole raid-leader tickets; optional popup one-click Master Loot.'
+            echo 'Not Build 60. Requires full Lua and NO-RELEASE CI success; no in-game acceptance yet.'
             echo 'Back up the live addon folder AND current account SavedVariables first.'
             echo 'Do not replace addon files in the middle of an encounter.'
             echo 'Manual OBTAINED: leader-attested Gear Plan only; DOES NOT verify independent delivery, unlock old loot or grant items.'
@@ -61,10 +62,10 @@ jobs:
       - name: Upload owner-controlled test package only
         uses: actions/upload-artifact@v4
         with:
-          name: NLL-MC-bindings-guild-${{ github.run_number }}
+          name: NLL-MC-leader-ticket-award-${{ github.run_number }}
           if-no-files-found: error
           retention-days: 7
           path: |
-            dist/NLL-MC-bindings-guild-test-ONLY.zip
+            dist/NLL-MC-leader-ticket-award-test-ONLY.zip
             dist/SHA256SUMS.txt
             dist/BUILD_INFO.txt

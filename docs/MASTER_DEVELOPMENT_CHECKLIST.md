@@ -783,6 +783,28 @@ Do not infer a server receipt from a /roll, cleared slot or successful
       mismatched award history, as well as recipient/item/ledger changes
       after first inventory-attestation click. These are NOT actual
       3.3.5a in-game tests.
+- [x] **Part 17 exact-owner Gear Plan receipt update:** after exact
+      winner/award evidence checks, the final receipt path now also
+      requires the **full exact character name** when capturing
+      winner-matched active Gear Plans, validating saved snapshots,
+      linking any historically attested bot NEED/GREED, checking the
+      original leader's receipt authority, and mirroring a confirmed
+      personal receipt into local wishlist SavedVariables.
+      This prevents `Throgar` from turning a separate
+      `Throgar-OtherRealm` Gear Plan OBTAINED and prevents an
+      `Leader-OtherRealm` alias from inheriting `Leader` receipt
+      authority. Previously saved plan entries are **not** rewritten.
+      **Compatibility HOLD:** records that disagree on realm suffix may
+      no longer auto-match for receipt/OBTAINED. Verify real client and
+      Playerbot naming before owner-approved release; do not silently
+      relax identity checks or change existing records.
+- [x] Exact code/test checkpoint `48602ce90d0eed6458b7a75d78fac1298c4db24d`:
+      [Lua 5.1 SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41207473609)
+      and [full NO-RELEASE SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41207468947).
+      Tests prove separate same-short-name Gear Plans stay NEEDED,
+      exact original-leader authority is required when raid authority
+      is absent, and one recipient cannot set another client's
+      local Wishlist OBTAINED. No live test or server inventory proof.
 - [ ] Phase 1 owner-controlled client install, backups, live-data validation,
       enlarged-font screenshots and real WoW 3.3.5a compatibility evidence.
       Phase 2 ticket-record testing and Phase 3 physical delivery need

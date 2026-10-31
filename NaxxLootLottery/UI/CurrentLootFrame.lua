@@ -715,7 +715,7 @@ function UI:CreateCurrentLootPanel(parent)
     end)
     -- Optional read-only all-slot view; sits on its own footer row,
     -- away from Prev Matches / Prepare Tickets (HF1 overlap regression).
-    local guild=self:CreateTextButton(panel,"Guild Loot",104)
+    local guild=self:CreateTextButton(panel,"Loot Review",104)
     guild:SetPoint("BOTTOMLEFT",panel,"BOTTOMLEFT",342,98)
     guild:SetScript("OnClick",function() UI:OpenGuildLootReview() end)
     self.currentLootGuildReviewButton=guild
@@ -754,7 +754,7 @@ function UI:CreateGuildLootDialog()
 
     local heading=f:CreateFontString(nil,"OVERLAY","GameFontNormalLarge")
     heading:SetPoint("TOP",f,"TOP",0,-23)
-    heading:SetText("GUILD LOOT - REVIEW / ARM / CONFIRM")
+    heading:SetText("ALL LOOT REVIEW - MATERIALS USE LEADER TICKETS")
     local status=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
     status:SetPoint("TOP",heading,"BOTTOM",0,-13)
     status:SetWidth(670)

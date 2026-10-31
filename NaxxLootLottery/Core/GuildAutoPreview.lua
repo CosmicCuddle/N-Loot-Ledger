@@ -82,7 +82,10 @@ function P:Build()
     for _,source in ipairs(scanned) do
         local decision,reason="HOLD",source.reason
         if source.status=="GUILD_REVIEW" then
-            if unresolved then
+            if source.guildMaterial then
+                decision="USE_LEADER_TICKETS"
+                reason="Guild material now uses sole raid-leader ticket in Current Loot; no Guild Master transfer"
+            elseif unresolved then
                 decision="HOLD_UNRESOLVED_REQUEST"
                 reason="Another Master Loot outcome is uncertain; manual reconciliation first"
             elseif NLL.GuildLootTransfer and

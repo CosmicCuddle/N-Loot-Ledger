@@ -127,7 +127,9 @@ function L:Prepare(entry, matches)
     local snapshot={}
     local tickets={}
     for i,m in ipairs(preview.current) do
-        snapshot[i]=CharacterKey(m.character)
+        snapshot[i]=preview.selectionType=='GUILD' and
+            string.lower(tostring(m.character or '')) or
+            CharacterKey(m.character)
         tickets[i]={number=i,character=m.character}
     end
     self.active={
@@ -169,7 +171,10 @@ function L:PoolStillMatches(entry)
         return false,'Roster/priority changed. Cancel and prepare new tickets.'
     end
     for i,m in ipairs(preview.current) do
-        if CharacterKey(m.character)~=a.candidateKeys[i] then
+        local currentKey=a.selectionType=='GUILD' and
+            string.lower(tostring(m.character or '')) or
+            CharacterKey(m.character)
+        if currentKey~=a.candidateKeys[i] then
             return false,'Candidate list changed. Cancel and prepare again.'
         end
     end

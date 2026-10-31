@@ -190,4 +190,48 @@ ok(N.db==db and not db.settings.directMasterLootEnabled and
    not db.settings.winnerQuickAwardEnabled and
    db.gearNeeds.old.status=="NEEDED" and #sends==1,
    "login/reload revokes both physical consent flags and preserves Gear Plans")
-print("PASS: "..n.." one-click physical award opt-in, wrong-target, fake, no-retry checks")
+-- New guild-only route must reverify the CURRENT leader at award time.
+-- It cannot borrow a previously completed one-ticket win after a leader
+-- change, even with both physical consents explicitly enabled.
+A.liveRequests={}
+entry.dropUID="UID-GUILD"
+entry.itemID=17011
+entry.itemName="Lava Core"
+entry.itemLink="|Hitem:17011:0|h[Lava Core]|h"
+entry.quantity=1
+actualLink=entry.itemLink
+finished.dropUID=entry.dropUID
+finished.itemID=entry.itemID
+finished.itemName=entry.itemName
+finished.selectionType="GUILD"
+finished.awardStatus=nil
+local liveLeader="Other"
+N.GuildLootReview={
+    IsGuildMaterial=function(_,id)return id==17011 end,
+    LeaderTicketRecipient=function()
+        if liveLeader=="BLOCKED" then
+            return nil,"Previous physical award for this material. NO RETRY."
+        end
+        return liveLeader
+    end,
+}
+ok(A:SetDirectEnabled(true) and A:SetQuickEnabled(true),
+    "guild physical award still requires both opt-ins")
+local sent,why=A:QuickAward("UID-GUILD","Pikeotter")
+ok(not sent and why:find("raid leader",1,true) and #sends==1,
+    "leader changed after guild ticket: no real award")
+ok(not A:Review(entry) and #sends==1,
+    "standard two-stage Review Award cannot bypass guild leader drift")
+liveLeader="BLOCKED"
+sent,why=A:QuickAward("UID-GUILD","Pikeotter")
+ok(not sent and why:find("NO RETRY",1,true) and #sends==1,
+    "previous material attempt guard enforced again at physical transfer")
+liveLeader="Pikeotter"
+sent,why=A:QuickAward("UID-GUILD","Pikeotter")
+ok(sent and #sends==2 and sends[2].slot==1 and
+   sends[2].candidate==1 and db.gearNeeds.old.status=="NEEDED",
+    "verified live raid leader can receive exactly one guild material request")
+sent=A:QuickAward("UID-GUILD","Pikeotter")
+ok(not sent and #sends==2,
+    "guild-only winner cannot be physically awarded a second time")
+print("PASS: "..n.." one-click award, guild leader drift and no-retry checks")

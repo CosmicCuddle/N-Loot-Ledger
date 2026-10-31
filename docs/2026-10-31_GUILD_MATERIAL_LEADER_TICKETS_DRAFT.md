@@ -140,21 +140,33 @@ leader are the same person.
   before any installation/merge/release. The existing installed Build 60
   does not include these changes.
 
-## Acceptance checklist (all pending until verified)
+## Acceptance checklist — source and client evidence tracked separately
 
-- [ ] CI tests cover five whitelist IDs, one exact raid leader and no
-  automatic `RandomRoll` or `GiveMasterLoot` on Prepare/Start.
-- [ ] Missing Master Loot, reservation, pending receipt, threshold,
-  unknown stack, quest/special, stale source and existing Guild audit
-  prevent preparing/awarding a leader-only material.
-- [ ] Guild Master may differ from raid leader; destination is still the
-  actual raid leader, not guild master.
-- [ ] All ordinary gear and Windseeker rolls retain their previous pool
-  logic and never become leader-only.
-- [ ] WoW client visual check of `GUILD ALLOCATION`, winner name and
-  safely disabled AWARD ITEM while consent is OFF.
+**Automated source/test checkpoint:** `37bc9c309602f78b30cce8bf1340c3e6e7399e2f`, with
+[Lua 5.1 tests passing](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41204851629)
+and [complete NO-RELEASE tests/ZIP passing](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41204847015).
+Later documentation-only changes are not new client acceptance evidence.
+
+- [x] **Mock/source tested:** all five whitelist IDs, one actual raid leader
+  and zero `RandomRoll` or `GiveMasterLoot` calls on Prepare/Start.
+- [x] **Mock/source tested:** missing Master Loot, reservations, pending
+  receipts, loot threshold, unknown stack, special classifications, stale
+  sources and old Guild attempts block unsafe leader-only tickets.
+- [x] **Mock/source tested:** Guild Master can differ from raid leader; only
+  the real raid leader gets the material ticket.
+- [x] **Mock/source tested:** ordinary gear and saved Windseeker reservations
+  retain separate established ticket/pool rules.
+- [ ] **Actual 3.3.5a client:** verify compact `GUILD ALLOCATION` heading,
+  `Raid leader only - Guild ticket #1`, winner name, enlarged-font
+  readability and physically disabled `AWARD ITEM` while consent is OFF.
 - [ ] **Only with separate owner go-ahead:** actual expendable transfer,
-  correct recipient inventory evidence, no duplicated award, saved
-  Gear Plans/history intact. No rare legendary test.
+  correct recipient inventory evidence, no duplicate award, saved
+  Gear Plans/history intact. Never use a rare legendary for acceptance.
+
+**Phase boundary:** Opening and reviewing Settings/loot UI is non-awarding.
+Starting an actual guild-material roll records a durable winner/receipt,
+even if `GiveMasterLoot` is never called. Use the
+[Part 17 non-awarding first-client guide](2026-10-31_PART17_FIRST_CLIENT_NON_AWARDING_ACCEPTANCE.md)
+before any separately approved real-loot test.
 
 **No production/test client changes made by this PR.**

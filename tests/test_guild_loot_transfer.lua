@@ -30,7 +30,9 @@ local selectedSlot=1
 LootFrame={IsShown=function()return true end,selectedSlot=selectedSlot}
 local candidates={"Leader","Pikeotter"}
 GetMasterLootCandidate=function(i)return candidates[i] end
-local itemIDs={17010,17011,16800,18259,17204}
+-- Exercise the retained NON-MATERIAL manual raid-leader transfer flow.
+-- Whitelisted guild materials now use the separate leader-only lottery.
+local itemIDs={17016,17017,16800,18259,17204}
 local names={"Fiery Core","Lava Core","Arcanist Boots","Enchant Formula","Eye of Sulfuras"}
 local locked={}
 local quantities={2,1,1,1,1}
@@ -153,7 +155,7 @@ itemIDs[1]=17011
 local sent,msg=T:Commit()
 ok(not sent and msg:find("changed") and #given==0,
     "changed live loot item aborts without any GiveMasterLoot")
-itemIDs[1]=17010
+itemIDs[1]=17016
 ok(T:Review(target) and T:Arm(),"review and arm require fresh user actions")
 roster[1]="NewLeader"
 sent,msg=T:Commit()
@@ -233,7 +235,7 @@ ok(rankAtCall.status=="LOOT_SLOT_CLEARED" and
 N.db.settings.directMasterLootEnabled=true
 T:SetEnabled(true)
 sent,msg=T:Review(target)
-ok(not sent and msg:find("unresolved") and T:WasAttempted(17010,17),
+ok(not sent and msg:find("unresolved") and T:WasAttempted(17016,17),
     "unverified cleared slot globally holds and same ID remains permanently locked")
 local target2={slotIndex=rows[2].slotIndex,itemID=rows[2].itemID,
     itemLink=rows[2].itemLink,quantity=rows[2].quantity}

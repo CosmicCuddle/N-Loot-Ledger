@@ -53,7 +53,11 @@ local N={
         guildLootTransferAudit={},
         settings={guildLootTransfersEnabled=true,directMasterLootEnabled=true}},
     DebugSimulator={IsActive=function()return false end},
-    TicketLottery={liveLootObserved=true,AuthorityAllowed=function()return true end},
+    -- Simulate a live lottery module with no completed result for this
+    -- new material. The real TicketLottery exports GetActiveFor(entry).
+    TicketLottery={liveLootObserved=true,
+        AuthorityAllowed=function()return true end,
+        GetActiveFor=function()return nil end},
     LootDetection={lootOpen=true},
     Data={MoltenCore={GetItem=function(_,id)
         if id==18563 then return {legendary=true,manualOnly=true} end

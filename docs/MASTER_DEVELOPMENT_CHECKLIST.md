@@ -699,6 +699,30 @@ Do not infer a server receipt from a /roll, cleared slot or successful
 - [ ] Owner-approved integration/merge/release. Draft #42 is dependent
       on draft PRs #41 and #40. No production change.
 
+## NLL-043 — Owner-selected leader-only ticket route for guild materials (DRAFT [#43](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/43))
+
+- [x] CosmicCuddle's decision (31 October 2026): five exact whitelisted
+      raid materials use **Prepare Tickets → Start Roll → winner popup**,
+      with the **raid leader as sole recipient**, not the Guild Master.
+      This is deterministic **GUILD ALLOCATION**, not a fair/random
+      NEED/GREED roll. Ordinary gear and saved Windseeker reservations
+      retain their previous rules.
+- [x] Existing reservation, pending receipt, mystery item/corpse identity,
+      Master Loot threshold, unknown stack and old Guild material attempt
+      safeguards are checked before leader-only tickets are prepared.
+      Never automatically run tickets or award an item on observing loot.
+- [x] Superseded Guild Master transfer controls are disabled for these
+      five materials; Guild Loot/Dry Run points to normal Current Loot
+      tickets. Unreserved non-material manual review remains separate.
+- [x] Standalone leader-only scanner/lottery regression and old Guild
+      review fixture migration committed to draft branch.
+- [ ] Exact-head **full Lua 5.1 + NO RELEASE package** workflows green.
+- [ ] In-client WoW 3.3.5a UI and separate owner-approved expendable
+      Master Loot/receipt test. NO rare/legendary awards in smoke test.
+- [ ] Owner decision on merging/releasing stacked drafts #40–#43.
+      Current installed Build 60 remains unchanged.
+- [x] [Detailed owner decision, constraints and acceptance](2026-10-31_GUILD_MATERIAL_LEADER_TICKETS_DRAFT.md).
+
 ## Next-development handover rule
 
 Before starting another NLL feature, read this document first,

@@ -15,9 +15,15 @@ date=function()return "2026-10-31" end
 UnitName=function()return "Operator" end
 IsRaidLeader=function()return true end
 local leader="RaidLeader"
+local leaderOffline=false
 GetNumRaidMembers=function()return 3 end
 GetRaidRosterInfo=function(i)
-    if i==1 then return leader,2 end
+    if i==1 then
+        if leaderOffline then
+            return leader,2,nil,nil,nil,nil,"Offline",nil
+        end
+        return leader,2,nil,nil,nil,nil,"Molten Core",1
+    end
     if i==2 then return "Operator",0 end
     return "Other",0
 end
@@ -178,6 +184,12 @@ ok(not q.ready and
    q.message:find("Completed guild ticket belongs to a different raid leader",1,true),
    "completed guild result cannot be reassigned to a newly appointed leader")
 leader="RaidLeader"
+leaderOffline=true
+local offline=P:BuildPreview(entry)
+ok(not offline.ready and #offline.current==0 and
+   awards==0 and randomRolls==0,
+   "explicitly offline raid leader cannot receive a guild material ticket")
+leaderOffline=false
 currentInstance=249
 hold("Not inside verified Molten Core")
 currentInstance=409

@@ -29,6 +29,9 @@ function Database:Initialize()
     -- Direct real loot transfer must be opted into EACH LOGIN/reload.
     -- Do not persist a previous enabled flag across client restarts.
     db.settings.directMasterLootEnabled = false
+    -- Optional one-click winner-popup physical transfer is a SECOND
+    -- independent consent and is reset on every login /reload.
+    db.settings.winnerQuickAwardEnabled = false
     -- Guild-material Master Loot is a separate consent and never persists.
     db.settings.guildLootTransfersEnabled = false
     -- Preview is harmless, but still requires deliberate opt-in each login.

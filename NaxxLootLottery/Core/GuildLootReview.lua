@@ -180,8 +180,15 @@ function G:GetLeader()
     end
     local leader
     for i=1,GetNumRaidMembers() do
-        local name,rank=GetRaidRosterInfo(i)
+        local name,rank,_,_,_,_,zone,online=GetRaidRosterInfo(i)
         if name and rank==2 then
+            -- Legacy clients and custom Playerbot rosters may omit
+            -- the optional online field. Never invent a TRUE value;
+            -- reject a leader explicitly flagged offline by WoW.
+            if online==false or online==0 or
+               (online==nil and zone=="Offline") then
+                return nil
+            end
             if leader then return nil end -- refuse ambiguous raid leadership
             leader=name
         end

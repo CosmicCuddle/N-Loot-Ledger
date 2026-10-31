@@ -74,6 +74,25 @@ function A:ValidateLiveContext(entry, winner)
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
         return false, 'Simulation active: real awards are blocked.'
     end
+    -- A guild-material result has NO ordinary saved-wishlist winner.
+    -- Even after tickets finish, independently recheck the live leader,
+    -- reservations, same-material attempt locks and loot classification
+    -- at the LAST physical-transfer gate. This covers BOTH the ordinary
+    -- two-stage Review Award and the opt-in winner-popup AWARD ITEM path.
+    local outcome=self:GetOutcome(entry)
+    if outcome and outcome.selectionType=='GUILD' then
+        local G=NLL.GuildLootReview
+        if not G or not G.IsGuildMaterial or
+           not G:IsGuildMaterial(entry.itemID) or
+           type(G.LeaderTicketRecipient)~='function' then
+            return false,'Unknown guild-material allocation. No physical award.'
+        end
+        local leader,reason=G:LeaderTicketRecipient(entry)
+        if not leader or Key(leader)~=Key(winner) then
+            return false,'Guild allocation no longer matches live raid leader: '..
+                tostring(reason or 'leader changed')
+        end
+    end
     -- Durable locks survive a reload, a swallowed WoW API exception and
     -- history trimming. A manually reconciled attempt stays locked forever.
     local locks=NLL.db and NLL.db.awardAttemptLocks or {}

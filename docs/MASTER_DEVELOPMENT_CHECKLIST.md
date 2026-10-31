@@ -830,6 +830,20 @@ Do not infer a server receipt from a /roll, cleared slot or successful
       **not** proof of a live client message or physical receipt.
       [First-client guide](2026-10-31_PART17_FIRST_CLIENT_NON_AWARDING_ACCEPTANCE.md)
       includes separately owner-approved two-human-client acceptance.
+- [x] **Part 17 exact Build 141 artifact independently opened/verified.**
+      Source/test commit `35917594eb15283fba35a88274217a80cedaf61f`
+      has [Lua 5.1 SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209745595)
+      and [full NO-RELEASE SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209742036).
+      Downloaded the real artifact `NLL-MC-leader-ticket-award-141`
+      (ID `13046300143`) and verified both ZIP CRCs, the inner
+      SHA-256 `896571baca5360a6f0c7d19e4485e5a22066b32ef82876bc0c5f0be8300e81f2`
+      against its `SHA256SUMS.txt`, exact source commit in
+      `BUILD_INFO.txt`, one `NaxxLootLottery/` root,
+      **51 Lua modules + one TOC** and no missing/extra TOC files.
+      The [first-client guide](2026-10-31_PART17_FIRST_CLIENT_NON_AWARDING_ACCEPTANCE.md)
+      contains the checksum and no-award client plan.
+      **Test-only; not installed, merged, released or proven in WoW.**
+      Keep the last installed Build 60 for an imminent raid.
 - [ ] Phase 1 owner-controlled client install, backups, live-data validation,
       enlarged-font screenshots and real WoW 3.3.5a compatibility evidence.
       Phase 2 ticket-record testing and Phase 3 physical delivery need

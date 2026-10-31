@@ -120,6 +120,8 @@ UI.awardReviewCheck.scripts.OnClick()
 ok(not UI.awardReviewConfirm.enabled and awards==0,
     "two-step Review requires full designated Master Looter identity")
 rosterMaster="Leader"
+local contextOK,contextReason=a:ValidateLiveContext(entry,"Pikeotter")
+ok(contextOK,"expected exact live context after negative cases: "..tostring(contextReason))
 UI.awardReviewCheck.scripts.OnClick()
 ok(UI.awardReviewConfirm.enabled and not UI.awardReviewDirect.enabled,
     "after live review, direct transfer still OFF by default")

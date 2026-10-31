@@ -50,16 +50,39 @@ function UI:CreateWinnerAnnouncement()
     disclaimer:SetJustifyH("CENTER")
 
     local close = self:CreateTextButton(frame, "Close Result", 130)
-    close:SetPoint("BOTTOM", frame, "BOTTOM", 85, 15)
-    local award = self:CreateTextButton(frame, "Review Award", 132)
-    award:SetPoint("BOTTOM",frame,"BOTTOM",-85,15)
+    close:SetPoint("BOTTOM", frame, "BOTTOM", 151, 15)
+    local award = self:CreateTextButton(frame, "Review Award", 130)
+    award:SetPoint("BOTTOM",frame,"BOTTOM",-151,15)
     award:SetScript("OnClick",function()
         frame:Hide()
         UI:ShowMainFrame("currentloot")
         UI:OpenAwardReview()
     end)
+    -- Physically awards with one click only AFTER independent quick
+    -- consent and fresh full-context validation. Never for simulations.
+    local quick=self:CreateTextButton(frame,"AWARD ITEM",140)
+    quick:SetPoint("BOTTOM",frame,"BOTTOM",0,15)
+    quick:SetScript("OnClick",function()
+        local A=NLL.AwardWorkflow
+        if not A or not A.IsQuickEnabled or not A:IsQuickEnabled() or
+           not UI.winnerAnnouncementDropUID or
+           not UI.winnerAnnouncementWinner then
+            NLL:Print("One-click Winner Award is OFF or winner data is missing.")
+            return
+        end
+        local ok,msg=A:QuickAward(UI.winnerAnnouncementDropUID,
+                                   UI.winnerAnnouncementWinner)
+        NLL:Print(msg)
+        if ok then
+            quick:Disable()
+            frame:Hide() -- request sent, not a recipient receipt
+        else
+            disclaimer:SetText("|cffff7777"..tostring(msg).."|r")
+        end
+    end)
     close:SetScript("OnClick", function() frame:Hide() end)
 
+    self.winnerQuickAwardButton=quick
     self.winnerReviewAwardButton = award
     self.winnerAnnouncement = frame
     self.winnerAnnouncementTitle = title
@@ -74,7 +97,7 @@ function UI:HideWinnerAnnouncement()
     if self.winnerAnnouncement then self.winnerAnnouncement:Hide() end
 end
 
-function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated, selectionType, tier)
+function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated, selectionType, tier, dropUID)
     if not itemName or not winner or not ticketNumber then return false end
     if not self.mainFrame then return false end
     self:CreateWinnerAnnouncement()
@@ -90,9 +113,18 @@ function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated, se
     self.winnerAnnouncementName:SetText("|cff66ff99" .. tostring(winner) .. "|r")
     self.winnerAnnouncementItem:SetText(tostring(itemName))
     self.winnerAnnouncementTicket:SetText("Winning ticket #" .. tostring(ticketNumber))
+    self.winnerAnnouncementDropUID=not simulated and dropUID or nil
+    self.winnerAnnouncementWinner=not simulated and winner or nil
+    local enabled=not simulated and type(dropUID)=="string" and
+        NLL.AwardWorkflow and NLL.AwardWorkflow.IsQuickEnabled and
+        NLL.AwardWorkflow:IsQuickEnabled()
+    if enabled then self.winnerQuickAwardButton:Enable()
+    else self.winnerQuickAwardButton:Disable() end
     self.winnerAnnouncementDisclaimer:SetText(simulated and
         "|cffffbb66FAKE RAID - no real equipment awarded|r" or
-        "|cffffbb66RESULT ONLY - award the item manually|r")
+        (enabled and
+        "|cffff9955AWARD ITEM sends REAL Master Loot; receipt still unverified|r" or
+        "|cffffbb66RESULT ONLY - quick award OFF; use Review Award|r"))
     self.winnerAnnouncement:Show()
     return true
 end

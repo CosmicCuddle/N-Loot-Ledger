@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - fix/nll-reserved-bindings-guild-materials-20261030
+      - feat/nll-winner-popup-quick-award-20261031
   workflow_dispatch:
 
 permissions:
@@ -21,6 +22,7 @@ jobs:
           grep -Fxq '## SavedVariables: NaxxLootLotteryDB' NaxxLootLottery/NaxxLootLottery.toc
           grep -Fxq '## Version: 0.1.0.29-rc.1-dev20' NaxxLootLottery/NaxxLootLottery.toc
           grep -Fq 'db.settings.directMasterLootEnabled = false' NaxxLootLottery/Storage/Database.lua
+          grep -Fq 'db.settings.winnerQuickAwardEnabled = false' NaxxLootLottery/Storage/Database.lua
           grep -Fq 'db.settings.guildLootTransfersEnabled = false' NaxxLootLottery/Storage/Database.lua
           grep -Fq 'db.settings.guildAutoPreviewEnabled = false' NaxxLootLottery/Storage/Database.lua
       - name: Install WoW Lua 5.1

@@ -44,6 +44,9 @@ function G:LeaderTicketRecipient(entry)
        type(entry.slotIndex)~="number" or entry.slotIndex<1 then
         return nil,"Not an unambiguous live guild-material drop."
     end
+    if type(GetLootMethod)~="function" or GetLootMethod()~="master" then
+        return nil,"WoW Master Loot must be active for raid-leader guild tickets."
+    end
     if NLL.GuildLootTransfer and
        NLL.GuildLootTransfer:IsUnresolved() then
         return nil,"Earlier physical loot request remains unresolved. Confirm receipt first."

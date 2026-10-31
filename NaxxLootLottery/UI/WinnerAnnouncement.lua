@@ -76,6 +76,14 @@ function UI:CreateWinnerAnnouncement()
         if ok then
             quick:Disable()
             frame:Hide() -- request sent, not a recipient receipt
+            -- Reduce navigation: open the EXISTING non-awarding receipt
+            -- review, identified by the exact completed real drop UID.
+            -- It remains NOT READY until independently observed loot
+            -- delivery and two explicit human inventory-confirmation
+            -- clicks. Opening this window NEVER marks OBTAINED.
+            if type(UI.OpenReceiptReview)=="function" then
+                UI:OpenReceiptReview(UI.winnerAnnouncementDropUID)
+            end
         else
             disclaimer:SetText("|cffff7777"..tostring(msg).."|r")
         end

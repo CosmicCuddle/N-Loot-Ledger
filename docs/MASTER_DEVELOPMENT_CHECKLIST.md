@@ -761,6 +761,28 @@ Do not infer a server receipt from a /roll, cleared slot or successful
       candidates, wrong Master Looter, changed link/quantity and
       changed item or candidates **between arm and final commit**;
       no live GiveMasterLoot or recipient inventory was verified.
+- [x] **Part 17 receipt identity and final-click integrity hardening:**
+      `LootReceiptTracker:ObserveWinner` compares the saved receipt's
+      **full exact recipient name** with an incoming result for the same
+      drop UID. `CanConfirm` now requires full exact winner identity in
+      the recorded award evidence, rather than allowing a same-short-name
+      different-realm lookalike to corroborate delivery. Existing ordinary
+      Gear Plan short-name compatibility and receipt write restrictions
+      remain otherwise unchanged.
+- [x] The **I Checked Inventory → MARK OBTAINED** UI freezes the
+      exact ledger row, full winner name and item ID. If the row is
+      replaced or recipient/item identity changes in between the two
+      clicks, the confirmation disarms and does NOT write OBTAINED.
+      This protects both live loot and historical Award History review.
+      Saved rows with inconsistent realm suffixes may now HOLD until
+      verified, never silently convert to OBTAINED.
+- [x] **Exact code/test checkpoint `151cd2c572e5a480d7ac89b5c214b1e9d106736c`**:
+      [Lua 5.1 regression SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41207088602)
+      and [full no-release integration SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41207084731).
+      Mocked tests explicitly cover cross-realm duplicate UID and
+      mismatched award history, as well as recipient/item/ledger changes
+      after first inventory-attestation click. These are NOT actual
+      3.3.5a in-game tests.
 - [ ] Phase 1 owner-controlled client install, backups, live-data validation,
       enlarged-font screenshots and real WoW 3.3.5a compatibility evidence.
       Phase 2 ticket-record testing and Phase 3 physical delivery need

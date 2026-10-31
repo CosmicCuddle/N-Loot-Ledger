@@ -14,7 +14,17 @@ end
 local function ItemID(link)
     return type(link) == 'string' and tonumber(link:match('item:(%d+)')) or nil
 end
-local function Now() return GetTime and GetTime() or 0 end
+-- A physical award's 15-second arm window requires a real, monotonic
+-- WoW uptime value. Missing/invalid clocks are NOT equivalent to time 0.
+local function Now()
+    if type(GetTime)~='function' then return nil end
+    local value=GetTime()
+    if type(value)~='number' or value~=value or
+       value<0 or value==math.huge or value==-math.huge then
+        return nil
+    end
+    return value
+end
 local function Selected()
     local loot = NLL.LootDetection:GetCurrentLoot() or {}
     return loot[(NLL.UI and NLL.UI.currentLootSelected) or 1]
@@ -383,7 +393,12 @@ function A:ArmDirectAward(entry)
         self:Cancel()
         return false, 'Master Loot selection changed. Start award review again.'
     end
-    verified.armedAt = Now()
+    local armedAt=Now()
+    if armedAt==nil then
+        self:Cancel()
+        return false,'WoW clock unavailable; cannot arm a physical Master Loot request.'
+    end
+    verified.armedAt=armedAt
     return true, 'ARMED: ' .. result.winner .. ' / ' .. entry.itemName ..
         '. Re-check both names, then press CONFIRM GIVE ITEM within 15 seconds.'
 end
@@ -395,9 +410,11 @@ function A:CommitDirectAward(entry)
        verified.simulated or verified.dropUID ~= entry.dropUID then
         return false, 'Direct award is not armed for this drop.'
     end
-    if not verified.armedAt or (Now() - verified.armedAt) > ARM_SECONDS then
+    local now=Now()
+    if type(verified.armedAt)~='number' or now==nil or
+       now<verified.armedAt or now-verified.armedAt>ARM_SECONDS then
         self:Cancel()
-        return false, 'Confirmation expired. Review the Master Loot candidate again.'
+        return false,'Confirmation expired or WoW clock changed; review and arm again.'
     end
     local result = self:GetOutcome(entry)
     if not result or result.awardStatus or result.winner ~= verified.winner or

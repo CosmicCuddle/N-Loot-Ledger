@@ -740,6 +740,27 @@ Do not infer a server receipt from a /roll, cleared slot or successful
       prepared. **Phase 1 does not press Prepare Tickets or Start Roll on
       actual loot**: Start Roll on a real guild material creates a lasting
       winner/receipt record even if no item is physically awarded.
+- [x] **Part 17 Master Loot identity hardening:** the existing ordinary
+      `Review Award → Arm Direct Award → Confirm` path now requires the
+      **full exact Master Looter name**, **one unique exact full-name
+      candidate** (no realm-stripped winner aliases), **unchanged
+      item hyperlink** and **exact positive integer stack count** at
+      each Review/Arm/Commit validation. The one-click path retains its
+      independent dual consent and immutable attempt lock. This is a
+      deliberate fail-closed tightening of legacy ordinary awards;
+      if a custom roster omits or changes realm suffixes, the physical
+      action is BLOCKED until its identity can be verified, never guessed.
+- [x] Verified the fifth `GetLootSlotInfo` return is `locked` in
+      authentic [3.3.5a client FrameXML LootFrame.lua](https://github.com/wowgaming/3.3.5-interface-files/blob/main/LootFrame.lua);
+      modern API signature documentation must not be substituted for
+      this Wrath client when inspecting loot availability.
+- [x] **Exact code/test checkpoint `2235140cabe009f8be3e6342cf6634bb19dddc71`**
+      [Lua 5.1 SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41205755127)
+      and [full NO-RELEASE SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41205751126).
+      Mock regressions cover lookalike realm characters, duplicate
+      candidates, wrong Master Looter, changed link/quantity and
+      changed item or candidates **between arm and final commit**;
+      no live GiveMasterLoot or recipient inventory was verified.
 - [ ] Phase 1 owner-controlled client install, backups, live-data validation,
       enlarged-font screenshots and real WoW 3.3.5a compatibility evidence.
       Phase 2 ticket-record testing and Phase 3 physical delivery need

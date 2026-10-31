@@ -930,14 +930,19 @@ function UI:RefreshGuildLootDialog()
             if item.status=="BELOW_THRESHOLD" then
                 summary="BELOW LOOT THRESHOLD - loot normally; cannot Master Loot."
             elseif item.status=="THRESHOLD_UNKNOWN" then
-                summary="LOOT THRESHOLD UNKNOWN - Guild transfer blocked."
+                summary=item.guildMaterial and
+                    "LOOT THRESHOLD UNKNOWN - Leader tickets HOLD." or
+                    "LOOT THRESHOLD UNKNOWN - Guild transfer blocked."
             elseif item.status=="LOOT_INFO_UNKNOWN" then
-                summary="LOOT SLOT COUNT UNKNOWN - Guild transfer blocked."
+                summary=item.guildMaterial and
+                    "LOOT SLOT COUNT UNKNOWN - Leader tickets HOLD." or
+                    "LOOT SLOT COUNT UNKNOWN - Guild transfer blocked."
             elseif item.guildMaterial and item.status=="GUILD_REVIEW" then
-                summary="Leader-only tickets | Use Prepare Tickets / Start Roll in Current Loot"
+                summary="Leader-only: Current Loot > Prepare Tickets > Start Roll"
             elseif item.guildMaterial then
-                summary=summary.." | Guild: "..tostring(
-                    item.guildMaster or "unavailable")
+                -- The old Guild Master material destination is retired.
+                -- Preserve the actual HOLD reason, never name a false recipient.
+                summary=summary.." | Leader tickets HOLD"
             else
                 summary=summary.." | Raid leader: "..tostring(item.leader)
             end

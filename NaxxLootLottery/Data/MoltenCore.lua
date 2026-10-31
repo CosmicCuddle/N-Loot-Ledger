@@ -299,6 +299,7 @@ AddItem(17011, "Lava Core", "Trash")
 AddItem(17010, "Fiery Core", "Trash")
 AddItem(11382, "Blood of the Mountain", "Trash")
 AddItem(17012, "Core Leather", "Trash")
+AddItem(7075, "Core of Earth", "Trash")
 AddItem(16819, "Vambraces of Prophecy", "Trash")
 AddItem(16799, "Arcanist Bindings", "Trash")
 AddItem(16804, "Felheart Bracers", "Trash")
@@ -525,7 +526,7 @@ for _, item in ipairs(MC.itemList) do
         item.manualReason = "Profession recipe"
     end
 end
-for _, id in ipairs({17011, 17010, 11382, 17012}) do
+for _, id in ipairs({17011, 17010, 11382, 17012, 7075}) do
     if MC.items[id] then
         MC.items[id].manualOnly = true
         MC.items[id].manualReason = "Crafting material"

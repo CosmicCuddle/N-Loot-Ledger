@@ -11,11 +11,16 @@ date=function()return "2026-10-17" end
 UnitName=function()return "Leader" end
 GetNumRaidMembers=function()return 40 end
 GetLootMethod=function()return "master",nil,1 end
-GetRaidRosterInfo=function(i) if i==1 then return "Leader",2 end end
+GetRaidRosterInfo=function(i) if i==1 then return rosterMaster,2 end end
 GetNumLootItems=function()return 1 end
-GetLootSlotLink=function(i) if i==1 then return "|Hitem:16800:0|h[Arcanist Boots]|h" end end
-GetLootSlotInfo=function()return nil,nil,1,4,false end
-GetMasterLootCandidate=function(i)if i==1 then return "Pikeotter" end end
+local physicalLink="|Hitem:16800:0|h[Arcanist Boots]|h"
+local liveLink=physicalLink
+local liveCount=1
+local rosterMaster="Leader"
+local candidates={"Pikeotter"}
+GetLootSlotLink=function(i) if i==1 then return liveLink end end
+GetLootSlotInfo=function()return nil,nil,liveCount,4,false end
+GetMasterLootCandidate=function(i)return candidates[i] end
 GiveMasterLoot=function(slot,candidate) awards=awards+1;ok(slot==1 and candidate==1,"exact real slot/candidate") end
 local function frame()
     local f={enabled=true,shown=false,scripts={}}
@@ -41,6 +46,7 @@ local function frame()
 end
 CreateFrame=frame
 local entry={dropUID="UID-A",slotIndex=1,itemID=16800,itemName="Arcanist Boots",
+    itemLink=physicalLink,quantity=1,
     raidKey="MOLTEN_CORE",boss="Lucifron",state="DETECTED"}
 local finished={dropUID=entry.dropUID,itemID=entry.itemID,itemName=entry.itemName,
     raidKey=entry.raidKey,boss=entry.boss,winner="Pikeotter",winningTicket=1,
@@ -88,6 +94,32 @@ ok(not UI.awardReviewConfirm.enabled and not UI.awardReviewDirect.enabled and
     "reviewed recipient cannot silently switch to another selected item")
 UI.currentLootSelected=1
 LootFrame={selectedSlot=1,IsShown=function()return true end}
+-- The legacy Review Award dialog must refuse an alternate realm, two
+-- identical names, altered link, changed stack, and wrong Master Looter.
+candidates={"Pikeotter-OtherRealm"}
+UI.awardReviewCheck.scripts.OnClick()
+ok(not UI.awardReviewConfirm.enabled and not a.verification and awards==0,
+    "two-step Review refuses realm-stripped candidate impersonation")
+candidates={"Pikeotter","Pikeotter"}
+UI.awardReviewCheck.scripts.OnClick()
+ok(not UI.awardReviewConfirm.enabled and not a.verification and awards==0,
+    "two-step Review refuses two identical Master Loot candidates")
+candidates={"Pikeotter"}
+liveLink="|Hitem:16800:1|h[Arcanist Boots]|h"
+UI.awardReviewCheck.scripts.OnClick()
+ok(not UI.awardReviewConfirm.enabled and awards==0,
+    "two-step Review rejects an enchanted/different item link")
+liveLink=physicalLink
+liveCount=2
+UI.awardReviewCheck.scripts.OnClick()
+ok(not UI.awardReviewConfirm.enabled and awards==0,
+    "two-step Review rejects changed loot stack")
+liveCount=1
+rosterMaster="Leader-OtherRealm"
+UI.awardReviewCheck.scripts.OnClick()
+ok(not UI.awardReviewConfirm.enabled and awards==0,
+    "two-step Review requires full designated Master Looter identity")
+rosterMaster="Leader"
 UI.awardReviewCheck.scripts.OnClick()
 ok(UI.awardReviewConfirm.enabled and not UI.awardReviewDirect.enabled,
     "after live review, direct transfer still OFF by default")

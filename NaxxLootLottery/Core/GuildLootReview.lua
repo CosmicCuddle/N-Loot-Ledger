@@ -129,7 +129,10 @@ function G:LeaderTicketRecipient(entry)
             if type(leader)~="string" or leader=="" then
                 return nil,"The raid leader cannot be uniquely verified."
             end
-            if completed and completed.selectionType=="GUILD" and
+            -- PREPARED tickets have no winner yet. Only a completed
+            -- immutable guild allocation may pin the final recipient.
+            if completed and completed.status=="COMPLETE" and
+               completed.selectionType=="GUILD" and
                (type(completed.winner)~="string" or
                 string.lower(completed.winner)~=string.lower(leader)) then
                 return nil,"Completed guild ticket belongs to a different raid leader."

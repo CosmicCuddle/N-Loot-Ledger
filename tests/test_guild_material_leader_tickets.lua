@@ -109,6 +109,9 @@ ok(L.active and #L.active.tickets==1 and
     L.active.tickets[1].character=="RaidLeader" and
     L.active.selectionType=="GUILD" and randomRolls==0,
     "saved ticket pool is exclusively the designated raid leader")
+local preparedGood,preparedReason=L:PoolStillMatches(entry)
+ok(preparedGood,
+   "PREPARED guild ticket remains valid before Start Roll: "..tostring(preparedReason))
 ok(L:StartRoll(entry),"Start Roll finalises a single-ticket allocation")
 ok(randomRolls==0 and awards==0 and popup and popup[2]=="RaidLeader" and
    popup[5]=="GUILD" and popup[7]=="LIVE:1:17011",

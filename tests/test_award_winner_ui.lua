@@ -129,6 +129,52 @@ ok(a.verification and a.verification.winner=="Pikeotter",
     "live candidate verified for exact winner")
 ok(awards==0,"recheck alone does not award")
 ok(a:SetDirectEnabled(true),"direct award enabling is separate user consent")
+-- A missing or corrupt client uptime must never turn the 15-second
+-- physical award confirmation into an unlimited-time authorization.
+local goodClock=GetTime
+local badClocks={
+    {name="missing GetTime",reader=false},
+    {name="nil uptime",reader=function()return nil end},
+    {name="string uptime",reader=function()return "100" end},
+    {name="negative uptime",reader=function()return -1 end},
+    {name="NaN uptime",reader=function()return 0/0 end},
+    {name="infinite uptime",reader=function()return math.huge end},
+}
+for _,case in ipairs(badClocks) do
+    GetTime=case.reader or nil
+    ok(a:Review(entry),"exact live loot review is non-awarding even with "..case.name)
+    local armed,why=a:ArmDirectAward(entry)
+    ok(not armed and not a.verification and awards==0 and
+       why:find("clock",1,true),
+       "two-step Direct Award cannot arm with "..case.name)
+end
+GetTime=goodClock
+local function blockedAfterArming(reader,label)
+    now=100
+    ok(a:Review(entry),"must start from a fresh exact review")
+    ok(a:ArmDirectAward(entry),"normal uptime permits first-stage arm")
+    GetTime=reader
+    local sent,why=a:CommitDirectAward(entry)
+    ok(not sent and not a.verification and awards==0 and
+       finished.awardStatus==nil and
+       why:find("clock",1,true),
+       "final physical click blocked on "..label)
+    GetTime=goodClock
+end
+blockedAfterArming(function()return nil end,"missing confirmation uptime")
+blockedAfterArming(function()return -1 end,"negative confirmation uptime")
+blockedAfterArming(function()return math.huge end,"infinite confirmation uptime")
+blockedAfterArming(function()return 99 end,"rolled-back confirmation uptime")
+now=100
+ok(a:Review(entry),"fresh review before expired confirmation check")
+ok(a:ArmDirectAward(entry),"fresh valid arm before expiry")
+now=116
+local expired,why=a:CommitDirectAward(entry)
+ok(not expired and not a.verification and awards==0 and
+   finished.awardStatus==nil and
+   why:find("expired",1,true),
+   "two-step physical award blocked after fifteen-second expiry")
+now=100
 UI.awardReviewCheck.scripts.OnClick()
 ok(UI.awardReviewDirect.enabled,"explicit enable PLUS recheck exposes arm action")
 UI.awardReviewDirect.scripts.OnClick()

@@ -47,6 +47,12 @@ itemRows[6].guildMaster="GuildBoss"
 itemRows[6].status="LOOT_INFO_UNKNOWN"
 itemRows[6].lootInfoKnown=false
 itemRows[6].reason="Unverified WoW loot stack count"
+-- A held guild material must never show the retired Guild Master
+-- destination, even when a historical master name remains in a row.
+itemRows[8].guildMaterial=true
+itemRows[8].guildMaster="GuildBoss"
+itemRows[8].status="RESERVED"
+itemRows[8].reason="Existing NEED"
 local previewLive=true
 NaxxLootLottery={
     UI={mainFrame=frame()},
@@ -117,13 +123,17 @@ ok(UI.guildLootRows[4].reviewButton.enabled==false,
     "unverified/missing guild master disables material transfer button")
 ok(UI.guildLootRows[5].reviewButton.enabled==false and
     UI.guildLootRows[5].reasonText.text:find(
-        "LOOT THRESHOLD UNKNOWN",1,true),
-    "unverifiable loot threshold shows concise reason and disables Guild")
+        "LOOT THRESHOLD UNKNOWN",1,true) and
+    UI.guildLootRows[5].reasonText.text:find("Leader tickets HOLD",1,true) and
+    not UI.guildLootRows[5].reasonText.text:find("GuildBoss",1,true),
+    "unknown threshold holds leader tickets; never shows retired Guild Master")
 ok(UI.guildLootRows[6].reviewButton.enabled==false and
     UI.guildLootRows[6].reasonText.text:find(
         "LOOT SLOT COUNT UNKNOWN",1,true) and
-    UI.guildLootRows[6].nameText.text:find(" x?",1,true),
-    "unknown stack size is shown as x? and cannot enable Guild")
+    UI.guildLootRows[6].nameText.text:find(" x?",1,true) and
+    UI.guildLootRows[6].reasonText.text:find("Leader tickets HOLD",1,true) and
+    not UI.guildLootRows[6].reasonText.text:find("GuildBoss",1,true),
+    "unknown stack shows x?, holds leader tickets and hides retired Guild Master")
 ok(UI.guildLootArm.label.text=="Arm Transfer",
     "before Review, transfer button makes no recipient claim")
 ok(UI.guildLootRows[1].reviewButton.width==90 and
@@ -150,6 +160,12 @@ UI.guildLootNext.events.OnClick()
 ok(UI.guildLootPageText.text=="Page 2/2" and
     UI.guildLootRows[1].reviewButton.target.itemID==17007,
     "pagination updates the exact selected recipient target")
+ok(UI.guildLootRows[2].reviewButton.label.text=="Tickets" and
+    not UI.guildLootRows[2].reviewButton.enabled and
+    UI.guildLootRows[2].reasonText.text:find("Existing NEED",1,true) and
+    UI.guildLootRows[2].reasonText.text:find("Leader tickets HOLD",1,true) and
+    not UI.guildLootRows[2].reasonText.text:find("GuildBoss",1,true),
+    "held material preserves reservation reason and never names retired Guild Master")
 UI.guildLootRows[1].reviewButton.events.OnClick(
     UI.guildLootRows[1].reviewButton)
 ok(calls.review==2 and calls.commit==1 and

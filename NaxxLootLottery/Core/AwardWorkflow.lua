@@ -261,6 +261,9 @@ function A:QuickAward(dropUID,expectedWinner)
     if not self:IsQuickEnabled() then
         return false,'One-click Winner Award is OFF. Enable BOTH award consents in Settings.'
     end
+    if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
+        return false,'Fake raids cannot send a real Master Loot award.'
+    end
     if type(dropUID)~='string' or dropUID=='' or
        type(expectedWinner)~='string' or expectedWinner=='' then
         return false,'The winner popup has no pinned physical drop/recipient.'
@@ -274,7 +277,8 @@ function A:QuickAward(dropUID,expectedWinner)
     end
     -- A physical copy's exact link, slot and stack count must agree. A
     -- display-only item ID cannot establish the selected WoW loot slot.
-    if type(entry.itemLink)~='string' or
+    if type(entry.slotIndex)~='number' or entry.slotIndex<1 or
+       entry.slotIndex%1~=0 or type(entry.itemLink)~='string' or
        type(entry.quantity)~='number' or entry.quantity<1 or
        entry.quantity%1~=0 or
        type(GetLootSlotLink)~='function' or

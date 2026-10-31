@@ -3,6 +3,18 @@
 local NLL = NaxxLootLottery
 local UI = NLL.UI
 
+-- Receipt confirmation is a human-verified SavedVariables write, not a
+-- passive view. Never use a guessed time 0 to arm its 15-second window.
+local function ReceiptUptime()
+    if type(GetTime)~='function' then return nil end
+    local now=GetTime()
+    if type(now)~='number' or now~=now or
+       now<0 or now==math.huge or now==-math.huge then
+        return nil
+    end
+    return now
+end
+
 function UI:CreateAwardReview()
     if self.awardReviewFrame then return end
     local frame = CreateFrame('Frame',nil,self.mainFrame)
@@ -254,12 +266,14 @@ function UI:CreateReceiptReview()
         local entry=not UI.receiptReviewHistorical and
             NLL.LootDetection:GetCurrentLoot()[
                 UI.currentLootSelected or 1] or nil
-        if not row or
+        if not row or row~=UI.receiptReviewRow or
+            row.character~=UI.receiptReviewWinner or
+            tonumber(row.itemID)~=UI.receiptReviewItemID or
             (not UI.receiptReviewHistorical and
-             (not entry or entry.dropUID~=row.dropUID)) or
-            row.character~=UI.receiptReviewWinner then
+             (not entry or entry.dropUID~=row.dropUID)) then
             warning:SetText("Item selection changed. Reopen receipt review.")
             UI.receiptReviewArmedAt=nil
+            UI.receiptReviewComplete:Disable()
             return
         end
         local ok,msg=NLL.LootReceiptTracker:CanConfirm(row.dropUID)
@@ -267,7 +281,14 @@ function UI:CreateReceiptReview()
             (ok and "Recheck the inventory, then click MARK OBTAINED." or
                 "Receipt cannot be confirmed.")))
         if ok then
-            UI.receiptReviewArmedAt=GetTime and GetTime() or 0
+            local now=ReceiptUptime()
+            if now==nil then
+                UI.receiptReviewArmedAt=nil
+                UI.receiptReviewComplete:Disable()
+                warning:SetText("WoW clock unavailable. Recheck inventory before confirming.")
+                return
+            end
+            UI.receiptReviewArmedAt=now
             UI.receiptReviewComplete:Enable()
         else
             UI.receiptReviewArmedAt=nil
@@ -279,10 +300,19 @@ function UI:CreateReceiptReview()
     complete:SetScript("OnClick",function()
         local entry=NLL.LootDetection:GetCurrentLoot()[
             UI.currentLootSelected or 1]
-        if (not UI.receiptReviewHistorical and
-            (not entry or entry.dropUID~=UI.receiptReviewUID)) or
-            not UI.receiptReviewArmedAt or
-            ((GetTime and GetTime() or 0)-UI.receiptReviewArmedAt)>15 then
+        local now=ReceiptUptime()
+        -- The human attested to one EXACT pinned recipient and item.
+        -- Never carry that assertion onto a mutated or replaced ledger
+        -- record with the same drop UID, especially from Award History.
+        local row=NLL.LootReceiptTracker:Get(UI.receiptReviewUID)
+        if not row or row~=UI.receiptReviewRow or
+            row.character~=UI.receiptReviewWinner or
+            tonumber(row.itemID)~=UI.receiptReviewItemID or
+            (not UI.receiptReviewHistorical and
+             (not entry or entry.dropUID~=UI.receiptReviewUID)) or
+            type(UI.receiptReviewArmedAt)~='number' or
+            now==nil or now<UI.receiptReviewArmedAt or
+            now-UI.receiptReviewArmedAt>15 then
             UI.receiptReviewArmedAt=nil
             complete:Disable()
             warning:SetText("Receipt verification expired or item changed.")
@@ -332,6 +362,8 @@ function UI:OpenReceiptReview(entry)
     self:CreateReceiptReview()
     self.receiptReviewUID=row.dropUID
     self.receiptReviewWinner=row.character
+    self.receiptReviewItemID=tonumber(row.itemID)
+    self.receiptReviewRow=row
     self.receiptReviewHistorical=historical
     self.receiptReviewArmedAt=nil
     self.receiptReviewComplete:Disable()

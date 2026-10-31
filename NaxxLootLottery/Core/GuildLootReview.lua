@@ -32,6 +32,117 @@ function G:IsGuildMaterial(itemID)
     return GUILD_MATERIALS[tonumber(itemID)]==true
 end
 
+-- Owner-approved new raid-leader-only ticket route for these five guild
+-- material IDs. This never overrides a real existing reservation,
+-- quest/special classification, loot threshold, item metadata, or past
+-- physical transfer attempts. Scan remains the single live policy source.
+function G:LeaderTicketRecipient(entry)
+    if type(entry)~="table" or entry.state~="DETECTED" or
+       entry.simulationOnly or entry.identityUncertain or
+       not self:IsGuildMaterial(entry.itemID) or
+       type(entry.dropUID)~="string" or entry.dropUID=="" or
+       type(entry.slotIndex)~="number" or entry.slotIndex<1 then
+        return nil,"Not an unambiguous live guild-material drop."
+    end
+    -- Client API revisions disagree about when GetInstanceInfo()
+    -- exposed its 8th map-ID return. Use verified 409 when supplied,
+    -- otherwise accept the exact English client instance name with
+    -- raid type. Never guess from a material itemID alone.
+    if entry.raidKey~="MOLTEN_CORE" or
+       type(GetInstanceInfo)~="function" then
+        return nil,"Molten Core instance identity unavailable; guild ticket blocked."
+    end
+    local instanceName,instanceType,_,_,_,_,_,instanceID=GetInstanceInfo()
+    if instanceType~="raid" or
+       not ((tonumber(instanceID)==409) or
+            (instanceID==nil and instanceName=="Molten Core")) then
+        return nil,"Not inside verified Molten Core; guild ticket blocked."
+    end
+    if type(GetLootMethod)~="function" or GetLootMethod()~="master" then
+        return nil,"WoW Master Loot must be active for raid-leader guild tickets."
+    end
+    if NLL.GuildLootTransfer and
+       NLL.GuildLootTransfer:IsUnresolved() then
+        return nil,"Earlier physical loot request remains unresolved. Confirm receipt first."
+    end
+    if NLL.GuildLootTransfer and
+       NLL.GuildLootTransfer:WasAttempted(entry.itemID,entry.slotIndex) then
+        return nil,"A guild transfer for this material ID was already attempted. NO RETRY."
+    end
+    -- A previous standard winner-award request can target the same
+    -- physical material as a later leader-only attempt. WoW 3.3.5a
+    -- exposes no authenticated corpse-source token to the addon;
+    -- the same item ID in another slot is NOT proof of a new copy.
+    -- Check immutable write-ahead locks as well as older audit rows
+    -- (history is capped; locks intentionally are not).
+    for _,attempt in pairs(NLL.db and NLL.db.awardAttemptLocks or {}) do
+        if type(attempt)=="table" and
+           tonumber(attempt.itemID)==tonumber(entry.itemID) then
+            return nil,"A standard Master Loot request already attempted this material ID. NO RETRY without verified corpse identity."
+        end
+    end
+    for _,audit in ipairs(NLL.db and NLL.db.lootAwardHistory or {}) do
+        if type(audit)=="table" and
+           tonumber(audit.itemID)==tonumber(entry.itemID) and
+           (audit.status=="AWARD_REQUESTED" or
+            audit.status=="AWARD_OUTCOME_UNKNOWN" or
+            audit.status=="LOOT_SLOT_CLEARED") then
+            return nil,"Previous winner Master Loot request for this material ID. NO RETRY."
+        end
+    end
+    -- After this exact guild leader ticket finishes, receipt tracking
+    -- correctly creates WON_AWAITING_ITEM. Ignore ONLY that one pending
+    -- receipt for the first physical award of the SAME pinned winner.
+    -- Every other pending/unknown human or bot receipt remains a HOLD.
+    local ownReceipt=nil
+    local completed=NLL.TicketLottery and
+        NLL.TicketLottery:GetActiveFor(entry)
+    if completed and completed.status=="COMPLETE" and
+       completed.selectionType=="GUILD" and
+       completed.test~=true and
+       completed.dropUID==entry.dropUID and
+       tonumber(completed.itemID)==tonumber(entry.itemID) and
+       type(completed.winner)=="string" then
+        local book=NLL.db and NLL.db.lootReceiptTracker
+        local r=type(book)=="table" and book[entry.dropUID]
+        if type(r)=="table" and r.dropUID==entry.dropUID and
+           tonumber(r.itemID)==tonumber(entry.itemID) and
+           r.selectionType=="GUILD" and
+           r.status=="WON_AWAITING_ITEM" and
+           type(r.character)=="string" and
+           string.lower(r.character)==string.lower(completed.winner) then
+            ownReceipt=r
+        end
+    end
+    local rows=self:Scan(ownReceipt)
+    for _,row in ipairs(rows or {}) do
+        if row.slotIndex==entry.slotIndex and
+           row.itemID==entry.itemID then
+            if row.itemLink~=entry.itemLink or
+               row.quantity~=entry.quantity then
+                return nil,"Live material link/stack changed; reopen review."
+            end
+            if row.status~="GUILD_REVIEW" then
+                return nil,row.reason or row.status or "Material held."
+            end
+            local leader=row.leader
+            if type(leader)~="string" or leader=="" then
+                return nil,"The raid leader cannot be uniquely verified."
+            end
+            -- PREPARED tickets have no winner yet. Only a completed
+            -- immutable guild allocation may pin the final recipient.
+            if completed and completed.status=="COMPLETE" and
+               completed.selectionType=="GUILD" and
+               (type(completed.winner)~="string" or
+                string.lower(completed.winner)~=string.lower(leader)) then
+                return nil,"Completed guild ticket belongs to a different raid leader."
+            end
+            return leader,"Leader-only guild-material ticket."
+        end
+    end
+    return nil,"Guild material is absent from the live loot window."
+end
+
 -- This is the GUILD MASTER (rankIndex 0), not the raid leader (rank 2).
 -- Roster might be missing/stale on 3.3.5a; fail closed instead of
 -- guessing. Verify one online guild master is in the current raid.
@@ -69,8 +180,15 @@ function G:GetLeader()
     end
     local leader
     for i=1,GetNumRaidMembers() do
-        local name,rank=GetRaidRosterInfo(i)
+        local name,rank,_,_,_,_,zone,online=GetRaidRosterInfo(i)
         if name and rank==2 then
+            -- Legacy clients and custom Playerbot rosters may omit
+            -- the optional online field. Never invent a TRUE value;
+            -- reject a leader explicitly flagged offline by WoW.
+            if online==false or online==0 or
+               (online==nil and zone=="Offline") then
+                return nil
+            end
             if leader then return nil end -- refuse ambiguous raid leadership
             leader=name
         end
@@ -78,7 +196,7 @@ function G:GetLeader()
     return leader
 end
 
-function G:GetReservationSummary(itemID)
+function G:GetReservationSummary(itemID,ignoreOwnGuildReceipt)
     local db=NLL.db
     local summary={need=0,greed=0,unknown=0,localCount=0,
         incoming=0,receiptPending=0,activeNames={}}
@@ -124,7 +242,13 @@ function G:GetReservationSummary(itemID)
             local awaitingReceipt=status~="OBTAINED"
             local awaitingPlayer=status=="OBTAINED" and
                 remote~=nil and remote~="" and remote~="ACKNOWLEDGED"
-            if awaitingReceipt or awaitingPlayer then
+            -- Identity must be the exact validated in-memory receipt,
+            -- never just a matching itemID or character name. Other
+            -- pending entries for the same material remain blocking.
+            if (awaitingReceipt or awaitingPlayer) and
+               not (receipt==ignoreOwnGuildReceipt and
+                    receipt.selectionType=="GUILD" and
+                    receipt.status=="WON_AWAITING_ITEM") then
                 summary.receiptPending=summary.receiptPending+1
             end
         end
@@ -200,7 +324,7 @@ function G:Classify(itemID, quality, itemType)
     return nil,classification,nil
 end
 
-function G:Scan()
+function G:Scan(ignoreOwnGuildReceipt)
     local rows={}
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
         return rows,"Fake raid active: guild loot requires live WoW corpse"
@@ -247,7 +371,7 @@ function G:Scan()
             end
             local category,reason
             category,_,reason=self:Classify(id,quality,itemType)
-            local summary=self:GetReservationSummary(id)
+            local summary=self:GetReservationSummary(id,ignoreOwnGuildReceipt)
             local status
             local threshold=type(GetLootThreshold)=="function" and
                 tonumber(GetLootThreshold()) or nil

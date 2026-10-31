@@ -6,6 +6,7 @@ local current="Leader"
 UnitName=function()return current end
 date=function()return "2026-10-17" end
 local debug=false
+local leaderAuthority=true
 local notices={}
 NaxxLootLottery={
     db={
@@ -18,6 +19,12 @@ NaxxLootLottery={
                 status="NEEDED",source="BOT_GEAR_PLAN",characterType="PLAYERBOT"},
             botgreed={character="Throgar",itemID=16866,raidKey="MOLTEN_CORE",
                 status="GREED",source="RAID_LEADER_MANUAL",characterType="PLAYERBOT"},
+            sameShortOtherRealm={character="Throgar-OtherRealm",itemID=16866,
+                raidKey="MOLTEN_CORE",status="NEEDED",
+                source="PLAYER_SUBMITTED",characterType="PLAYER"},
+            realmQualifiedLeader={character="Leader-OtherRealm",itemID=18821,
+                raidKey="MOLTEN_CORE",status="GREED",
+                source="PLAYER_SUBMITTED",characterType="PLAYER"},
             botother={character="Throgar",itemID=18821,raidKey="MOLTEN_CORE",
                 status="NEEDED",source="BOT_GEAR_PLAN"},
             otherbot={character="Gorak",itemID=16866,raidKey="MOLTEN_CORE",
@@ -31,7 +38,7 @@ NaxxLootLottery={
     },
     DebugSimulator={IsActive=function()return debug end},
     Print=function(_,v)notices[#notices+1]=v end,
-    TicketLottery={AuthorityAllowed=function()return true end},
+    TicketLottery={AuthorityAllowed=function()return leaderAuthority end},
 }
 local N=NaxxLootLottery
 local refreshes=0
@@ -53,7 +60,8 @@ local actual=N.db.gearNeeds
 local ledger=N.db.lootReceiptTracker
 ok(R:ObserveWinner(bot),"real bot winner tracked")
 ok(ledger[bot.dropUID].status=="WON_AWAITING_ITEM" and
-    #ledger[bot.dropUID].needs==2,"both bot reservations snapshotted")
+    #ledger[bot.dropUID].needs==2,
+    "only the two exact Throgar plans are snapshotted, never Throgar-OtherRealm")
 ok(actual.botneed.status=="NEEDED" and actual.botgreed.status=="GREED",
     "winning ticket alone does NOT mark either bot reservation obtained")
 local accepted,why=R:CanConfirm(bot.dropUID)
@@ -65,6 +73,10 @@ ok(R:ObserveWinner(bot) and ledger[bot.dropUID]==winPending,
 local corrupt={dropUID=bot.dropUID,itemID=16866,itemName="Helm of Might",
     winner="Gorak",status="COMPLETE"}
 ok(not R:ObserveWinner(corrupt),"same drop UID cannot be moved to another winner")
+local lookalike={dropUID=bot.dropUID,itemID=16866,itemName="Helm of Might",
+    winner="Throgar-OtherRealm",status="COMPLETE"}
+ok(not R:ObserveWinner(lookalike) and ledger[bot.dropUID]==winPending,
+    "same drop UID may not be claimed by same short name on a different realm")
 N.db.lootAwardHistory[#N.db.lootAwardHistory+1]={
     dropUID=bot.dropUID,itemID=16866,winner="Throgar",
     status="AWARD_REQUESTED"
@@ -72,6 +84,21 @@ N.db.lootAwardHistory[#N.db.lootAwardHistory+1]={
 accepted,why=R:CanConfirm(bot.dropUID)
 ok(not accepted,"GiveMasterLoot request alone is insufficient")
 N.db.lootAwardHistory[#N.db.lootAwardHistory].status="LOOT_SLOT_CLEARED"
+N.db.lootAwardHistory[#N.db.lootAwardHistory].winner="Throgar-OtherRealm"
+local aliasOK,aliasReason=R:CanConfirm(bot.dropUID)
+ok(not aliasOK and aliasReason:find("record the award",1,true) and
+   winPending.status=="WON_AWAITING_ITEM",
+   "another realm's short-name lookalike cannot validate physical receipt")
+N.db.lootAwardHistory[#N.db.lootAwardHistory].winner="Throgar"
+current="Leader-OtherRealm"
+leaderAuthority=false
+local aliasAuthority,authReason=R:CanConfirm(bot.dropUID)
+ok(not aliasAuthority and
+   authReason:find("authority",1,true) and
+   winPending.status=="WON_AWAITING_ITEM",
+   "different realm's short-name lookalike cannot inherit original leader authority")
+current="Leader"
+leaderAuthority=true
 ok(R:CanConfirm(bot.dropUID),"slot cleared allows separate manual receipt confirmation")
 -- Simulate human recipient check; no award is sent by this call.
 local committed,message=R:ConfirmReceipt(bot.dropUID)
@@ -83,8 +110,9 @@ ok(actual.botneed.status=="OBTAINED" and
     "bot NEED and GREED each transition to OBTAINED")
 ok(actual.botother.status=="NEEDED" and
     actual.otherbot.status=="NEEDED" and
-    actual.leader.status=="GREED",
-    "another item/bot/player remains unchanged")
+    actual.leader.status=="GREED" and
+    actual.sameShortOtherRealm.status=="NEEDED",
+    "receipt for Throgar cannot mark Throgar-OtherRealm or unrelated wishes")
 ok(winPending.status=="OBTAINED" and
     winPending.evidence=="LEADER_CONFIRMED_RECIPIENT_INVENTORY" and
     winPending.confirmedBy=="Leader","receipt audit records human assertion")
@@ -120,8 +148,24 @@ N.db.lootAwardHistory[#N.db.lootAwardHistory+1]={
 }
 ok(R:ConfirmReceipt(personal.dropUID),"player checked own inventory")
 ok(actual.leader.status=="OBTAINED" and
-    ownStatus["Leader|MOLTEN_CORE|18821"],
-    "local player mirrors obtained into own SavedVariables")
+    ownStatus["Leader|MOLTEN_CORE|18821"] and
+    actual.realmQualifiedLeader.status=="GREED",
+    "local player mirrors only the exact name; other-realm Gear Plan preserved")
+local separateRealm={dropUID="MC1:3:18821:OtherRealm",itemID=18821,
+    winner="Leader-OtherRealm",itemName="Quick Strike Ring",
+    raidKey="MOLTEN_CORE",selectionType="GREED",status="COMPLETE"}
+ok(R:ObserveWinner(separateRealm) and
+    #ledger[separateRealm.dropUID].needs==1,
+    "a qualified-name winner snapshots only its own exact Gear Plan")
+N.db.lootAwardHistory[#N.db.lootAwardHistory+1]={
+    dropUID=separateRealm.dropUID,itemID=18821,winner="Leader-OtherRealm",
+    status="LEADER_REPORTED"
+}
+ok(R:ConfirmReceipt(separateRealm.dropUID) and
+    actual.realmQualifiedLeader.status=="OBTAINED" and
+    actual.realmQualifiedLeader.obtainedDropUID==separateRealm.dropUID and
+    not ownStatus["Leader-OtherRealm|MOLTEN_CORE|18821"],
+    "separate realm's receipt cannot update this client's local wishlist")
 local blocked={dropUID="MC1:4:16866",itemID=16866,
     winner="Gorak",status="COMPLETE",raidKey="MOLTEN_CORE"}
 ok(R:ObserveWinner(blocked),"independent second winner recorded pending")

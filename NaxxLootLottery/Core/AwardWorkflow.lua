@@ -14,7 +14,17 @@ end
 local function ItemID(link)
     return type(link) == 'string' and tonumber(link:match('item:(%d+)')) or nil
 end
-local function Now() return GetTime and GetTime() or 0 end
+-- A physical award's 15-second arm window requires a real, monotonic
+-- WoW uptime value. Missing/invalid clocks are NOT equivalent to time 0.
+local function Now()
+    if type(GetTime)~='function' then return nil end
+    local value=GetTime()
+    if type(value)~='number' or value~=value or
+       value<0 or value==math.huge or value==-math.huge then
+        return nil
+    end
+    return value
+end
 local function Selected()
     local loot = NLL.LootDetection:GetCurrentLoot() or {}
     return loot[(NLL.UI and NLL.UI.currentLootSelected) or 1]
@@ -74,6 +84,26 @@ function A:ValidateLiveContext(entry, winner)
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
         return false, 'Simulation active: real awards are blocked.'
     end
+    -- A guild-material result has NO ordinary saved-wishlist winner.
+    -- Even after tickets finish, independently recheck the live leader,
+    -- reservations, same-material attempt locks and loot classification
+    -- at the LAST physical-transfer gate. This covers BOTH the ordinary
+    -- two-stage Review Award and the opt-in winner-popup AWARD ITEM path.
+    local outcome=self:GetOutcome(entry)
+    if outcome and outcome.selectionType=='GUILD' then
+        local G=NLL.GuildLootReview
+        if not G or not G.IsGuildMaterial or
+           not G:IsGuildMaterial(entry.itemID) or
+           type(G.LeaderTicketRecipient)~='function' then
+            return false,'Unknown guild-material allocation. No physical award.'
+        end
+        local leader,reason=G:LeaderTicketRecipient(entry)
+        if type(leader)~='string' or
+           string.lower(leader)~=string.lower(tostring(winner)) then
+            return false,'Guild allocation no longer matches live raid leader: '..
+                tostring(reason or 'leader changed')
+        end
+    end
     -- Durable locks survive a reload, a swallowed WoW API exception and
     -- history trimming. A manually reconciled attempt stays locked forever.
     local locks=NLL.db and NLL.db.awardAttemptLocks or {}
@@ -123,8 +153,11 @@ function A:ValidateLiveContext(entry, winner)
         return false, 'Cannot verify your Master Looter identity from the raid.'
     end
     local masterName = GetRaidRosterInfo(masterRaidIndex)
-    if not masterName or Key(masterName) ~= Key(UnitName and UnitName('player')) then
-        return false, 'You are not WoW\'s designated Master Looter.'
+    -- A realm-stripped alias is not proof of the designated Master Looter.
+    local actorName=UnitName and UnitName('player') or nil
+    if type(masterName)~='string' or type(actorName)~='string' or
+       string.lower(masterName)~=string.lower(actorName) then
+        return false, 'You are not WoW\'s exact designated Master Looter.'
     end
     if type(GetNumLootItems) ~= 'function' or
        type(GetLootSlotLink) ~= 'function' or
@@ -136,26 +169,39 @@ function A:ValidateLiveContext(entry, winner)
        LootFrame.selectedSlot ~= slot then
         return false, 'Open the WoW Master Loot dropdown for THIS loot slot.'
     end
+    -- The older two-click award path must use the same exact-item-link and
+    -- verified stack proof as quick award; checking itemID alone is unsafe.
     if slot > (GetNumLootItems() or 0) or
-       ItemID(GetLootSlotLink(slot)) ~= entry.itemID then
-        return false, 'The selected WoW loot slot no longer matches this item.'
+       type(entry.itemLink)~='string' or
+       type(entry.quantity)~='number' or
+       entry.quantity<1 or entry.quantity%1~=0 or
+       GetLootSlotLink(slot)~=entry.itemLink or
+       ItemID(entry.itemLink)~=entry.itemID then
+        return false, 'Exact selected WoW item link or stack is unavailable/changed.'
     end
-    if type(GetLootSlotInfo) == 'function' then
-        local _, _, quantity, _, locked = GetLootSlotInfo(slot)
-        if locked or (quantity and quantity < 1) then
-            return false, 'The loot slot is locked or empty.'
+    if type(GetLootSlotInfo)~='function' then
+        return false, 'WoW loot quantity/lock API unavailable.'
+    end
+    -- WoW 3.3.5a GetLootSlotInfo: fifth result is locked (confirmed
+    -- against client FrameXML LootFrame.lua), not modern sixth result.
+    local _, _, quantity, _, locked=GetLootSlotInfo(slot)
+    if type(quantity)~='number' or quantity<1 or
+       quantity%1~=0 or quantity~=entry.quantity or locked then
+        return false, 'Exact WoW loot quantity changed or slot is locked.'
+    end
+    -- Every award route (NEED/GREED/GUILD) requires ONE full-name
+    -- candidate. Never strip realms or silently choose a lookalike.
+    local candidateIndex,count=nil,0
+    for i=1,40 do
+        local candidate=GetMasterLootCandidate(i)
+        if type(candidate)=='string' and
+           string.lower(candidate)==string.lower(winner) then
+            candidateIndex=i
+            count=count+1
         end
     end
-    local candidateIndex
-    for i = 1, 40 do
-        local candidate = GetMasterLootCandidate(i)
-        if candidate and Key(candidate) == Key(winner) then
-            candidateIndex = i
-            break
-        end
-    end
-    if not candidateIndex then
-        return false, 'Winner is absent from this item\'s Master Loot candidate list.'
+    if count~=1 then
+        return false,'Winner is missing or ambiguous in exact Master Loot candidates.'
     end
     return true, {dropUID = entry.dropUID, itemID = entry.itemID,
         itemName = entry.itemName, winner = winner, slot = slot,
@@ -347,7 +393,12 @@ function A:ArmDirectAward(entry)
         self:Cancel()
         return false, 'Master Loot selection changed. Start award review again.'
     end
-    verified.armedAt = Now()
+    local armedAt=Now()
+    if armedAt==nil then
+        self:Cancel()
+        return false,'WoW clock unavailable; cannot arm a physical Master Loot request.'
+    end
+    verified.armedAt=armedAt
     return true, 'ARMED: ' .. result.winner .. ' / ' .. entry.itemName ..
         '. Re-check both names, then press CONFIRM GIVE ITEM within 15 seconds.'
 end
@@ -359,9 +410,11 @@ function A:CommitDirectAward(entry)
        verified.simulated or verified.dropUID ~= entry.dropUID then
         return false, 'Direct award is not armed for this drop.'
     end
-    if not verified.armedAt or (Now() - verified.armedAt) > ARM_SECONDS then
+    local now=Now()
+    if type(verified.armedAt)~='number' or now==nil or
+       now<verified.armedAt or now-verified.armedAt>ARM_SECONDS then
         self:Cancel()
-        return false, 'Confirmation expired. Review the Master Loot candidate again.'
+        return false,'Confirmation expired or WoW clock changed; review and arm again.'
     end
     local result = self:GetOutcome(entry)
     if not result or result.awardStatus or result.winner ~= verified.winner or
@@ -430,6 +483,18 @@ function A:OnLootSlotCleared(slot)
             if NLL.LootIdentity then NLL.LootIdentity:MarkAward(uid,request.result.awardStatus) end
             self.liveRequests[uid] = nil
             RefreshUI()
+            -- A successful AWARD ITEM click opens the existing human
+            -- receipt review in NOT READY state. When the real slot clears,
+            -- refresh ONLY that still-open exact-UID dialog so it now
+            -- explains that a separate inventory check is required.
+            -- This never calls ConfirmReceipt or marks plans OBTAINED.
+            local UI=NLL.UI
+            if UI and UI.receiptReviewUID==uid and
+               UI.receiptReviewFrame and UI.receiptReviewFrame.IsShown and
+               UI.receiptReviewFrame:IsShown() and
+               type(UI.OpenReceiptReview)=="function" then
+                UI:OpenReceiptReview(uid)
+            end
             break
         end
     end

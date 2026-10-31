@@ -104,13 +104,13 @@ records.reconciliationStatus="CLOSED_NO_RETRY"
 plan=P:Build()
 ok(plan.rows[1].decision=="HOLD_UNCERTAIN" and
    plan.rows[2].decision=="HOLD_UNCERTAIN" and
-   plan.rows[3].decision=="PROPOSE_TO_GUILD_MASTER" and
-   plan.rows[3].proposedRecipient=="Raid3" and
+   plan.rows[3].decision=="USE_LEADER_TICKETS" and
+   plan.rows[3].proposedRecipient==nil and
    plan.rows[4].decision=="PROPOSE_TO_LEADER" and
    plan.rows[4].proposedRecipient==leader,
    "NO RETRY closes global gate but pending receipts remain held")
 ok(plan.rows[5].decision=="HOLD_UNCERTAIN" and
-   plan.rows[6].decision=="HOLD_UNCERTAIN" and plan.proposed==2,
+   plan.rows[6].decision=="HOLD_UNCERTAIN" and plan.proposed==1,
    "only acknowledged or truly unreserved items proposed")
 ack.remoteSyncStatus="SEND_FAILED"
 plan=P:Build()
@@ -118,21 +118,21 @@ ok(plan.rows[2].decision=="HOLD_UNCERTAIN",
    "failed player notification still holds")
 ack.remoteSyncStatus="ACKNOWLEDGED"
 plan=P:Build()
-ok(plan.rows[2].decision=="PROPOSE_TO_GUILD_MASTER" and
-   plan.rows[2].proposedRecipient=="Raid3",
-   "remote acknowledgment only permits proposal to guild master")
+ok(plan.rows[2].decision=="USE_LEADER_TICKETS" and
+   plan.rows[2].proposedRecipient==nil,
+   "remote ACK removes hold, but only leader ticket path is offered")
 pending.status="OBTAINED"
 plan=P:Build()
-ok(plan.rows[1].decision=="PROPOSE_TO_GUILD_MASTER" and
-   plan.rows[1].proposedRecipient=="Raid3",
-   "independent bot receipt clears hold but never redirects to raid leader")
+ok(plan.rows[1].decision=="USE_LEADER_TICKETS" and
+   plan.rows[1].proposedRecipient==nil,
+   "independent receipt clears hold and exposes only leader-ticket review")
 pending.status="WON_AWAITING_ITEM"
 ack.remoteSyncStatus="AWAITING_PLAYER"
 local bad={itemID=17010,itemLink=rows[1].itemLink,
     slotIndex=1,quantity=1}
 local allowed,message=G:Validate(bad)
-ok(not allowed and message:find("reservation changed",1,true),
-    "manual guild transfer cannot bypass orphaned winner")
+ok(not allowed and message:find("leader-only",1,true),
+    "manual guild transfer never bypasses new leader-only route")
 N.TicketLottery.active={status="WAITING_FOR_ROLL"}
 plan=P:Build()
 ok(plan.rows[3].decision=="HOLD_ACTIVE_ROLL" and plan.proposed==0,
@@ -152,9 +152,9 @@ ok(plan.rows[3].decision=="HOLD_MASTER_LOOT",
    "acting client must match WoW Master Looter raid index")
 masterIndex=1
 plan=P:Build()
-ok(plan.rows[3].decision=="PROPOSE_TO_GUILD_MASTER" and
-   plan.rows[3].proposedRecipient=="Raid3",
-   "verified Master Looter permits only a dry-run guild-master proposal")
+ok(plan.rows[3].decision=="USE_LEADER_TICKETS" and
+   plan.rows[3].proposedRecipient==nil,
+   "verified Master Looter exposes only leader-ticket guidance")
 N.LootDetection.lootOpen=false
 plan=P:Build()
 ok(#plan.rows==0 and plan.proposed==0,

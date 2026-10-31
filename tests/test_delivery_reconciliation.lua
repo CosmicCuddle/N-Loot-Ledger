@@ -17,6 +17,7 @@ LootFrame={selectedSlot=1,IsShown=function()return true end}
 local authorized=true
 local fake=false
 local entry={dropUID="L1:1:16800",itemID=16800,
+    itemLink=link,quantity=1,
     itemName="Arcanist Boots",raidKey="MOLTEN_CORE",slotIndex=1}
 local won={dropUID=entry.dropUID,itemID=16800,winner="Pikeotter",
     status="COMPLETE",test=false}

@@ -127,7 +127,9 @@ function L:Prepare(entry, matches)
     local snapshot={}
     local tickets={}
     for i,m in ipairs(preview.current) do
-        snapshot[i]=CharacterKey(m.character)
+        snapshot[i]=preview.selectionType=='GUILD' and
+            string.lower(tostring(m.character or '')) or
+            CharacterKey(m.character)
         tickets[i]={number=i,character=m.character}
     end
     self.active={
@@ -137,8 +139,10 @@ function L:Prepare(entry, matches)
         tickets=tickets, candidateKeys=snapshot,
         status='PREPARED', test=isTest, createdAt=Now(), method=nil
     }
-    local stageLabel = preview.selectionType == 'GREED' and 'GREED' or
-        ('NEED - Tier ' .. tostring(preview.chosenTier))
+    local stageLabel = preview.selectionType=='GUILD' and
+        'GUILD - RAID LEADER ONLY' or
+        (preview.selectionType == 'GREED' and 'GREED' or
+        ('NEED - Tier ' .. tostring(preview.chosenTier)))
     NLL:Print((isTest and '[TEST] ' or '') .. 'Prepared ' .. #tickets ..
         ' tickets for ' .. entry.itemName .. ' (' .. stageLabel .. ').')
     for _,t in ipairs(tickets) do
@@ -167,7 +171,10 @@ function L:PoolStillMatches(entry)
         return false,'Roster/priority changed. Cancel and prepare new tickets.'
     end
     for i,m in ipairs(preview.current) do
-        if CharacterKey(m.character)~=a.candidateKeys[i] then
+        local currentKey=a.selectionType=='GUILD' and
+            string.lower(tostring(m.character or '')) or
+            CharacterKey(m.character)
+        if currentKey~=a.candidateKeys[i] then
             return false,'Candidate list changed. Cancel and prepare again.'
         end
     end
@@ -209,11 +216,18 @@ function L:Finish(roll,method)
     end
     self:Record('COMPLETE',roll,'Result only. Loot award remains manual.')
     NLL:Print((a.test and '[TEST - no loot awarded] ' or '') ..
-        a.itemName .. ': winning ticket ' .. roll .. ' = ' .. a.winner ..
-        '. Award remains MANUAL.')
+        a.itemName .. (a.selectionType=='GUILD' and
+        ': sole guild leader ticket ' or ': winning ticket ')..
+        roll .. ' = ' .. a.winner .. '. Item not yet awarded.')
     if not a.test then
-        self:Announce("NLL WINNER: "..a.itemName.." -> "..a.winner..
-            " (ticket #"..roll.."). Item not yet awarded.")
+        if a.selectionType=='GUILD' then
+            self:Announce("NLL GUILD ALLOCATION (LEADER ONLY): "..
+                a.itemName.." -> "..a.winner..
+                " (sole ticket #1). Item not yet awarded.")
+        else
+            self:Announce("NLL WINNER: "..a.itemName.." -> "..a.winner..
+                " (ticket #"..roll.."). Item not yet awarded.")
+        end
     end
     if NLL.UI and NLL.UI.RefreshCurrentLootPanel then
         NLL.UI:RefreshCurrentLootPanel()
@@ -247,6 +261,21 @@ function L:StartRoll(entry)
         a.roller=CharacterKey(UnitName and UnitName('player'))
         self:Finish(math.random(1,#a.tickets),'LOCAL_TEST_RANDOM')
         return true,'TEST draw completed; no loot awarded.'
+    end
+    -- One raid-leader ticket is an explicit GUILD assignment, not a
+    -- chance draw. The owner still presses Start Roll, but we must not
+    -- claim a random contest or depend on WoW RandomRoll(1,1).
+    if a.selectionType=='GUILD' then
+        if #a.tickets~=1 then
+            return false,'Guild material must have exactly one leader ticket.'
+        end
+        a.status='WAITING_FOR_ROLL'
+        a.rollStarted=Now()
+        a.roller=CharacterKey(UnitName and UnitName('player'))
+        if not self:Finish(1,'GUILD_LEADER_ONLY') then
+            return false,'Leader-only guild result could not be verified.'
+        end
+        return true,'Guild material assigned to sole raid-leader ticket; ITEM NOT AWARDED.'
     end
     -- Only the real owner action starts this countdown. OnUpdate will
     -- revalidate the same live corpse, candidates and leader authority.

@@ -715,7 +715,7 @@ function UI:CreateCurrentLootPanel(parent)
     end)
     -- Optional read-only all-slot view; sits on its own footer row,
     -- away from Prev Matches / Prepare Tickets (HF1 overlap regression).
-    local guild=self:CreateTextButton(panel,"Guild Loot",104)
+    local guild=self:CreateTextButton(panel,"Loot Review",104)
     guild:SetPoint("BOTTOMLEFT",panel,"BOTTOMLEFT",342,98)
     guild:SetScript("OnClick",function() UI:OpenGuildLootReview() end)
     self.currentLootGuildReviewButton=guild
@@ -754,7 +754,7 @@ function UI:CreateGuildLootDialog()
 
     local heading=f:CreateFontString(nil,"OVERLAY","GameFontNormalLarge")
     heading:SetPoint("TOP",f,"TOP",0,-23)
-    heading:SetText("GUILD LOOT - REVIEW / ARM / CONFIRM")
+    heading:SetText("ALL LOOT REVIEW - MATERIALS USE LEADER TICKETS")
     local status=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
     status:SetPoint("TOP",heading,"BOTTOM",0,-13)
     status:SetWidth(670)
@@ -930,27 +930,33 @@ function UI:RefreshGuildLootDialog()
             if item.status=="BELOW_THRESHOLD" then
                 summary="BELOW LOOT THRESHOLD - loot normally; cannot Master Loot."
             elseif item.status=="THRESHOLD_UNKNOWN" then
-                summary="LOOT THRESHOLD UNKNOWN - Guild transfer blocked."
+                summary=item.guildMaterial and
+                    "LOOT THRESHOLD UNKNOWN - Leader tickets HOLD." or
+                    "LOOT THRESHOLD UNKNOWN - Guild transfer blocked."
             elseif item.status=="LOOT_INFO_UNKNOWN" then
-                summary="LOOT SLOT COUNT UNKNOWN - Guild transfer blocked."
+                summary=item.guildMaterial and
+                    "LOOT SLOT COUNT UNKNOWN - Leader tickets HOLD." or
+                    "LOOT SLOT COUNT UNKNOWN - Guild transfer blocked."
             elseif item.guildMaterial and item.status=="GUILD_REVIEW" then
-                summary="Guild material | Master: "..tostring(
-                    item.guildMaster or "UNAVAILABLE - open Guild roster")
+                summary="Leader-only: Current Loot > Prepare Tickets > Start Roll"
             elseif item.guildMaterial then
-                summary=summary.." | Guild: "..tostring(
-                    item.guildMaster or "unavailable")
+                -- The old Guild Master material destination is retired.
+                -- Preserve the actual HOLD reason, never name a false recipient.
+                summary=summary.." | Leader tickets HOLD"
             else
                 summary=summary.." | Raid leader: "..tostring(item.leader)
             end
             row.reasonText:SetText(summary)
             row.reviewButton.label:SetText(
-                item.guildMaterial and "Guild" or "Review")
+                item.guildMaterial and "Tickets" or "Review")
             row.reviewButton.target={
                 slotIndex=item.slotIndex,itemID=item.itemID,
                 itemLink=item.itemLink,quantity=item.quantity,
             }
+            -- Existing Guild button must never offer the superseded
+            -- Guild Master transfer route for a leader-only material.
             if item.status=="GUILD_REVIEW" and
-                (not item.guildMaterial or item.guildMaster) then
+                not item.guildMaterial then
                 row.reviewButton:Enable()
             else row.reviewButton:Disable() end
             row:Show()
@@ -1140,7 +1146,12 @@ function UI:RefreshCurrentLootPanel()
 
     local selectedPolicy=NLL.Data and NLL.Data.MoltenCore and
         NLL.Data.MoltenCore:GetItem(selected.itemID)
-    if selectedPolicy and selectedPolicy.reservationLottery and
+    if not simulation and NLL.GuildLootReview and
+       NLL.GuildLootReview:IsGuildMaterial(selected.itemID) then
+        statusText=statusText..
+            "  |cff66ff99GUILD MATERIAL: leader-only ticket. "..
+            "Prepare Tickets, then Start Roll; no random contest.|r"
+    elseif selectedPolicy and selectedPolicy.reservationLottery and
         (selected.itemID==18563 or selected.itemID==18564) then
         statusText=statusText..
             "  |cff66ff99Saved Windseeker reservations: equal tickets; manual award.|r"

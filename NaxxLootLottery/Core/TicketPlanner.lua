@@ -54,6 +54,29 @@ function Planner:BuildPreview(entry, matches, options)
         return result
     end
     local raidKey = entry.raidKey or "MOLTEN_CORE"
+    -- Five explicitly whitelisted materials now use normal Prepare Tickets /
+    -- Start Roll buttons, with ONE leader ticket (deterministic selection).
+    -- Do not include any saved NEED/GREED or manual candidate additions.
+    -- Actual awards remain separate, guarded Master Loot requests.
+    local G=NLL.GuildLootReview
+    if not sandbox and raidKey=="MOLTEN_CORE" and G and
+       G:IsGuildMaterial(entry.itemID) then
+        local leader,reason=G:LeaderTicketRecipient(entry)
+        result.guildLeaderOnly=true
+        if not leader then
+            result.message="GUILD MATERIAL HOLD: "..tostring(reason)
+            return result
+        end
+        result.selectionType="GUILD"
+        result.current={{character=leader,interestStatus="GUILD",
+            inRaid=true,online=true,eligiblePresence=true,
+            source="GUILD_LEADER_ONLY"}}
+        result.ready=true
+        result.message="GUILD MATERIAL: raid leader "..leader..
+            " is the ONLY ticket. Start Roll selects this leader; "..
+            "no random contest or physical award occurs until AWARD ITEM."
+        return result
+    end
     if raidKey ~= "MOLTEN_CORE" or not NLL.Data.MoltenCore:GetItem(entry.itemID) then
         result.message = "Unsupported drop; no ticket preview."
         return result

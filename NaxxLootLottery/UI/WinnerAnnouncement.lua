@@ -1,5 +1,5 @@
--- NLL 0.1.0.21: A visual result popup, not an award window.
--- No code in this file changes SavedVariables or gives loot.
+-- Winner popup: a result display plus an explicitly opted-in Master Loot
+-- button. Showing the result alone never awards loot or marks OBTAINED.
 local NLL = NaxxLootLottery
 local UI = NLL.UI
 
@@ -76,6 +76,14 @@ function UI:CreateWinnerAnnouncement()
         if ok then
             quick:Disable()
             frame:Hide() -- request sent, not a recipient receipt
+            -- Reduce navigation: open the EXISTING non-awarding receipt
+            -- review, identified by the exact completed real drop UID.
+            -- It remains NOT READY until independently observed loot
+            -- delivery and two explicit human inventory-confirmation
+            -- clicks. Opening this window NEVER marks OBTAINED.
+            if type(UI.OpenReceiptReview)=="function" then
+                UI:OpenReceiptReview(UI.winnerAnnouncementDropUID)
+            end
         else
             disclaimer:SetText("|cffff7777"..tostring(msg).."|r")
         end
@@ -107,12 +115,18 @@ function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated, se
     end
     local interest = selectionType == 'GREED' and 'GREED' or
         ('NEED' .. (tier and (' - Tier '..tostring(tier)) or ''))
-    local label = (simulated and 'SIMULATION' or 'LOTTERY') ..
-        ' WINNER - ' .. interest
+    -- Keep the large heading short for 3.3.5a clients using larger fonts;
+    -- show the raid-leader-only restriction separately in the ticket line.
+    local label = selectionType=='GUILD' and
+        'GUILD ALLOCATION' or
+        ((simulated and 'SIMULATION' or 'LOTTERY') ..
+        ' WINNER - ' .. interest)
     self.winnerAnnouncementTitle:SetText("|cffffd568" .. label .. "|r")
     self.winnerAnnouncementName:SetText("|cff66ff99" .. tostring(winner) .. "|r")
     self.winnerAnnouncementItem:SetText(tostring(itemName))
-    self.winnerAnnouncementTicket:SetText("Winning ticket #" .. tostring(ticketNumber))
+    self.winnerAnnouncementTicket:SetText((selectionType=="GUILD" and
+        "Raid leader only - Guild ticket #" or "Winning ticket #")..
+        tostring(ticketNumber))
     self.winnerAnnouncementDropUID=not simulated and dropUID or nil
     self.winnerAnnouncementWinner=not simulated and winner or nil
     local enabled=not simulated and type(dropUID)=="string" and
@@ -123,7 +137,7 @@ function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated, se
     self.winnerAnnouncementDisclaimer:SetText(simulated and
         "|cffffbb66FAKE RAID - no real equipment awarded|r" or
         (enabled and
-        "|cffff9955AWARD ITEM sends REAL Master Loot; receipt still unverified|r" or
+        "|cffff9955Select THIS item in WoW loot first; AWARD ITEM sends REAL loot.|r" or
         "|cffffbb66RESULT ONLY - quick award OFF; use Review Award|r"))
     self.winnerAnnouncement:Show()
     return true

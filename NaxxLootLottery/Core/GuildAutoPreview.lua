@@ -98,6 +98,9 @@ function P:Build()
             elseif not masterOK then
                 decision="HOLD_MASTER_LOOT"
                 reason="The acting character is not the verified WoW Master Looter"
+            elseif source.guildMaterial then
+                decision="USE_LEADER_TICKETS"
+                reason="Guild material uses Prepare Tickets / Start Roll, sole raid leader; NO transfer here"
             elseif source.guildMaterial and not source.guildMaster then
                 decision="HOLD_GUILD_MASTER"
                 reason="Actual guild master is not verified online and present in raid; no fallback to raid leader"

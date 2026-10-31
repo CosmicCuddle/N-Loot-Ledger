@@ -607,6 +607,8 @@ current SavedVariables inventory.
 - [ ] Owner-approved merge/release. Keep draft and no auto awards.
 
 **NLL-041 — Reserved Windseeker/guild-material C16; stacked draft [#41](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/41)**
+
+> Historical C16 Guild Master routing is now **superseded for the five guild material IDs** by CosmicCuddle's newer raid-leader-only ticket decision in PR #43. These checked lines record prior development, **not** current recipient policy. Ordinary non-material transfer safeguards remain separate.
 - [x] Built: 18563/18564 use saved class-eligible reservation pools,
       NEED before GREED with equal tickets; manual award still separate.
 - [x] Built: Lava/Fiery Core, Core Leather, Blood of Mountain, Core of Earth
@@ -691,13 +693,209 @@ Do not infer a server receipt from a /roll, cleared slot or successful
       confirmation is still required for actual Gear Plan changes.
 - [x] Mocked Lua 5.1 positive/negative test fixtures and Settings
       opt-in regression added. [Draft design and acceptance](2026-10-31_WINNER_POPUP_QUICK_AWARD_DRAFT.md).
-- [ ] Latest exact-branch automated Lua CI including quick mock and
-      retained two-stage/Settings safety regression PASSES.
+- [x] Latest stacked #43 Lua 5.1 regression includes quick-popup tests,
+      legacy two-stage/Settings safety and guild-recipient drift. Exact
+      code/test checkpoint `37bc9c309602f78b30cce8bf1340c3e6e7399e2f` passed
+      [run 41204851629](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41204851629).
+      This is mocked/source CI, not in-game acceptance.
 - [ ] Controlled in-game WoW 3.3.5a UI checks and an *owner-approved*
       expendable-material physical test. **No real Windseeker/rare-item
       live transfer** in initial acceptance; protect current saved plans.
 - [ ] Owner-approved integration/merge/release. Draft #42 is dependent
       on draft PRs #41 and #40. No production change.
+
+## NLL-043 — Owner-selected leader-only ticket route for guild materials (DRAFT [#43](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/43))
+
+- [x] CosmicCuddle's decision (31 October 2026): five exact whitelisted
+      raid materials use **Prepare Tickets → Start Roll → winner popup**,
+      with the **raid leader as sole recipient**, not the Guild Master.
+      This is deterministic **GUILD ALLOCATION**, not a fair/random
+      NEED/GREED roll. Ordinary gear and saved Windseeker reservations
+      retain their previous rules.
+- [x] Existing reservation, pending receipt, mystery item/corpse identity,
+      Master Loot threshold, unknown stack and old Guild material attempt
+      safeguards are checked before leader-only tickets are prepared.
+      Never automatically run tickets or award an item on observing loot.
+- [x] Superseded Guild Master transfer controls are disabled for these
+      five materials; Guild Loot/Dry Run points to normal Current Loot
+      tickets. Unreserved non-material manual review remains separate.
+- [x] Standalone leader-only scanner/lottery regression and old Guild
+      review fixture migration committed to draft branch.
+- [x] Exact code/test checkpoint `37bc9c309602f78b30cce8bf1340c3e6e7399e2f`:
+      [Lua 5.1 green](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41204851629) and
+      [full NO-RELEASE package green](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41204847015).
+      The code contains the compact guild winner heading and retained explicit
+      raid-leader-only ticket caption. **Recheck latest branch HEAD's CI after
+      subsequent commits; no green run means a deployed build passed.**
+- [ ] In-client WoW 3.3.5a UI and separate owner-approved expendable
+      Master Loot/receipt test. NO rare/legendary awards in smoke test.
+- [ ] Owner decision on merging/releasing stacked drafts #40–#43.
+      Current installed Build 60 remains unchanged.
+- [x] [Detailed owner decision, constraints and acceptance](2026-10-31_GUILD_MATERIAL_LEADER_TICKETS_DRAFT.md).
+- [x] Source/UI review corrected stale Guild Master wording on held guild
+      material rows (commits `06b33e9`, `b24b5ab`) and shortened the
+      enlarged-font winner popup heading (commits `966b068`, `37bc9c3`).
+      No physical award/recipient rules, core or SavedVariables changed.
+- [x] [Part 17 controlled non-awarding first-client acceptance guide](2026-10-31_PART17_FIRST_CLIENT_NON_AWARDING_ACCEPTANCE.md)
+      prepared. **Phase 1 does not press Prepare Tickets or Start Roll on
+      actual loot**: Start Roll on a real guild material creates a lasting
+      winner/receipt record even if no item is physically awarded.
+- [x] **Part 17 Master Loot identity hardening:** the existing ordinary
+      `Review Award → Arm Direct Award → Confirm` path now requires the
+      **full exact Master Looter name**, **one unique exact full-name
+      candidate** (no realm-stripped winner aliases), **unchanged
+      item hyperlink** and **exact positive integer stack count** at
+      each Review/Arm/Commit validation. The one-click path retains its
+      independent dual consent and immutable attempt lock. This is a
+      deliberate fail-closed tightening of legacy ordinary awards;
+      if a custom roster omits or changes realm suffixes, the physical
+      action is BLOCKED until its identity can be verified, never guessed.
+- [x] Verified the fifth `GetLootSlotInfo` return is `locked` in
+      authentic [3.3.5a client FrameXML LootFrame.lua](https://github.com/wowgaming/3.3.5-interface-files/blob/main/LootFrame.lua);
+      modern API signature documentation must not be substituted for
+      this Wrath client when inspecting loot availability.
+- [x] **Exact code/test checkpoint `2235140cabe009f8be3e6342cf6634bb19dddc71`**
+      [Lua 5.1 SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41205755127)
+      and [full NO-RELEASE SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41205751126).
+      Mock regressions cover lookalike realm characters, duplicate
+      candidates, wrong Master Looter, changed link/quantity and
+      changed item or candidates **between arm and final commit**;
+      no live GiveMasterLoot or recipient inventory was verified.
+- [x] **Part 17 receipt identity and final-click integrity hardening:**
+      `LootReceiptTracker:ObserveWinner` compares the saved receipt's
+      **full exact recipient name** with an incoming result for the same
+      drop UID. `CanConfirm` now requires full exact winner identity in
+      the recorded award evidence, rather than allowing a same-short-name
+      different-realm lookalike to corroborate delivery. Existing ordinary
+      Gear Plan short-name compatibility and receipt write restrictions
+      remain otherwise unchanged.
+- [x] The **I Checked Inventory → MARK OBTAINED** UI freezes the
+      exact ledger row, full winner name and item ID. If the row is
+      replaced or recipient/item identity changes in between the two
+      clicks, the confirmation disarms and does NOT write OBTAINED.
+      This protects both live loot and historical Award History review.
+      Saved rows with inconsistent realm suffixes may now HOLD until
+      verified, never silently convert to OBTAINED.
+- [x] **Exact code/test checkpoint `151cd2c572e5a480d7ac89b5c214b1e9d106736c`**:
+      [Lua 5.1 regression SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41207088602)
+      and [full no-release integration SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41207084731).
+      Mocked tests explicitly cover cross-realm duplicate UID and
+      mismatched award history, as well as recipient/item/ledger changes
+      after first inventory-attestation click. These are NOT actual
+      3.3.5a in-game tests.
+- [x] **Part 17 exact-owner Gear Plan receipt update:** after exact
+      winner/award evidence checks, the final receipt path now also
+      requires the **full exact character name** when capturing
+      winner-matched active Gear Plans, validating saved snapshots,
+      linking any historically attested bot NEED/GREED, checking the
+      original leader's receipt authority, and mirroring a confirmed
+      personal receipt into local wishlist SavedVariables.
+      This prevents `Throgar` from turning a separate
+      `Throgar-OtherRealm` Gear Plan OBTAINED and prevents an
+      `Leader-OtherRealm` alias from inheriting `Leader` receipt
+      authority. Previously saved plan entries are **not** rewritten.
+      **Compatibility HOLD:** records that disagree on realm suffix may
+      no longer auto-match for receipt/OBTAINED. Verify real client and
+      Playerbot naming before owner-approved release; do not silently
+      relax identity checks or change existing records.
+- [x] Exact code/test checkpoint `48602ce90d0eed6458b7a75d78fac1298c4db24d`:
+      [Lua 5.1 SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41207473609)
+      and [full NO-RELEASE SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41207468947).
+      Tests prove separate same-short-name Gear Plans stay NEEDED,
+      exact original-leader authority is required when raid authority
+      is absent, and one recipient cannot set another client's
+      local Wishlist OBTAINED. No live test or server inventory proof.
+- [x] **Part 17 remote human receipt hardening (R1 protocol)**:
+      the optional recipient-side receipt whisper/ACK now independently
+      validates **full exact sender/current raid leader** identity and
+      full exact named recipient. The ordinary legacy wishlist
+      communication protocol was intentionally NOT changed. Separate
+      leader-only send and remote ACK paths fail closed on mismatching
+      realm suffixes. A spoofed lookalike, replay or wrong recipient
+      cannot silently mark another player's local wishlist OBTAINED.
+      Actual custom WoW 3.3.5a sender/roster naming remains to be
+      verified in an authorised two-client test.
+- [x] The remote player **I Have the Item → MARK OBTAINED** dialog
+      refuses a missing/non-numeric/negative/NaN/infinite or backwards
+      WoW clock, enforces the 15-second window, and pins the exact
+      pending offer key, row object, full recipient, sender, drop UID
+      and item ID across both clicks. Changed offer identity disarms;
+      the existing receipt core independently revalidates at Accept.
+- [x] **Source/test commit `60964fadadefda48d701656569240c78bbba3795`:**
+      [Lua 5.1 SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209617578)
+      and [full NO-RELEASE SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209612517).
+      Tested alternate-realm leader, recipient and ACK sender,
+      invalid/rollback clocks, and switching or modifying a pending
+      receipt between inspection and final click. This is mock CI,
+      **not** proof of a live client message or physical receipt.
+      [First-client guide](2026-10-31_PART17_FIRST_CLIENT_NON_AWARDING_ACCEPTANCE.md)
+      includes separately owner-approved two-human-client acceptance.
+- [x] **Part 17 exact Build 141 artifact independently opened/verified.**
+      Source/test commit `35917594eb15283fba35a88274217a80cedaf61f`
+      has [Lua 5.1 SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209745595)
+      and [full NO-RELEASE SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209742036).
+      Downloaded the real artifact `NLL-MC-leader-ticket-award-141`
+      (ID `13046300143`) and verified both ZIP CRCs, the inner
+      SHA-256 `896571baca5360a6f0c7d19e4485e5a22066b32ef82876bc0c5f0be8300e81f2`
+      against its `SHA256SUMS.txt`, exact source commit in
+      `BUILD_INFO.txt`, one `NaxxLootLottery/` root,
+      **51 Lua modules + one TOC** and no missing/extra TOC files.
+      The [first-client guide](2026-10-31_PART17_FIRST_CLIENT_NON_AWARDING_ACCEPTANCE.md)
+      contains the checksum and no-award client plan.
+      **Test-only; not installed, merged, released or proven in WoW.**
+      Keep the last installed Build 60 for an imminent raid.
+- [x] **R1 exact live recipient roster proof before whisper and ACK**:
+      audit of `Core/ReceiptSync.lua` found the outgoing, human-only
+      receipt notification and leader-side ACK still depended on legacy
+      `Communication:IsSenderInRaid`, which strips realm suffixes.
+      This could treat `Pikeotter-OtherRealm` as proof that the
+      intended `Pikeotter` was still present. `IsExactRaidRecipient`
+      now requires **exactly one FULL-name match** in the current
+      `GetRaidRosterInfo` list; otherwise the R1 notice is withheld
+      as `WAITING_FOR_PLAYER` and an ACK cannot be accepted.
+      General V1/V2 wishlist transport, historical records, physical
+      award/NO RETRY and the existing full-name R1 leader checks
+      were NOT modified. A missing or inconsistent realm suffix
+      remains a safe HOLD pending real client verification.
+- [x] [R1 code `aa7ecbb`](https://github.com/CosmicCuddle/N-Loot-Ledger/commit/aa7ecbbe7dac86eb6a452fea301e39d25d4de5b2)
+      and [regression `48d1593`](https://github.com/CosmicCuddle/N-Loot-Ledger/commit/48d1593f0fd5559fdf374f198b622b64acc988fe)
+      confirmed by [Lua 5.1 SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41212579008)
+      and [NO-RELEASE integration SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41212575151).
+      Tests prove false legacy short-name membership never sends a
+      recipient notification or validates an old recipient's ACK;
+      a duplicated exact name is refused and the unique correct
+      recipient path remains passing. No actual WoW messaging tested.
+- [x] **Part 17 synthetic 638-record legacy SavedVariables preservation gate**:
+      new [Lua 5.1 fixture](../tests/test_638_legacy_savedvariables_reload.lua)
+      creates **638 synthetic** Gear Plans across 38 mock Playerbot names
+      (NEEDED/GREED/OBTAINED/DISABLED), legacy history and uncertain
+      award/receipt records, old no-retry audit locks, custom priority,
+      original wishlist NEED/GREED/OBTAINED tables, pending remote
+      receipts, owner preferences and arbitrary old custom fields.
+      After `Database:Initialize` and a simulated `/reload`, ALL
+      original Gear Plan row identities, 638 entries, statuses,
+      history/receipt/audit/wishlist table references and custom
+      settings remain intact. Only the established session-only four
+      consent toggles reset OFF, and a legacy non-DARK skin setting
+      normalizes to DARK by existing design. No in-game data was read.
+- [x] [638 fixture commit `d70c006`](https://github.com/CosmicCuddle/N-Loot-Ledger/commit/d70c00687b904aee6edb65195ec15d3cafe22fa8):
+      [Lua 5.1 regression SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41213030752)
+      and [whole integration/NO-RELEASE SUCCESS](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41213026399).
+      Actual GitHub Actions **test-only Build 147** artifact
+      `NLL-MC-leader-ticket-award-147` (ID `13046792089`)
+      was downloaded and CRC/SHA256 checked.
+      **Its inner addon ZIP is BYTE-IDENTICAL to Build 146**;
+      SHA256 `b7eef2b4f2b2415317873b0bac174eaed196a0e4dfc6f59ed7964eaa39a532c2`.
+      Verified inner 51 Lua + 1 TOC, one `NaxxLootLottery/` root,
+      3.3.5a Interface 30300, unchanged SavedVariables identity
+      `NaxxLootLotteryDB`. The only code change in this checkpoint
+      is the offline regression test. This is NOT proof of actual
+      owner's 638 records: their last reported count needs controlled
+      read-only in-client verification after backups.
+- [ ] Phase 1 owner-controlled client install, backups, live-data validation,
+      enlarged-font screenshots and real WoW 3.3.5a compatibility evidence.
+      Phase 2 ticket-record testing and Phase 3 physical delivery need
+      separate explicit owner permission. Remain DRAFT/unmerged/unreleased.
 
 ## Next-development handover rule
 

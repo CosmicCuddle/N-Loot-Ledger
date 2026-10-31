@@ -8,6 +8,13 @@ local R=NLL.LootReceiptTracker
 local function Key(name)
     return string.lower((tostring(name or ""):match("^([^%-]+)") or ""))
 end
+local function ExactName(a,b)
+    -- A short-name match is not evidence of the same physical recipient.
+    -- The persistent drop/award ledger must preserve the full identity
+    -- (including a realm suffix if one is present).
+    return type(a)=="string" and type(b)=="string" and
+        a~="" and b~="" and string.lower(a)==string.lower(b)
+end
 local function Now()
     return date and date("%Y-%m-%d %H:%M:%S") or "unknown"
 end
@@ -32,7 +39,7 @@ function R:ObserveWinner(result)
     if not book then return false,"Saved receipt ledger unavailable." end
     local old=book[result.dropUID]
     if old then
-        if Key(old.character)==Key(result.winner) and
+        if ExactName(old.character,result.winner) and
             old.itemID==tonumber(result.itemID) then return true,old end
         return false,"This physical loot opportunity is locked to another winner."
     end
@@ -41,7 +48,7 @@ function R:ObserveWinner(result)
     local keys={}
     for key,need in pairs(NLL.db.gearNeeds or {}) do
         if type(need)=="table" and
-            Key(need.character)==Key(result.winner) and
+            ExactName(need.character,result.winner) and
             tonumber(need.itemID)==tonumber(result.itemID) and
             need.raidKey==(result.raidKey or "MOLTEN_CORE") and
             (need.status=="NEEDED" or need.status=="GREED") then
@@ -81,7 +88,7 @@ local function MatchesManualAttestation(need,snapshot,receipt)
        (snapshot.from~="NEEDED" and snapshot.from~="GREED") then
         return false
     end
-    if Key(need.character)~=Key(receipt.character) or
+    if not ExactName(need.character,receipt.character) or
        tonumber(need.itemID)~=receipt.itemID or
        need.raidKey~=receipt.raidKey then
         return false
@@ -90,7 +97,7 @@ local function MatchesManualAttestation(need,snapshot,receipt)
         if type(audit)=="table" and
            audit.kind=="LEADER_ATTESTED_BOT_HAS_ITEM" and
            audit.gearKey==snapshot.key and
-           Key(audit.character)==Key(receipt.character) and
+           ExactName(audit.character,receipt.character) and
            tonumber(audit.itemID)==receipt.itemID and
            audit.oldStatus==snapshot.from and
            audit.newStatus=="OBTAINED" and
@@ -117,8 +124,7 @@ function R:CanConfirm(dropUID)
     -- User must be acting as the leader who recorded the win, or have
     -- current raid authority. No third-party addon message can confirm.
     local actor=UnitName and UnitName("player")
-    local allowed=(actor and Key(actor)~="" and
-        Key(actor)==Key(row.observedBy)) or
+    local allowed=ExactName(actor,row.observedBy) or
         (NLL.TicketLottery and
          NLL.TicketLottery:AuthorityAllowed(false))
     if not allowed then
@@ -130,7 +136,7 @@ function R:CanConfirm(dropUID)
     for _,a in ipairs(NLL.db.lootAwardHistory or {}) do
         if a.dropUID==dropUID and
            tonumber(a.itemID)==row.itemID and
-           Key(a.winner)==Key(row.character) and
+           ExactName(a.winner,row.character) and
            (a.status=="LEADER_REPORTED" or
             a.status=="LOOT_SLOT_CLEARED") then
             awarded=true
@@ -146,7 +152,7 @@ function R:CanConfirm(dropUID)
     end
     for _,snapshot in ipairs(row.needs or {}) do
         local need=NLL.db.gearNeeds[snapshot.key]
-        if need and (Key(need.character)~=Key(row.character) or
+        if need and (not ExactName(need.character,row.character) or
             tonumber(need.itemID)~=row.itemID or
             need.raidKey~=row.raidKey or
             (need.status~=snapshot.from and
@@ -186,7 +192,7 @@ function R:ConfirmReceipt(dropUID)
     -- player's local wishlist must be synchronized separately; do NOT
     -- pretend the raid leader edited another client's WTF folder.
     if NLL.Database and NLL.Database.MarkLocalObtained and
-       UnitName and Key(UnitName("player"))==Key(row.character) then
+       UnitName and ExactName(UnitName("player"),row.character) then
         NLL.Database:MarkLocalObtained(row.character,row.raidKey,row.itemID)
     end
     row.status="OBTAINED"

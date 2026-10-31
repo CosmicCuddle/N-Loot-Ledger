@@ -57,3 +57,5 @@ jobs:
           lua5.1 tests/test_award_winner_ui.lua
           lua5.1 tests/test_winner_popup_quick_award.lua
           lua5.1 tests/test_guild_transfer_settings_ui.lua
+      - name: Leader-only guild material allocation and no-award checks
+        run: lua5.1 tests/test_guild_material_leader_tickets.lua

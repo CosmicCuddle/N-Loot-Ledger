@@ -69,9 +69,17 @@ NaxxLootLottery={
     LootIdentity={GetRow=function()return nil end,
         MarkAward=function()end},
     UI={currentLootSelected=1,mainFrame=frame(),
+        receiptReviewFrame=frame(), receiptReviewOpenCount=0,
         ShowMainFrame=function(self)self.mainFrame:Show()end,
         RefreshCurrentLootPanel=function()end,
-        RefreshOverview=function()end},
+        RefreshOverview=function()end,
+        OpenReceiptReview=function(self,uid)
+            self.receiptReviewUID=uid
+            self.receiptOpenUID=uid
+            self.receiptReviewOpenCount=self.receiptReviewOpenCount+1
+            self.receiptReviewFrame:Show()
+            return true
+        end},
 }
 local N=NaxxLootLottery
 local UI=N.UI
@@ -94,7 +102,8 @@ ok(show(false) and not UI.winnerQuickAwardButton.enabled,
     "quick physical award is invisible to consent until separately enabled")
 ok(UI.winnerReviewAwardButton.enabled,
     "previous Review Award workflow remains available")
-ok(#sends==0,"popup showing NEVER awards loot")
+ok(#sends==0 and UI.receiptOpenUID==nil,
+    "popup showing NEVER awards loot or opens receipt confirmation")
 ok(not A:SetQuickEnabled(true),
     "Master Loot selection alone cannot authorise quick award")
 ok(A:SetDirectEnabled(true) and not A:IsQuickEnabled(),
@@ -165,8 +174,9 @@ UI.winnerQuickAwardButton.scripts.OnClick()
 ok(#sends==1 and sends[1].slot==1 and sends[1].candidate==1,
     "one deliberate click sends ONLY exact selected item to exact winner")
 ok(not UI.winnerAnnouncement.shown and
-    winner.awardStatus=="AWARD_REQUESTED",
-    "winner popup closes only after real request is recorded")
+    winner.awardStatus=="AWARD_REQUESTED" and
+    UI.receiptOpenUID=="UID-QUICK",
+    "winner popup closes and offers existing read-only receipt review after successful physical request")
 ok(#N.db.lootAwardHistory==1 and
    N.db.lootAwardHistory[1].status=="AWARD_REQUESTED" and
    N.db.awardAttemptLocks["UID-QUICK"] and
@@ -175,6 +185,17 @@ ok(#N.db.lootAwardHistory==1 and
 show(false)
 UI.winnerQuickAwardButton.scripts.OnClick()
 ok(#sends==1,"same popup/drop cannot send a second Master Loot request")
+A:OnLootSlotCleared(1)
+ok(UI.receiptReviewOpenCount==2 and
+   UI.receiptReviewUID=="UID-QUICK" and
+   winner.awardStatus=="LOOT_SLOT_CLEARED" and
+   N.db.gearNeeds.old.status=="NEEDED" and
+   #sends==1,
+   "slot clear refreshes only open exact-drop receipt review; NEVER automatically marks OBTAINED")
+UI.receiptReviewFrame:Hide()
+A:OnLootSlotCleared(1)
+ok(UI.receiptReviewOpenCount==2 and #sends==1,
+   "hidden receipt dialogs are not reopened by other slot events")
 ok(A:SetDirectEnabled(false) and not A:IsQuickEnabled() and
    not db.settings.winnerQuickAwardEnabled,
    "disabling direct award immediately disarms quick transfer")
@@ -190,4 +211,65 @@ ok(N.db==db and not db.settings.directMasterLootEnabled and
    not db.settings.winnerQuickAwardEnabled and
    db.gearNeeds.old.status=="NEEDED" and #sends==1,
    "login/reload revokes both physical consent flags and preserves Gear Plans")
-print("PASS: "..n.." one-click physical award opt-in, wrong-target, fake, no-retry checks")
+-- New guild-only route must reverify the CURRENT leader at award time.
+-- It cannot borrow a previously completed one-ticket win after a leader
+-- change, even with both physical consents explicitly enabled.
+A.liveRequests={}
+entry.dropUID="UID-GUILD"
+entry.itemID=17011
+entry.itemName="Lava Core"
+entry.itemLink="|Hitem:17011:0|h[Lava Core]|h"
+entry.quantity=1
+actualLink=entry.itemLink
+winner.dropUID=entry.dropUID
+winner.itemID=entry.itemID
+winner.itemName=entry.itemName
+winner.selectionType="GUILD"
+winner.awardStatus=nil
+local liveLeader="Other"
+N.GuildLootReview={
+    IsGuildMaterial=function(_,id)return id==17011 end,
+    LeaderTicketRecipient=function()
+        if liveLeader=="BLOCKED" then
+            return nil,"Previous physical award for this material. NO RETRY."
+        end
+        return liveLeader
+    end,
+}
+ok(A:SetDirectEnabled(true) and A:SetQuickEnabled(true),
+    "guild physical award still requires both opt-ins")
+ok(UI:ShowWinnerAnnouncement("Lava Core","Pikeotter",1,false,
+        "GUILD",nil,"UID-GUILD") and
+   UI.winnerAnnouncementTitle.text=="|cffffd568GUILD ALLOCATION|r" and
+   UI.winnerAnnouncementTicket.text=="Raid leader only - Guild ticket #1" and
+   UI.winnerAnnouncementDisclaimer.text:find("Select THIS item",1,true) and
+   #sends==1,
+   "short guild popup heading and separate leader-only ticket line; no automatic award")
+local sent,why=A:QuickAward("UID-GUILD","Pikeotter")
+ok(not sent and why:find("raid leader",1,true) and #sends==1,
+    "leader changed after guild ticket: no real award")
+ok(not A:Review(entry) and #sends==1,
+    "standard two-stage Review Award cannot bypass guild leader drift")
+liveLeader="BLOCKED"
+sent,why=A:QuickAward("UID-GUILD","Pikeotter")
+ok(not sent and why:find("NO RETRY",1,true) and #sends==1,
+    "previous material attempt guard enforced again at physical transfer")
+liveLeader="Pikeotter-OtherRealm"
+ok(not A:Review(entry) and #sends==1,
+    "winner cannot impersonate leader sharing realm-stripped nickname")
+liveLeader="Pikeotter"
+candidates={"Pikeotter-OtherRealm"}
+ok(not A:Review(entry) and #sends==1,
+    "guild Review Award refuses same short name from another realm")
+candidates={"Pikeotter","Pikeotter"}
+ok(not A:Review(entry) and #sends==1,
+    "guild Review Award refuses duplicate exact recipient candidates")
+candidates={"Pikeotter"}
+sent,why=A:QuickAward("UID-GUILD","Pikeotter")
+ok(sent and #sends==2 and sends[2].slot==1 and
+   sends[2].candidate==1 and db.gearNeeds.old.status=="NEEDED",
+    "verified live raid leader can receive exactly one guild material request")
+sent=A:QuickAward("UID-GUILD","Pikeotter")
+ok(not sent and #sends==2,
+    "guild-only winner cannot be physically awarded a second time")
+print("PASS: "..n.." one-click award, guild leader drift and no-retry checks")

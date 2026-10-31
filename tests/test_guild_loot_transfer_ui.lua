@@ -47,6 +47,12 @@ itemRows[6].guildMaster="GuildBoss"
 itemRows[6].status="LOOT_INFO_UNKNOWN"
 itemRows[6].lootInfoKnown=false
 itemRows[6].reason="Unverified WoW loot stack count"
+-- A held guild material must never show the retired Guild Master
+-- destination, even when a historical master name remains in a row.
+itemRows[8].guildMaterial=true
+itemRows[8].guildMaster="GuildBoss"
+itemRows[8].status="RESERVED"
+itemRows[8].reason="Existing NEED"
 local previewLive=true
 NaxxLootLottery={
     UI={mainFrame=frame()},
@@ -107,35 +113,41 @@ ok(UI.guildLootArm.enabled==false and UI.guildLootConfirm.enabled==false,
     "no Arm/Confirm actions until a reviewed item is selected")
 ok(UI.guildLootRows[2].reviewButton.enabled==false,
     "reserved gear cannot invoke Review")
-ok(UI.guildLootRows[1].reviewButton.label.text=="Guild" and
-    UI.guildLootRows[1].reasonText.text:find("GuildBoss",1,true) and
-    UI.guildLootRows[3].reviewButton.label.text=="Review",
-    "only guild materials gain a labelled Guild review control")
+ok(UI.guildLootRows[1].reviewButton.label.text=="Tickets" and
+    UI.guildLootRows[1].reasonText.text:find("Leader%-only") and
+    not UI.guildLootRows[1].reviewButton.enabled and
+    UI.guildLootRows[3].reviewButton.label.text=="Review" and
+    UI.guildLootRows[3].reviewButton.enabled,
+    "five guild materials direct to leader tickets, never old Guild Master transfer")
 ok(UI.guildLootRows[4].reviewButton.enabled==false,
     "unverified/missing guild master disables material transfer button")
 ok(UI.guildLootRows[5].reviewButton.enabled==false and
     UI.guildLootRows[5].reasonText.text:find(
-        "LOOT THRESHOLD UNKNOWN",1,true),
-    "unverifiable loot threshold shows concise reason and disables Guild")
+        "LOOT THRESHOLD UNKNOWN",1,true) and
+    UI.guildLootRows[5].reasonText.text:find("Leader tickets HOLD",1,true) and
+    not UI.guildLootRows[5].reasonText.text:find("GuildBoss",1,true),
+    "unknown threshold holds leader tickets; never shows retired Guild Master")
 ok(UI.guildLootRows[6].reviewButton.enabled==false and
     UI.guildLootRows[6].reasonText.text:find(
         "LOOT SLOT COUNT UNKNOWN",1,true) and
-    UI.guildLootRows[6].nameText.text:find(" x?",1,true),
-    "unknown stack size is shown as x? and cannot enable Guild")
+    UI.guildLootRows[6].nameText.text:find(" x?",1,true) and
+    UI.guildLootRows[6].reasonText.text:find("Leader tickets HOLD",1,true) and
+    not UI.guildLootRows[6].reasonText.text:find("GuildBoss",1,true),
+    "unknown stack shows x?, holds leader tickets and hides retired Guild Master")
 ok(UI.guildLootArm.label.text=="Arm Transfer",
     "before Review, transfer button makes no recipient claim")
 ok(UI.guildLootRows[1].reviewButton.width==90 and
     UI.guildLootRows[1].nameText.width==540,
     "review control reserves room in each loot row")
-local target=UI.guildLootRows[1].reviewButton.target
-ok(target.itemID==17001 and target.slotIndex==1,
-    "per-row review target uses exact actual WoW item index")
-UI.guildLootRows[1].reviewButton.events.OnClick(
-    UI.guildLootRows[1].reviewButton)
+local target=UI.guildLootRows[3].reviewButton.target
+ok(target.itemID==17003 and target.slotIndex==3,
+    "nonmaterial review target uses exact WoW item index")
+UI.guildLootRows[3].reviewButton.events.OnClick(
+    UI.guildLootRows[3].reviewButton)
 ok(calls.review==1 and UI.guildLootArm.enabled==true and
     UI.guildLootConfirm.enabled==false and
-    UI.guildLootArm.label.text=="Arm Guild Master",
-    "reviewed material clearly says its actual guild-master recipient")
+    UI.guildLootArm.label.text=="Arm Raid Leader",
+    "nonmaterial manual review keeps raid-leader recipient")
 ok(calls.commit==0,"no transfer action on opening, browsing, or Review")
 UI.guildLootArm.events.OnClick()
 ok(calls.arm==1 and calls.commit==0 and
@@ -148,6 +160,12 @@ UI.guildLootNext.events.OnClick()
 ok(UI.guildLootPageText.text=="Page 2/2" and
     UI.guildLootRows[1].reviewButton.target.itemID==17007,
     "pagination updates the exact selected recipient target")
+ok(UI.guildLootRows[2].reviewButton.label.text=="Tickets" and
+    not UI.guildLootRows[2].reviewButton.enabled and
+    UI.guildLootRows[2].reasonText.text:find("Existing NEED",1,true) and
+    UI.guildLootRows[2].reasonText.text:find("Leader tickets HOLD",1,true) and
+    not UI.guildLootRows[2].reasonText.text:find("GuildBoss",1,true),
+    "held material preserves reservation reason and never names retired Guild Master")
 UI.guildLootRows[1].reviewButton.events.OnClick(
     UI.guildLootRows[1].reviewButton)
 ok(calls.review==2 and calls.commit==1 and

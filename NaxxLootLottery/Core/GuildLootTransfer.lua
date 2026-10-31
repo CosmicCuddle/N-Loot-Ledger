@@ -108,6 +108,13 @@ function T:Validate(target)
        ItemID(target.itemLink)~=target.itemID then
         return false,"Select a real guild-loot item slot first."
     end
+    -- Owner's newer allocation policy supersedes the old Guild Master
+    -- destination for the five guild materials. Physical requests must go
+    -- through the leader-only ticket winner and the normal Award workflow.
+    if NLL.GuildLootReview and
+       NLL.GuildLootReview:IsGuildMaterial(target.itemID) then
+        return false,"Guild material now uses leader-only Prepare Tickets / Start Roll / Award Winner."
+    end
     if not NLL.TicketLottery or
        not NLL.TicketLottery:AuthorityAllowed(false) then
         return false,"Only a raid leader/officer can request guild transfers."

@@ -109,8 +109,10 @@ function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated, se
         'GUILD ALLOCATION - RAID LEADER ONLY' or
         (selectionType == 'GREED' and 'GREED' or
         ('NEED' .. (tier and (' - Tier '..tostring(tier)) or '')))
-    local label = (simulated and 'SIMULATION' or 'LOTTERY') ..
-        ' WINNER - ' .. interest
+    local label = selectionType=='GUILD' and
+        'GUILD ALLOCATION - RAID LEADER ONLY' or
+        ((simulated and 'SIMULATION' or 'LOTTERY') ..
+        ' WINNER - ' .. interest)
     self.winnerAnnouncementTitle:SetText("|cffffd568" .. label .. "|r")
     self.winnerAnnouncementName:SetText("|cff66ff99" .. tostring(winner) .. "|r")
     self.winnerAnnouncementItem:SetText(tostring(itemName))

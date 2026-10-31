@@ -934,8 +934,7 @@ function UI:RefreshGuildLootDialog()
             elseif item.status=="LOOT_INFO_UNKNOWN" then
                 summary="LOOT SLOT COUNT UNKNOWN - Guild transfer blocked."
             elseif item.guildMaterial and item.status=="GUILD_REVIEW" then
-                summary="Guild material | Master: "..tostring(
-                    item.guildMaster or "UNAVAILABLE - open Guild roster")
+                summary="Leader-only tickets | Use Prepare Tickets / Start Roll in Current Loot"
             elseif item.guildMaterial then
                 summary=summary.." | Guild: "..tostring(
                     item.guildMaster or "unavailable")
@@ -944,13 +943,15 @@ function UI:RefreshGuildLootDialog()
             end
             row.reasonText:SetText(summary)
             row.reviewButton.label:SetText(
-                item.guildMaterial and "Guild" or "Review")
+                item.guildMaterial and "Tickets" or "Review")
             row.reviewButton.target={
                 slotIndex=item.slotIndex,itemID=item.itemID,
                 itemLink=item.itemLink,quantity=item.quantity,
             }
+            -- Existing Guild button must never offer the superseded
+            -- Guild Master transfer route for a leader-only material.
             if item.status=="GUILD_REVIEW" and
-                (not item.guildMaterial or item.guildMaster) then
+                not item.guildMaterial then
                 row.reviewButton:Enable()
             else row.reviewButton:Disable() end
             row:Show()

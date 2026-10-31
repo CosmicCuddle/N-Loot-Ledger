@@ -83,6 +83,26 @@ ok(not UI.receiptReviewComplete.enabled and
     UI.receiptReviewWarning.text:find("Delivery not recorded",1,true),
     "unreported receipt cannot be marked obtained")
 can=true
+-- The recipient's manual OBTAINED action is a SavedVariables write.
+-- The first click cannot arm it when the uptime API is absent/invalid.
+local goodClock=GetTime
+local badClocks={
+    {label="missing GetTime",reader=false},
+    {label="nil uptime",reader=function()return nil end},
+    {label="text uptime",reader=function()return "500" end},
+    {label="negative uptime",reader=function()return -1 end},
+    {label="NaN uptime",reader=function()return 0/0 end},
+    {label="infinite uptime",reader=function()return math.huge end},
+}
+for _,case in ipairs(badClocks) do
+    GetTime=case.reader or nil
+    UI.receiptReviewCheck.scripts.OnClick()
+    ok(not UI.receiptReviewComplete.enabled and
+       UI.receiptReviewArmedAt==nil and confirms==0 and
+       ledger.status=="WON_AWAITING_ITEM",
+       "receipt cannot arm on "..case.label)
+end
+GetTime=goodClock
 UI.receiptReviewCheck.scripts.OnClick()
 ok(UI.receiptReviewComplete.enabled and confirms==0,
     "verification click enables separate second click but changes nothing")
@@ -90,10 +110,27 @@ clock=clock+16
 UI.receiptReviewComplete.scripts.OnClick()
 ok(confirms==0 and not UI.receiptReviewComplete.enabled,
     "confirmation expires after 15 seconds without changing wishlist")
+-- Even with a previously armed human claim, backwards or missing time
+-- must cancel rather than silently commit OBTAINED.
+UI.receiptReviewCheck.scripts.OnClick()
+clock=clock-1
+UI.receiptReviewComplete.scripts.OnClick()
+ok(confirms==0 and not UI.receiptReviewComplete.enabled and
+   UI.receiptReviewArmedAt==nil and ledger.status=="WON_AWAITING_ITEM",
+   "rolled-back receipt clock cancels the second click")
+clock=clock+1
+UI.receiptReviewCheck.scripts.OnClick()
+GetTime=nil
+UI.receiptReviewComplete.scripts.OnClick()
+ok(confirms==0 and not UI.receiptReviewComplete.enabled and
+   ledger.status=="WON_AWAITING_ITEM",
+   "lost WoW clock between receipt clicks cannot mark OBTAINED")
+GetTime=goodClock
 UI.receiptReviewCheck.scripts.OnClick()
 current={dropUID="DIFFERENT",itemID=18821}
 UI.receiptReviewComplete.scripts.OnClick()
-ok(confirms==0 and not UI.receiptReviewComplete.enabled,
+ok(confirms==0 and not UI.receiptReviewComplete.enabled and
+   UI.receiptReviewArmedAt==nil,
     "selected loot changes after verification: no receipt")
 current=drop
 UI.receiptReviewCheck.scripts.OnClick()

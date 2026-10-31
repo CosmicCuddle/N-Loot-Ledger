@@ -2,6 +2,15 @@
 -- The button can never award an item or edit a different account's data.
 local NLL=NaxxLootLottery
 local UI=NLL.UI
+-- A remote receipt changes the recipient's local SavedVariables. Missing
+-- or backwards client uptime cannot extend the human confirmation window.
+local function ReceiptUptime()
+    if type(GetTime)~="function" then return nil end
+    local now=GetTime()
+    if type(now)~="number" or now~=now or now<0 or
+       now==math.huge or now==-math.huge then return nil end
+    return now
+end
 function UI:CreateReceiptSyncDialog()
     if self.receiptSyncFrame then return end
     local f=CreateFrame("Frame",nil,self.mainFrame)
@@ -49,9 +58,22 @@ function UI:CreateReceiptSyncDialog()
         local key=UI.receiptSyncKey
         local ok,record=NLL.ReceiptSync:CanAccept(key)
         UI.receiptSyncArmedAt=nil
+        UI.receiptSyncArmedKey=nil
+        UI.receiptSyncArmedRow=nil
         UI.receiptSyncConfirm:Disable()
         if ok then
-            UI.receiptSyncArmedAt=GetTime and GetTime() or 0
+            local now=ReceiptUptime()
+            if now==nil then
+                warning:SetText("WoW clock unavailable. Check inventory again.")
+                return
+            end
+            UI.receiptSyncArmedAt=now
+            UI.receiptSyncArmedKey=key
+            UI.receiptSyncArmedRow=record
+            UI.receiptSyncArmedItemID=record.itemID
+            UI.receiptSyncArmedRecipient=record.recipient
+            UI.receiptSyncArmedLeader=record.leader
+            UI.receiptSyncArmedDropUID=record.dropUID
             UI.receiptSyncConfirm:Enable()
             warning:SetText("Now click MARK OBTAINED within 15 seconds.")
         else warning:SetText(tostring(record)) end
@@ -59,16 +81,30 @@ function UI:CreateReceiptSyncDialog()
     local confirm=self:CreateTextButton(f,"MARK OBTAINED",168)
     confirm:SetPoint("LEFT",verify,"RIGHT",12,0)
     confirm:SetScript("OnClick",function()
-        if not UI.receiptSyncArmedAt or
-            (GetTime and GetTime() or 0)-UI.receiptSyncArmedAt>15 then
+        local now=ReceiptUptime()
+        local key=UI.receiptSyncKey
+        local eligible,row=NLL.ReceiptSync:CanAccept(key)
+        if not eligible or type(UI.receiptSyncArmedAt)~="number" or
+           now==nil or now<UI.receiptSyncArmedAt or
+           now-UI.receiptSyncArmedAt>15 or
+           key~=UI.receiptSyncArmedKey or
+           row~=UI.receiptSyncArmedRow or
+           not row or row.itemID~=UI.receiptSyncArmedItemID or
+           row.recipient~=UI.receiptSyncArmedRecipient or
+           row.leader~=UI.receiptSyncArmedLeader or
+           row.dropUID~=UI.receiptSyncArmedDropUID then
             UI.receiptSyncArmedAt=nil
+            UI.receiptSyncArmedKey=nil
+            UI.receiptSyncArmedRow=nil
             confirm:Disable()
-            warning:SetText("Confirmation expired. Check the item again.")
+            warning:SetText("Receipt changed or confirmation expired. Check your bag again.")
             return
         end
         UI.receiptSyncArmedAt=nil
+        UI.receiptSyncArmedKey=nil
+        UI.receiptSyncArmedRow=nil
         confirm:Disable()
-        local ok,message=NLL.ReceiptSync:Accept(UI.receiptSyncKey)
+        local ok,message=NLL.ReceiptSync:Accept(key)
         NLL:Print(message)
         if ok then UI:RefreshReceiptSyncDialog()
         else warning:SetText(tostring(message)) end
@@ -77,6 +113,8 @@ function UI:CreateReceiptSyncDialog()
     close:SetPoint("LEFT",confirm,"RIGHT",12,0)
     close:SetScript("OnClick",function()
         UI.receiptSyncArmedAt=nil
+        UI.receiptSyncArmedKey=nil
+        UI.receiptSyncArmedRow=nil
         f:Hide()
     end)
     self.receiptSyncFrame=f
@@ -97,6 +135,8 @@ function UI:RefreshReceiptSyncDialog()
     self.receiptSyncIndex=math.min(math.max(1,self.receiptSyncIndex or 1),
         math.max(1,#pending))
     self.receiptSyncArmedAt=nil
+    self.receiptSyncArmedKey=nil
+    self.receiptSyncArmedRow=nil
     self.receiptSyncConfirm:Disable()
     self.receiptSyncPageText:SetText(
         "Receipt "..(pending[1] and self.receiptSyncIndex or 0)..

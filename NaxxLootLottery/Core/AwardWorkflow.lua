@@ -143,8 +143,11 @@ function A:ValidateLiveContext(entry, winner)
         return false, 'Cannot verify your Master Looter identity from the raid.'
     end
     local masterName = GetRaidRosterInfo(masterRaidIndex)
-    if not masterName or Key(masterName) ~= Key(UnitName and UnitName('player')) then
-        return false, 'You are not WoW\'s designated Master Looter.'
+    -- A realm-stripped alias is not proof of the designated Master Looter.
+    local actorName=UnitName and UnitName('player') or nil
+    if type(masterName)~='string' or type(actorName)~='string' or
+       string.lower(masterName)~=string.lower(actorName) then
+        return false, 'You are not WoW\'s exact designated Master Looter.'
     end
     if type(GetNumLootItems) ~= 'function' or
        type(GetLootSlotLink) ~= 'function' or
@@ -156,44 +159,39 @@ function A:ValidateLiveContext(entry, winner)
        LootFrame.selectedSlot ~= slot then
         return false, 'Open the WoW Master Loot dropdown for THIS loot slot.'
     end
+    -- The older two-click award path must use the same exact-item-link and
+    -- verified stack proof as quick award; checking itemID alone is unsafe.
     if slot > (GetNumLootItems() or 0) or
-       ItemID(GetLootSlotLink(slot)) ~= entry.itemID then
-        return false, 'The selected WoW loot slot no longer matches this item.'
+       type(entry.itemLink)~='string' or
+       type(entry.quantity)~='number' or
+       entry.quantity<1 or entry.quantity%1~=0 or
+       GetLootSlotLink(slot)~=entry.itemLink or
+       ItemID(entry.itemLink)~=entry.itemID then
+        return false, 'Exact selected WoW item link or stack is unavailable/changed.'
     end
-    if type(GetLootSlotInfo) == 'function' then
-        local _, _, quantity, _, locked = GetLootSlotInfo(slot)
-        if locked or (quantity and quantity < 1) then
-            return false, 'The loot slot is locked or empty.'
+    if type(GetLootSlotInfo)~='function' then
+        return false, 'WoW loot quantity/lock API unavailable.'
+    end
+    -- WoW 3.3.5a GetLootSlotInfo: fifth result is locked (confirmed
+    -- against client FrameXML LootFrame.lua), not modern sixth result.
+    local _, _, quantity, _, locked=GetLootSlotInfo(slot)
+    if type(quantity)~='number' or quantity<1 or
+       quantity%1~=0 or quantity~=entry.quantity or locked then
+        return false, 'Exact WoW loot quantity changed or slot is locked.'
+    end
+    -- Every award route (NEED/GREED/GUILD) requires ONE full-name
+    -- candidate. Never strip realms or silently choose a lookalike.
+    local candidateIndex,count=nil,0
+    for i=1,40 do
+        local candidate=GetMasterLootCandidate(i)
+        if type(candidate)=='string' and
+           string.lower(candidate)==string.lower(winner) then
+            candidateIndex=i
+            count=count+1
         end
     end
-    local candidateIndex
-    if outcome and outcome.selectionType=='GUILD' then
-        -- The legacy normal lottery review accepts realm-stripped
-        -- names. For the new deterministic guild-material route, the
-        -- candidate must be the FULL exact leader name, exactly once.
-        local count=0
-        for i=1,40 do
-            local candidate=GetMasterLootCandidate(i)
-            if type(candidate)=='string' and
-               string.lower(candidate)==string.lower(winner) then
-                candidateIndex=i
-                count=count+1
-            end
-        end
-        if count~=1 then
-            return false,'Guild leader is missing or ambiguous in the exact Master Loot candidates.'
-        end
-    else
-        for i = 1, 40 do
-            local candidate = GetMasterLootCandidate(i)
-            if candidate and Key(candidate) == Key(winner) then
-                candidateIndex = i
-                break
-            end
-        end
-        if not candidateIndex then
-            return false, 'Winner is absent from this item\'s Master Loot candidate list.'
-        end
+    if count~=1 then
+        return false,'Winner is missing or ambiguous in exact Master Loot candidates.'
     end
     return true, {dropUID = entry.dropUID, itemID = entry.itemID,
         itemName = entry.itemName, winner = winner, slot = slot,

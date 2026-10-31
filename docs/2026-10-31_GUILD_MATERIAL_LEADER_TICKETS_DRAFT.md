@@ -51,6 +51,33 @@ leader are the same person.
    physical transfer disabled for these five IDs. Dry Run explains
    **USE_LEADER_TICKETS** rather than proposing Guild Master.
 
+## Verification additions — after source review (31 October)
+
+- **Actual location must be Molten Core:** the leader-only route requires
+  the 3.3.5a `GetInstanceInfo()` result to identify a **raid** with instance
+  map ID **409**. Recognition of item 7075 or the other material IDs in an
+  unrelated outdoor/dungeon loot window must not create guild tickets.
+  Missing location APIs fail closed.
+- **All physical award routes re-check policy:** even if a one-ticket guild
+  winner has already been recorded, standard Review Award and opt-in
+  winner-popup AWARD ITEM must re-confirm that the live recipient remains
+  the same raid leader and the item remains safely eligible. Neither route
+  can use a stale guild allocation after leadership changes or new holds.
+- **Cross-route permanent NO RETRY:** a previously sent normal Master Loot
+  request for the same material ID blocks the guild ticket path using
+  `lootAwardHistory` and **durable** `awardAttemptLocks`, even if the old
+  audit was later reconciled or the WoW item moved to another slot.
+- **Important owner impact:** these deliberately conservative physical
+  attempt locks can stop later genuine drops with the same material ID.
+  Without an authenticated per-corpse source token exposed to the addon
+  (outstanding coordination issue #2), this draft **cannot honestly promise
+  unlimited automatic repeat material transfers**. Never loosen the guard
+  merely to make the feature appear to work.
+- **Tests:** separate mocks for all five item IDs, non-MC source, changing
+  raid leader, previous guild transfers, previous normal Master Loot
+  requests and immutable locks. These are NOT evidence of in-game receipt
+  or a successful real award.
+
 ## Important guardrails
 
 - New ticket policy does **not** override quest/recipe/legendary

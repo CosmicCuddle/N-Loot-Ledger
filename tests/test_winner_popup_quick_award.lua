@@ -135,6 +135,18 @@ show(false)
 UI.winnerQuickAwardButton.scripts.OnClick()
 ok(#sends==0,"missing client clock fails closed")
 GetTime=savedClock
+local originalLootMethod=GetLootMethod
+GetLootMethod=function()return "group",nil,1 end
+show(false)
+UI.winnerQuickAwardButton.scripts.OnClick()
+ok(#sends==0,"master loot OFF in Blizzard cannot be bypassed")
+GetLootMethod=originalLootMethod
+local originalRoster=GetRaidRosterInfo
+GetRaidRosterInfo=function(i)if i==1 then return "OtherMaster",2 end end
+show(false)
+UI.winnerQuickAwardButton.scripts.OnClick()
+ok(#sends==0,"wrong designated Master Looter cannot quick-award")
+GetRaidRosterInfo=originalRoster
 lootOpen=false
 show(false)
 UI.winnerQuickAwardButton.scripts.OnClick()

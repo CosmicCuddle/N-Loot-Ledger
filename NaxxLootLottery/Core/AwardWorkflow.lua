@@ -264,6 +264,10 @@ function A:QuickAward(dropUID,expectedWinner)
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
         return false,'Fake raids cannot send a real Master Loot award.'
     end
+    local t=type(GetTime)=='function' and GetTime() or nil
+    if type(t)~='number' or t~=t or t<0 then
+        return false,'WoW clock unavailable. No one-click award sent.'
+    end
     if type(dropUID)~='string' or dropUID=='' or
        type(expectedWinner)~='string' or expectedWinner=='' then
         return false,'The winner popup has no pinned physical drop/recipient.'
@@ -298,7 +302,11 @@ function A:QuickAward(dropUID,expectedWinner)
     end
     local matches=0
     for i=1,40 do
-        if Key(GetMasterLootCandidate(i))==Key(expectedWinner) then
+        local candidate=GetMasterLootCandidate(i)
+        -- Quick physical award requires the FULL exact recipient name,
+        -- never a realm-stripped alias or another similarly named player.
+        if type(candidate)=='string' and
+           string.lower(candidate)==string.lower(expectedWinner) then
             matches=matches+1
         end
     end

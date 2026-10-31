@@ -55,6 +55,27 @@ function G:LeaderTicketRecipient(entry)
        NLL.GuildLootTransfer:WasAttempted(entry.itemID,entry.slotIndex) then
         return nil,"A guild transfer for this material ID was already attempted. NO RETRY."
     end
+    -- A previous standard winner-award request can target the same
+    -- physical material as a later leader-only attempt. WoW 3.3.5a
+    -- exposes no authenticated corpse-source token to the addon;
+    -- the same item ID in another slot is NOT proof of a new copy.
+    -- Check immutable write-ahead locks as well as older audit rows
+    -- (history is capped; locks intentionally are not).
+    for _,attempt in pairs(NLL.db and NLL.db.awardAttemptLocks or {}) do
+        if type(attempt)=="table" and
+           tonumber(attempt.itemID)==tonumber(entry.itemID) then
+            return nil,"A standard Master Loot request already attempted this material ID. NO RETRY without verified corpse identity."
+        end
+    end
+    for _,audit in ipairs(NLL.db and NLL.db.lootAwardHistory or {}) do
+        if type(audit)=="table" and
+           tonumber(audit.itemID)==tonumber(entry.itemID) and
+           (audit.status=="AWARD_REQUESTED" or
+            audit.status=="AWARD_OUTCOME_UNKNOWN" or
+            audit.status=="LOOT_SLOT_CLEARED") then
+            return nil,"Previous winner Master Loot request for this material ID. NO RETRY."
+        end
+    end
     local rows=self:Scan()
     for _,row in ipairs(rows or {}) do
         if row.slotIndex==entry.slotIndex and

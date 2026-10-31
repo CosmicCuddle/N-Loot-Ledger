@@ -166,15 +166,33 @@ function A:ValidateLiveContext(entry, winner)
         end
     end
     local candidateIndex
-    for i = 1, 40 do
-        local candidate = GetMasterLootCandidate(i)
-        if candidate and Key(candidate) == Key(winner) then
-            candidateIndex = i
-            break
+    if outcome and outcome.selectionType=='GUILD' then
+        -- The legacy normal lottery review accepts realm-stripped
+        -- names. For the new deterministic guild-material route, the
+        -- candidate must be the FULL exact leader name, exactly once.
+        local count=0
+        for i=1,40 do
+            local candidate=GetMasterLootCandidate(i)
+            if type(candidate)=='string' and
+               string.lower(candidate)==string.lower(winner) then
+                candidateIndex=i
+                count=count+1
+            end
         end
-    end
-    if not candidateIndex then
-        return false, 'Winner is absent from this item\'s Master Loot candidate list.'
+        if count~=1 then
+            return false,'Guild leader is missing or ambiguous in the exact Master Loot candidates.'
+        end
+    else
+        for i = 1, 40 do
+            local candidate = GetMasterLootCandidate(i)
+            if candidate and Key(candidate) == Key(winner) then
+                candidateIndex = i
+                break
+            end
+        end
+        if not candidateIndex then
+            return false, 'Winner is absent from this item\'s Master Loot candidate list.'
+        end
     end
     return true, {dropUID = entry.dropUID, itemID = entry.itemID,
         itemName = entry.itemName, winner = winner, slot = slot,

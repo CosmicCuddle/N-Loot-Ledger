@@ -671,6 +671,34 @@ Continue existing release gates: **Built / CI / WoW / Release** separately.
 Do not infer a server receipt from a /roll, cleared slot or successful
 `GiveMasterLoot` API call.
 
+## NLL-042 — Optional one-click physical award from winner popup (DRAFT [#42](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/42))
+
+- [x] Owner-requested feature implemented in **a separate stacked DRAFT**
+      based on PR #41; the owner's installed Build 60 is untouched.
+- [x] Winner result popup adds `AWARD ITEM`, retaining the original
+      `Review Award` (two-click flow). Popup locks actual dropUID/winner;
+      does not send anything merely because /roll selected a winner.
+- [x] Both *Direct Master Loot* and independently opted-in *1-Click Award*
+      must be enabled **for this login**. Master Loot configuration alone
+      does not authorise the quick button. Both reset OFF after /reload.
+      Quick action fails closed on fake raid, stale/ambiguous recipient,
+      exact item-link/stack mismatch, closed loot, identity drift or
+      previous immutable item-attempt lock.
+- [x] Quick button sends only after fresh verified Review/Arm/Commit
+      validations in the same user-click callback; `GiveMasterLoot`
+      still records an attempt FIRST. Successful API request remains
+      `AWARD_REQUESTED`, **NOT `OBTAINED`**. Separate inventory
+      confirmation is still required for actual Gear Plan changes.
+- [x] Mocked Lua 5.1 positive/negative test fixtures and Settings
+      opt-in regression added. [Draft design and acceptance](2026-10-31_WINNER_POPUP_QUICK_AWARD_DRAFT.md).
+- [ ] Latest exact-branch automated Lua CI including quick mock and
+      retained two-stage/Settings safety regression PASSES.
+- [ ] Controlled in-game WoW 3.3.5a UI checks and an *owner-approved*
+      expendable-material physical test. **No real Windseeker/rare-item
+      live transfer** in initial acceptance; protect current saved plans.
+- [ ] Owner-approved integration/merge/release. Draft #42 is dependent
+      on draft PRs #41 and #40. No production change.
+
 ## Next-development handover rule
 
 Before starting another NLL feature, read this document first,

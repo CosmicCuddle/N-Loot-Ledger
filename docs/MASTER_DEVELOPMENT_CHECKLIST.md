@@ -607,6 +607,8 @@ current SavedVariables inventory.
 - [ ] Owner-approved merge/release. Keep draft and no auto awards.
 
 **NLL-041 — Reserved Windseeker/guild-material C16; stacked draft [#41](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/41)**
+
+> Historical C16 Guild Master routing is now **superseded for the five guild material IDs** by CosmicCuddle's newer raid-leader-only ticket decision in PR #43. These checked lines record prior development, **not** current recipient policy. Ordinary non-material transfer safeguards remain separate.
 - [x] Built: 18563/18564 use saved class-eligible reservation pools,
       NEED before GREED with equal tickets; manual award still separate.
 - [x] Built: Lava/Fiery Core, Core Leather, Blood of Mountain, Core of Earth
@@ -691,8 +693,11 @@ Do not infer a server receipt from a /roll, cleared slot or successful
       confirmation is still required for actual Gear Plan changes.
 - [x] Mocked Lua 5.1 positive/negative test fixtures and Settings
       opt-in regression added. [Draft design and acceptance](2026-10-31_WINNER_POPUP_QUICK_AWARD_DRAFT.md).
-- [ ] Latest exact-branch automated Lua CI including quick mock and
-      retained two-stage/Settings safety regression PASSES.
+- [x] Latest stacked #43 Lua 5.1 regression includes quick-popup tests,
+      legacy two-stage/Settings safety and guild-recipient drift. Exact
+      code/test checkpoint `37bc9c309602f78b30cce8bf1340c3e6e7399e2f` passed
+      [run 41204851629](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41204851629).
+      This is mocked/source CI, not in-game acceptance.
 - [ ] Controlled in-game WoW 3.3.5a UI checks and an *owner-approved*
       expendable-material physical test. **No real Windseeker/rare-item
       live transfer** in initial acceptance; protect current saved plans.
@@ -716,12 +721,29 @@ Do not infer a server receipt from a /roll, cleared slot or successful
       tickets. Unreserved non-material manual review remains separate.
 - [x] Standalone leader-only scanner/lottery regression and old Guild
       review fixture migration committed to draft branch.
-- [ ] Exact-head **full Lua 5.1 + NO RELEASE package** workflows green.
+- [x] Exact code/test checkpoint `37bc9c309602f78b30cce8bf1340c3e6e7399e2f`:
+      [Lua 5.1 green](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41204851629) and
+      [full NO-RELEASE package green](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41204847015).
+      The code contains the compact guild winner heading and retained explicit
+      raid-leader-only ticket caption. **Recheck latest branch HEAD's CI after
+      subsequent commits; no green run means a deployed build passed.**
 - [ ] In-client WoW 3.3.5a UI and separate owner-approved expendable
       Master Loot/receipt test. NO rare/legendary awards in smoke test.
 - [ ] Owner decision on merging/releasing stacked drafts #40–#43.
       Current installed Build 60 remains unchanged.
 - [x] [Detailed owner decision, constraints and acceptance](2026-10-31_GUILD_MATERIAL_LEADER_TICKETS_DRAFT.md).
+- [x] Source/UI review corrected stale Guild Master wording on held guild
+      material rows (commits `06b33e9`, `b24b5ab`) and shortened the
+      enlarged-font winner popup heading (commits `966b068`, `37bc9c3`).
+      No physical award/recipient rules, core or SavedVariables changed.
+- [x] [Part 17 controlled non-awarding first-client acceptance guide](2026-10-31_PART17_FIRST_CLIENT_NON_AWARDING_ACCEPTANCE.md)
+      prepared. **Phase 1 does not press Prepare Tickets or Start Roll on
+      actual loot**: Start Roll on a real guild material creates a lasting
+      winner/receipt record even if no item is physically awarded.
+- [ ] Phase 1 owner-controlled client install, backups, live-data validation,
+      enlarged-font screenshots and real WoW 3.3.5a compatibility evidence.
+      Phase 2 ticket-record testing and Phase 3 physical delivery need
+      separate explicit owner permission. Remain DRAFT/unmerged/unreleased.
 
 ## Next-development handover rule
 

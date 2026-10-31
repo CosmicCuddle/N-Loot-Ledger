@@ -174,8 +174,9 @@ hold("stack changed")
 qty=2
 leader="ChangedLeader"
 local q=P:BuildPreview(entry)
-ok(q.ready and q.current[1].character=="ChangedLeader" and
-   #q.current==1,"live raid-leader roster change is re-read, not pinned")
+ok(not q.ready and
+   q.message:find("Completed guild ticket belongs to a different raid leader",1,true),
+   "completed guild result cannot be reassigned to a newly appointed leader")
 leader="RaidLeader"
 currentInstance=249
 hold("Not inside verified Molten Core")

@@ -9,6 +9,7 @@ GetTime=function()return now end
 time=function()return 1800000000+now end
 date=function()return "2026-10-17" end
 UnitName=function()return "Leader" end
+local rosterMaster="Leader"
 GetNumRaidMembers=function()return 40 end
 GetLootMethod=function()return "master",nil,1 end
 GetRaidRosterInfo=function(i) if i==1 then return rosterMaster,2 end end
@@ -16,7 +17,6 @@ GetNumLootItems=function()return 1 end
 local physicalLink="|Hitem:16800:0|h[Arcanist Boots]|h"
 local liveLink=physicalLink
 local liveCount=1
-local rosterMaster="Leader"
 local candidates={"Pikeotter"}
 GetLootSlotLink=function(i) if i==1 then return liveLink end end
 GetLootSlotInfo=function()return nil,nil,liveCount,4,false end

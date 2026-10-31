@@ -45,6 +45,10 @@ function G:LeaderTicketRecipient(entry)
         return nil,"Not an unambiguous live guild-material drop."
     end
     if NLL.GuildLootTransfer and
+       NLL.GuildLootTransfer:IsUnresolved() then
+        return nil,"Earlier physical loot request remains unresolved. Confirm receipt first."
+    end
+    if NLL.GuildLootTransfer and
        NLL.GuildLootTransfer:WasAttempted(entry.itemID,entry.slotIndex) then
         return nil,"A guild transfer for this material ID was already attempted. NO RETRY."
     end

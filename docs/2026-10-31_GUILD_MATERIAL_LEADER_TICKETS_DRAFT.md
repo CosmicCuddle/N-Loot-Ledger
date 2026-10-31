@@ -69,6 +69,13 @@ leader are the same person.
   verified translation. Recognition of item 7075 or other materials in
   outdoor/unrelated loot alone can never create guild tickets.
   In-game client confirmation of the location API is still pending.
+- **Receipt screen refresh:** after a successful AWARD ITEM request,
+  the read-only receipt review opens without marking anything obtained.
+  If WoW later reports that same loot slot cleared while that exact
+  receipt window remains visible, NLL refreshes the warning/status in
+  place. A cleared slot is NOT recipient ownership evidence; only
+  `I Checked Inventory` and the subsequent `MARK OBTAINED` action
+  can update matching plans.
 - **Practical single-click limitation:** on this client the matching
   item must already be **selected in the Blizzard Master Loot window**
   before pressing the NLL popup's AWARD ITEM. A fully self-selecting
@@ -81,6 +88,12 @@ leader are the same person.
   that item's first physical award. A missing/mismatched receipt, any older
   unverified receipt or any other pending human ACK remains a HOLD. The
   ordinary read-only Guild Loot summary still shows the pending receipt.
+- **Online raid-leader safeguard:** the raid roster's explicitly offline
+  leader marker (e.g. zone `Offline`, online `0` or `false`) blocks the
+  sole-ticket route. A missing optional online flag on a custom 3.3.5a
+  Playerbot roster is **not** interpreted as online proof. Correct
+  recipient still must be uniquely present in the real Blizzard Master
+  Loot candidates before any physical award.
 - **All physical award routes re-check policy:** even if a one-ticket guild
   winner has already been recorded, standard Review Award and opt-in
   winner-popup AWARD ITEM must re-confirm that the live recipient remains

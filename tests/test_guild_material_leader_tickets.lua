@@ -176,7 +176,7 @@ entry.dropUID="LIVE:leadership-drift:17010"
 ok(L:Prepare(entry),"new material with current leader can prepare")
 leader="SomeoneElse"
 local allowed,reason=L:StartRoll(entry)
-ok(not allowed and reason:find("Roster/priority changed",1,true) and
+ok(not allowed and reason:find("Candidate list changed",1,true) and
    L.active.status=="PREPARED" and randomRolls==0 and awards==0,
    "leadership change after Prepare prevents former leader award")
 leader="RaidLeader"

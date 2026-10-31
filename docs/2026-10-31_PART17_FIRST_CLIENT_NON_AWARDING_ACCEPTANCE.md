@@ -3,7 +3,7 @@
 **Owner:** CosmicCuddle  
 **State:** DRAFT / test-only. **Not an installed update, approved merge or release.**  
 **Code:** [PR #43](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/43), stacked on [#42](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/42), [#41](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/41) and [#40](https://github.com/CosmicCuddle/N-Loot-Ledger/pull/40).  
-**Last Lua/whole-suite code checkpoint:** `37bc9c309602f78b30cce8bf1340c3e6e7399e2f`; [Lua 5.1 green](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41204851629) and [full NO-RELEASE green](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41204847015). A later docs-only commit does not by itself constitute a new gameplay test.
+**Last source/test code checkpoint:** `60964fadadefda48d701656569240c78bbba3795`; [Lua 5.1 green](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209617578) and [full NO-RELEASE green](https://github.com/CosmicCuddle/N-Loot-Ledger/actions/runs/41209612517). This is mocked/source evidence only; any later documentation commit must be checked against latest PR HEAD before testing.
 
 ## Before touching the installed addon
 
@@ -38,6 +38,8 @@ If a guild material is **below Blizzard's Master Loot quality threshold**, the c
 An experimental `AWARD ITEM` click calls `GiveMasterLoot` and is **irreversible/NO RETRY** once attempted, including on unknown outcomes. Require a deliberately expendable item, an actual open matching Blizzard Master Loot slot, designated Master Looter, exact unique candidate and fresh confirmation by CosmicCuddle. Both physical consent switches must be deliberately enabled for that session. Never test with a Windseeker binding or irreplaceable item.
 
 Even if the WoW API returns without an error, the recipient's bag must be **independently checked**. A cleared loot slot is not ownership evidence. Only the separate human **I Checked Inventory → MARK OBTAINED** process may update a matching Gear Plan; a remote player's wishlist requires actual communication/synchronisation. **Never repeat a physical award request to diagnose a missing result.**
+
+For a separately approved **two-human-client receipt test**, both characters must be in the same real raid and their **full character names must exactly match** the live raid roster, saved award recipient and addon whisper sender. After a true human inventory check, the leader may offer the `R1` receipt through NLL. The receiving player must check their own bag, press **I Have the Item**, then **MARK OBTAINED** within 15 seconds. Validate that no automatic OBTAINED occurs on message receipt, another-realm lookalike sender/recipient is rejected, switching the displayed offer disarms, and any missing/backwards clock cancels confirmation. Confirm the separate `R1|ACK` on leader side. If a real 3.3.5a roster inconsistently includes realm suffixes, **STOP/HOLD and record evidence** instead of modifying saved names or bypassing the exact match.
 
 ## Current limits / stop conditions
 

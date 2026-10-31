@@ -199,5 +199,10 @@ local allowed,reason=L:StartRoll(entry)
 ok(not allowed and reason:find("Candidate list changed",1,true) and
    L.active.status=="PREPARED" and randomRolls==0 and awards==0,
    "leadership change after Prepare prevents former leader award")
+leader="RaidLeader-OtherRealm"
+allowed,reason=L:StartRoll(entry)
+ok(not allowed and reason:find("Candidate list changed",1,true) and
+   randomRolls==0 and awards==0,
+   "same short leader name from a different realm cannot inherit prepared ticket")
 leader="RaidLeader"
 print("PASS: "..n.." sole-leader guild tickets and reservation/identity safety")

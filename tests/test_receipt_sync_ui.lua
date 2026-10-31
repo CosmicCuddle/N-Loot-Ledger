@@ -84,6 +84,50 @@ ok(accepted==0,"even callback bypass cannot confirm without inspection")
 UI.receiptSyncVerify.events.OnClick()
 ok(UI.receiptSyncConfirm.enabled==true and accepted==0,
     "first human click only arms second confirmation")
+-- A stale/missing uptime must NEVER allow a receipt to be marked OBTAINED.
+local goodClock=GetTime
+local badClocks={
+    {name="missing",fn=false},
+    {name="nil",fn=function()return nil end},
+    {name="negative",fn=function()return -1 end},
+    {name="text",fn=function()return "250" end},
+    {name="NaN",fn=function()return 0/0 end},
+    {name="infinite",fn=function()return math.huge end},
+}
+for _,test in ipairs(badClocks) do
+    GetTime=test.fn or nil
+    UI.receiptSyncVerify.events.OnClick()
+    ok(not UI.receiptSyncConfirm.enabled and
+       UI.receiptSyncArmedAt==nil and accepted==0,
+       "remote receipt cannot arm with "..test.name.." uptime")
+end
+GetTime=goodClock
+UI.receiptSyncVerify.events.OnClick()
+clock=clock-1
+UI.receiptSyncConfirm.events.OnClick()
+ok(not UI.receiptSyncConfirm.enabled and accepted==0,
+   "backwards remote receipt confirmation clock must be rejected")
+clock=clock+1
+UI.receiptSyncVerify.events.OnClick()
+GetTime=nil
+UI.receiptSyncConfirm.events.OnClick()
+ok(not UI.receiptSyncConfirm.enabled and accepted==0,
+   "lost uptime between clicks cannot mark remote OBTAINED")
+GetTime=goodClock
+UI.receiptSyncVerify.events.OnClick()
+local originalKey=UI.receiptSyncKey
+UI.receiptSyncKey=pending[2].key
+UI.receiptSyncConfirm.events.OnClick()
+ok(accepted==0 and not UI.receiptSyncConfirm.enabled,
+   "changed selected offer key cannot inherit another item's inspection")
+UI.receiptSyncKey=originalKey
+UI.receiptSyncVerify.events.OnClick()
+pending[1].itemID=18821
+UI.receiptSyncConfirm.events.OnClick()
+ok(accepted==0 and not UI.receiptSyncConfirm.enabled,
+   "changed item within same pending offer invalidates inventory inspection")
+pending[1].itemID=16800
+UI.receiptSyncVerify.events.OnClick()
 UI.receiptSyncNext.events.OnClick()
 ok(UI.receiptSyncPageText.text=="Receipt 2 / 2" and
     UI.receiptSyncConfirm.enabled==false,

@@ -32,6 +32,43 @@ function G:IsGuildMaterial(itemID)
     return GUILD_MATERIALS[tonumber(itemID)]==true
 end
 
+-- Owner-approved new raid-leader-only ticket route for these five guild
+-- material IDs. This never overrides a real existing reservation,
+-- quest/special classification, loot threshold, item metadata, or past
+-- physical transfer attempts. Scan remains the single live policy source.
+function G:LeaderTicketRecipient(entry)
+    if type(entry)~="table" or entry.state~="DETECTED" or
+       entry.simulationOnly or entry.identityUncertain or
+       not self:IsGuildMaterial(entry.itemID) or
+       type(entry.dropUID)~="string" or entry.dropUID=="" or
+       type(entry.slotIndex)~="number" or entry.slotIndex<1 then
+        return nil,"Not an unambiguous live guild-material drop."
+    end
+    if NLL.GuildLootTransfer and
+       NLL.GuildLootTransfer:WasAttempted(entry.itemID,entry.slotIndex) then
+        return nil,"A guild transfer for this material ID was already attempted. NO RETRY."
+    end
+    local rows=self:Scan()
+    for _,row in ipairs(rows or {}) do
+        if row.slotIndex==entry.slotIndex and
+           row.itemID==entry.itemID then
+            if row.itemLink~=entry.itemLink or
+               row.quantity~=entry.quantity then
+                return nil,"Live material link/stack changed; reopen review."
+            end
+            if row.status~="GUILD_REVIEW" then
+                return nil,row.reason or row.status or "Material held."
+            end
+            local leader=row.leader
+            if type(leader)~="string" or leader=="" then
+                return nil,"The raid leader cannot be uniquely verified."
+            end
+            return leader,"Leader-only guild-material ticket."
+        end
+    end
+    return nil,"Guild material is absent from the live loot window."
+end
+
 -- This is the GUILD MASTER (rankIndex 0), not the raid leader (rank 2).
 -- Roster might be missing/stale on 3.3.5a; fail closed instead of
 -- guessing. Verify one online guild master is in the current raid.

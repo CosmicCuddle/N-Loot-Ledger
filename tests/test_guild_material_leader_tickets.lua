@@ -46,6 +46,7 @@ NaxxLootLottery={
     Roster={Refresh=function()rosterRefresh=rosterRefresh+1 end},
     LootIdentity={
         IsProcessed=function()return false end,
+        RestoreOutcome=function()return nil end,
         GetRow=function()return nil end,
         MarkCompleted=function()end,
     },

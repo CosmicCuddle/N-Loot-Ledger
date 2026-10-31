@@ -116,7 +116,9 @@ function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated, se
     self.winnerAnnouncementTitle:SetText("|cffffd568" .. label .. "|r")
     self.winnerAnnouncementName:SetText("|cff66ff99" .. tostring(winner) .. "|r")
     self.winnerAnnouncementItem:SetText(tostring(itemName))
-    self.winnerAnnouncementTicket:SetText("Winning ticket #" .. tostring(ticketNumber))
+    self.winnerAnnouncementTicket:SetText((selectionType=="GUILD" and
+        "Guild allocation ticket #" or "Winning ticket #")..
+        tostring(ticketNumber))
     self.winnerAnnouncementDropUID=not simulated and dropUID or nil
     self.winnerAnnouncementWinner=not simulated and winner or nil
     local enabled=not simulated and type(dropUID)=="string" and
@@ -127,7 +129,7 @@ function UI:ShowWinnerAnnouncement(itemName, winner, ticketNumber, simulated, se
     self.winnerAnnouncementDisclaimer:SetText(simulated and
         "|cffffbb66FAKE RAID - no real equipment awarded|r" or
         (enabled and
-        "|cffff9955AWARD ITEM sends REAL Master Loot; receipt still unverified|r" or
+        "|cffff9955Select THIS item in WoW loot first; AWARD ITEM sends REAL loot.|r" or
         "|cffffbb66RESULT ONLY - quick award OFF; use Review Award|r"))
     self.winnerAnnouncement:Show()
     return true

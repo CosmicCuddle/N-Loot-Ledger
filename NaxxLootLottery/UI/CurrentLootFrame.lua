@@ -1140,7 +1140,12 @@ function UI:RefreshCurrentLootPanel()
 
     local selectedPolicy=NLL.Data and NLL.Data.MoltenCore and
         NLL.Data.MoltenCore:GetItem(selected.itemID)
-    if selectedPolicy and selectedPolicy.reservationLottery and
+    if not simulation and NLL.GuildLootReview and
+       NLL.GuildLootReview:IsGuildMaterial(selected.itemID) then
+        statusText=statusText..
+            "  |cff66ff99GUILD MATERIAL: leader-only ticket. "..
+            "Prepare Tickets, then Start Roll; no random contest.|r"
+    elseif selectedPolicy and selectedPolicy.reservationLottery and
         (selected.itemID==18563 or selected.itemID==18564) then
         statusText=statusText..
             "  |cff66ff99Saved Windseeker reservations: equal tickets; manual award.|r"

@@ -53,11 +53,15 @@ leader are the same person.
 
 ## Verification additions — after source review (31 October)
 
-- **Actual location must be Molten Core:** the leader-only route requires
-  the 3.3.5a `GetInstanceInfo()` result to identify a **raid** with instance
-  map ID **409**. Recognition of item 7075 or the other material IDs in an
-  unrelated outdoor/dungeon loot window must not create guild tickets.
-  Missing location APIs fail closed.
+- **Actual location must be Molten Core:** the leader-only route checks
+  `GetInstanceInfo()` for **raid** type and map ID **409**, when exposed.
+  Because client/API references disagree on whether 3.3.5a exposes the
+  eighth map ID, a missing ID permits the exact English instance name
+  `Molten Core` with `raid` type. A different non-nil ID or a different
+  name without an ID fails closed; other languages may need a separately
+  verified translation. Recognition of item 7075 or other materials in
+  outdoor/unrelated loot alone can never create guild tickets.
+  In-game client confirmation of the location API is still pending.
 - **Receipt-created-before-award special case:** `TicketLottery:Finish`
   creates a real `WON_AWAITING_ITEM` receipt before the operator can press
   AWARD ITEM. The recheck now excludes **only the exact, completed, same-UID,

@@ -115,6 +115,34 @@ ok(L.active.status=="COMPLETE" and L.active.winner=="RaidLeader" and
 ok(not L:Prepare(entry),"same live opportunity cannot reroll after winner")
 ok(#db.gearNeeds==0 and awards==0,
    "no Gear Plan status changed from preparing or finishing guild material")
+-- The completed guild ticket itself creates a receipt awaiting delivery.
+-- That exact receipt must not veto the FIRST real award to its leader.
+-- However the read-only Guild Loot overview must still show it pending,
+-- and any OTHER unresolved same-item receipt must keep the physical HOLD.
+local own={dropUID=entry.dropUID,itemID=17011,
+    character="RaidLeader",selectionType="GUILD",
+    status="WON_AWAITING_ITEM"}
+db.lootReceiptTracker[entry.dropUID]=own
+ok(G:Scan()[1].status=="UNRESOLVED",
+   "regular read-only guild overview still reports pending receipt")
+local first=P:BuildPreview(entry)
+ok(first.ready and first.selectionType=="GUILD" and
+   #first.current==1 and first.current[1].character=="RaidLeader",
+   "one exact completed guild ticket receipt doesn't block its first award")
+db.lootReceiptTracker["OLDER-UNCONFIRMED"]={
+    dropUID="OLDER-UNCONFIRMED",itemID=17011,
+    character="Pikeotter",selectionType="NEED",
+    status="WON_AWAITING_ITEM"}
+local held=P:BuildPreview(entry)
+ok(not held.ready and held.message:find("Pending winner receipt",1,true),
+   "a second unresolved winner receipt on same material still holds")
+db.lootReceiptTracker["OLDER-UNCONFIRMED"]=nil
+own.character="WrongCharacter"
+held=P:BuildPreview(entry)
+ok(not held.ready and held.message:find("Pending winner receipt",1,true),
+   "wrong receipt character may NEVER be excluded as own guild result")
+own.character="RaidLeader"
+db.lootReceiptTracker[entry.dropUID]=nil
 
 -- Subsequent fresh source cases test scanner and reservation holds only;
 -- do not reset/erase a real completed roll to claim a second winner.

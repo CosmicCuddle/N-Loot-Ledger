@@ -65,6 +65,10 @@ ok(R:ObserveWinner(bot) and ledger[bot.dropUID]==winPending,
 local corrupt={dropUID=bot.dropUID,itemID=16866,itemName="Helm of Might",
     winner="Gorak",status="COMPLETE"}
 ok(not R:ObserveWinner(corrupt),"same drop UID cannot be moved to another winner")
+local lookalike={dropUID=bot.dropUID,itemID=16866,itemName="Helm of Might",
+    winner="Throgar-OtherRealm",status="COMPLETE"}
+ok(not R:ObserveWinner(lookalike) and ledger[bot.dropUID]==winPending,
+    "same drop UID may not be claimed by same short name on a different realm")
 N.db.lootAwardHistory[#N.db.lootAwardHistory+1]={
     dropUID=bot.dropUID,itemID=16866,winner="Throgar",
     status="AWARD_REQUESTED"
@@ -72,6 +76,12 @@ N.db.lootAwardHistory[#N.db.lootAwardHistory+1]={
 accepted,why=R:CanConfirm(bot.dropUID)
 ok(not accepted,"GiveMasterLoot request alone is insufficient")
 N.db.lootAwardHistory[#N.db.lootAwardHistory].status="LOOT_SLOT_CLEARED"
+N.db.lootAwardHistory[#N.db.lootAwardHistory].winner="Throgar-OtherRealm"
+local aliasOK,aliasReason=R:CanConfirm(bot.dropUID)
+ok(not aliasOK and aliasReason:find("record the award",1,true) and
+   winPending.status=="WON_AWAITING_ITEM",
+   "another realm's short-name lookalike cannot validate physical receipt")
+N.db.lootAwardHistory[#N.db.lootAwardHistory].winner="Throgar"
 ok(R:CanConfirm(bot.dropUID),"slot cleared allows separate manual receipt confirmation")
 -- Simulate human recipient check; no award is sent by this call.
 local committed,message=R:ConfirmReceipt(bot.dropUID)

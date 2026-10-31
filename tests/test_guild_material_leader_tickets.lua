@@ -60,7 +60,10 @@ NaxxLootLottery={
         GetRow=function()return nil end,
         MarkCompleted=function()end,
     },
-    LootReceiptTracker={ObserveWinner=function()return true end},
+    LootReceiptTracker={
+        ObserveWinner=function()return true end,
+        Get=function()return nil end, -- no confirmed recipient receipt
+    },
     AwardWorkflow={liveRequests={}},
     NeedMatcher={GetMatchesForItem=function()return {}end},
     CandidateReview={MergeMatches=function(_,_,m)return m end},

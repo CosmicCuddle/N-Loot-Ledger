@@ -52,3 +52,8 @@ jobs:
         run: lua5.1 tests/test_search_layout.lua
       - name: Wishlist Inbox pagination and footer layout regression
         run: lua5.1 tests/test_inbox_layout.lua
+      - name: Winner one-click consent and exact physical award safety
+        run: |
+          lua5.1 tests/test_award_winner_ui.lua
+          lua5.1 tests/test_winner_popup_quick_award.lua
+          lua5.1 tests/test_guild_transfer_settings_ui.lua

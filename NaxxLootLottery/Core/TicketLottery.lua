@@ -220,7 +220,7 @@ function L:Finish(roll,method)
     end
     if NLL.UI and NLL.UI.ShowWinnerAnnouncement then
         NLL.UI:ShowWinnerAnnouncement(a.itemName, a.winner, roll,
-            a.test == true, a.selectionType or 'NEED', a.tier)
+            a.test == true, a.selectionType or 'NEED', a.tier, a.dropUID)
     end
     return true
 end

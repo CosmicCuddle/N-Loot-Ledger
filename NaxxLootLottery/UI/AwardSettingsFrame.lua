@@ -21,7 +21,7 @@ function UI:CreateAwardSettingsContent(parent)
     procedure:SetPoint('TOPLEFT',warning,'BOTTOMLEFT',0,-26)
     procedure:SetWidth(670)
     procedure:SetJustifyH('LEFT')
-    procedure:SetText('Direct mode requires a verified winner and open Blizzard loot slot. It also requires two deliberate clicks (Arm and Confirm) and resets OFF every login or /reload.')
+    procedure:SetText('Direct mode requires a verified winner and open Blizzard loot slot. Normal awards use Arm + Confirm. Separate one-click winner awards can be opted into for this login only.')
     local status = page:CreateFontString(nil,'OVERLAY','GameFontHighlight')
     status:SetPoint('TOPLEFT',procedure,'BOTTOMLEFT',0,-32)
     status:SetWidth(650)
@@ -39,11 +39,25 @@ function UI:CreateAwardSettingsContent(parent)
         end
         UI:RefreshAwardSettingsContent()
     end)
+    local quick=UI:CreateTextButton(page,'Enable 1-Click Award',228)
+    quick:SetPoint('LEFT',toggle,'RIGHT',16,0)
+    quick:SetScript('OnClick',function()
+        local A=NLL.AwardWorkflow
+        if not A or not A.SetQuickEnabled then return end
+        local enable=not A:IsQuickEnabled()
+        local ok,msg=A:SetQuickEnabled(enable)
+        if ok then
+            NLL:Print(enable and 'ONE-CLICK physical award ENABLED for this login. AWARD ITEM on a winner popup sends real Master Loot immediately after live checks.' or
+                'ONE-CLICK winner awards DISABLED.')
+        else NLL:Print(msg or 'Cannot change one-click award consent.') end
+        UI:RefreshAwardSettingsContent()
+    end)
+    self.awardSettingsQuickToggle=quick
     local foot = page:CreateFontString(nil,'OVERLAY','GameFontDisableSmall')
     foot:SetPoint('TOPLEFT',toggle,'BOTTOMLEFT',0,-26)
     foot:SetWidth(670)
     foot:SetJustifyH('LEFT')
-    foot:SetText('NLL never auto-awards after a roll. A successful GiveMasterLoot call is only a request, not proof the winner received it. Fake raids never make this call.')
+    foot:SetText('No awards happen automatically after a roll. ONE-CLICK AWARD transfers REAL loot when pressed if both toggles are ON. Delivery remains UNVERIFIED until human receipt.')
     local guildStatus=page:CreateFontString(nil,'OVERLAY','GameFontHighlight')
     guildStatus:SetPoint('TOPLEFT',foot,'BOTTOMLEFT',0,-26)
     guildStatus:SetWidth(650)
@@ -78,6 +92,15 @@ function UI:RefreshAwardSettingsContent()
     local fake=NLL.DebugSimulator and NLL.DebugSimulator:IsActive()
     if fake then self.awardSettingsToggle:Disable()
     else self.awardSettingsToggle:Enable() end
+    local A=NLL.AwardWorkflow
+    if self.awardSettingsQuickToggle then
+        local quick=A and A.IsQuickEnabled and A:IsQuickEnabled()
+        self.awardSettingsQuickToggle.label:SetText(quick and
+            'Disable 1-Click Award' or 'Enable 1-Click Award')
+        if fake or not enabled or not A or not A.SetQuickEnabled then
+            self.awardSettingsQuickToggle:Disable()
+        else self.awardSettingsQuickToggle:Enable() end
+    end
     local T=NLL.GuildLootTransfer
     if self.awardSettingsGuildStatus then
         local consent=NLL.db and NLL.db.settings and

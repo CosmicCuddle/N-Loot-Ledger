@@ -227,8 +227,99 @@ function A:SetDirectEnabled(value)
     -- Never permit changing a real-award safety setting in fake mode.
     if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then return false end
     NLL.db.settings.directMasterLootEnabled = value == true
+    if value~=true then NLL.db.settings.winnerQuickAwardEnabled=false end
     self:Cancel()
     return true
+end
+
+-- One-click physical routing is NEVER implied by selecting Master Looter or
+-- enabling normal two-stage Direct Awards. Both separate opt-ins reset on
+-- every login and /reload.
+function A:IsQuickEnabled()
+    return self:IsDirectEnabled() and NLL.db and NLL.db.settings and
+        NLL.db.settings.winnerQuickAwardEnabled==true
+end
+
+function A:SetQuickEnabled(value)
+    if not NLL.db or not NLL.db.settings or
+       (NLL.DebugSimulator and NLL.DebugSimulator:IsActive()) then
+        return false,'Cannot change quick-award consent during a fake raid.'
+    end
+    if value==true and not self:IsDirectEnabled() then
+        return false,'Enable Direct Master Loot separately before one-click awards.'
+    end
+    NLL.db.settings.winnerQuickAwardEnabled=value==true
+    self:Cancel()
+    return true
+end
+
+-- Exactly ONE deliberate popup click may send the request, but only with
+-- both consents ON, a pinned LIVE winner and independent exact-slot proof.
+-- Reuse the normal write-ahead audit/no-retry path: never mark OBTAINED.
+function A:QuickAward(dropUID,expectedWinner)
+    self:Cancel()
+    if not self:IsQuickEnabled() then
+        return false,'One-click Winner Award is OFF. Enable BOTH award consents in Settings.'
+    end
+    if NLL.DebugSimulator and NLL.DebugSimulator:IsActive() then
+        return false,'Fake raids cannot send a real Master Loot award.'
+    end
+    local t=type(GetTime)=='function' and GetTime() or nil
+    if type(t)~='number' or t~=t or t<0 then
+        return false,'WoW clock unavailable. No one-click award sent.'
+    end
+    if type(dropUID)~='string' or dropUID=='' or
+       type(expectedWinner)~='string' or expectedWinner=='' then
+        return false,'The winner popup has no pinned physical drop/recipient.'
+    end
+    local entry=Selected()
+    local result=self:GetOutcome(entry)
+    if not entry or entry.dropUID~=dropUID or not result or
+       result.winner~=expectedWinner or result.awardStatus or result.test or
+       entry.simulationOnly then
+        return false,'The selected live loot or winning character changed. No award sent.'
+    end
+    -- A physical copy's exact link, slot and stack count must agree. A
+    -- display-only item ID cannot establish the selected WoW loot slot.
+    if type(entry.slotIndex)~='number' or entry.slotIndex<1 or
+       entry.slotIndex%1~=0 or type(entry.itemLink)~='string' or
+       type(entry.quantity)~='number' or entry.quantity<1 or
+       entry.quantity%1~=0 or
+       type(GetLootSlotLink)~='function' or
+       type(GetLootSlotInfo)~='function' or
+       GetLootSlotLink(entry.slotIndex)~=entry.itemLink then
+        return false,'Exact live item link/stack is unavailable or changed. No award sent.'
+    end
+    local _,_,count,_,locked=GetLootSlotInfo(entry.slotIndex)
+    if type(count)~='number' or count~=entry.quantity or
+       count<1 or locked then
+        return false,'Live loot quantity or locked status changed. No award sent.'
+    end
+    -- Two distinct candidate entries with matching short names are not
+    -- proof of one recipient. The regular two-stage dialog remains separate.
+    if type(GetMasterLootCandidate)~='function' then
+        return false,'WoW Master Loot candidate API unavailable.'
+    end
+    local matches=0
+    for i=1,40 do
+        local candidate=GetMasterLootCandidate(i)
+        -- Quick physical award requires the FULL exact recipient name,
+        -- never a realm-stripped alias or another similarly named player.
+        if type(candidate)=='string' and
+           string.lower(candidate)==string.lower(expectedWinner) then
+            matches=matches+1
+        end
+    end
+    if matches~=1 then
+        return false,'The winner is absent or ambiguous in Master Loot candidates.'
+    end
+    -- ValidateLiveContext is repeated at each stage; Commit writes the
+    -- immutable request lock BEFORE WoW GiveMasterLoot, even on API errors.
+    local ok,msg=self:Review(entry)
+    if not ok then self:Cancel(); return false,msg end
+    ok,msg=self:ArmDirectAward(entry)
+    if not ok then self:Cancel(); return false,msg end
+    return self:CommitDirectAward(entry)
 end
 
 function A:ArmDirectAward(entry)
